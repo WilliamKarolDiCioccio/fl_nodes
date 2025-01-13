@@ -40,8 +40,8 @@ class _NodeWidgetState extends State<NodeWidget> {
   Timer? _edgeTimer;
   Tuple2<String, String>? _tempLink;
 
-  double get _zoom => widget.controller.zoom;
-  Offset get _offset => widget.controller.offset;
+  double get _zoom => widget.controller.viewportZoom;
+  Offset get _offset => widget.controller.viewportOffset;
 
   @override
   void initState() {
@@ -73,7 +73,7 @@ class _NodeWidgetState extends State<NodeWidget> {
       } else if (event is DragSelectionEvent) {
         if (event.ids.contains(widget.node.id)) {
           setState(() {
-            widget.node.offset += event.delta / widget.controller.zoom;
+            widget.node.offset += event.delta / widget.controller.viewportZoom;
           });
         }
       } else if (event is CollapseNodeEvent) {
@@ -90,7 +90,8 @@ class _NodeWidgetState extends State<NodeWidget> {
 
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0; // Distance from edge to start moving
-    final moveAmount = 5.0 / widget.controller.zoom; // Amount to move per frame
+    final moveAmount =
+        5.0 / widget.controller.viewportZoom; // Amount to move per frame
 
     final editorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
     if (editorBounds == null) return;
@@ -133,8 +134,8 @@ class _NodeWidgetState extends State<NodeWidget> {
       final portScreenPosition = worldToScreen(
         port.offset,
         getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
-        widget.controller.offset,
-        widget.controller.zoom,
+        widget.controller.viewportOffset,
+        widget.controller.viewportZoom,
       );
 
       final hitBox = Rect.fromCenter(
@@ -225,21 +226,21 @@ class _NodeWidgetState extends State<NodeWidget> {
               widget.controller.removeNodes(
                 widget.controller.selectedNodeIds,
               );
-              widget.controller.clearSelection();
             } else {
               widget.controller.removeNodes({widget.node.id});
             }
+            widget.controller.clearSelection();
           },
         ),
         MenuItem(
           label: 'Cut',
           icon: Icons.content_cut,
-          onSelected: () {},
+          onSelected: () => widget.controller.cutSelectedNodes(),
         ),
         MenuItem(
           label: 'Copy',
           icon: Icons.copy,
-          onSelected: () {},
+          onSelected: () => widget.controller.copySelectedNodes(),
         ),
       ];
     }
@@ -274,16 +275,14 @@ class _NodeWidgetState extends State<NodeWidget> {
 
         widget.controller.nodePrototypes.forEach(
           (key, value) {
-            if (value()
-                .ports
-                .any((port) => port.isInput != startPort.isInput)) {
-              compatiblePrototypes.add(MapEntry(key, value()));
+            if (value.ports.any((port) => port.isInput != startPort.isInput)) {
+              compatiblePrototypes.add(MapEntry(key, value));
             }
           },
         );
       } else {
         widget.controller.nodePrototypes.forEach(
-          (key, value) => compatiblePrototypes.add(MapEntry(key, value())),
+          (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
         );
       }
 
@@ -338,17 +337,18 @@ class _NodeWidgetState extends State<NodeWidget> {
           ? child
           : ImprovedListener(
               behavior: HitTestBehavior.translucent,
-              onPointerPressed: (event) {
+              onPointerPressed: (event) async {
                 final locator = _isNearPort(event.localPosition);
 
                 if (event.buttons == kSecondaryMouseButton) {
                   if (!widget.node.state.isSelected) {
                     widget.controller.clearSelection();
+                    widget.controller.selectNodesById({widget.node.id});
                   }
 
                   if (locator != null) {
                     /// If a port is near the cursor, show the port context menu
-                    createAndShowContextMenu(
+                    await createAndShowContextMenu(
                       context,
                       portContextMenuEntries(
                         event.localPosition,
@@ -358,7 +358,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                     );
                   } else if (!isContextMenuVisible) {
                     // Else show the node context menu
-                    createAndShowContextMenu(
+                    await createAndShowContextMenu(
                       context,
                       nodeContextMenuEntries(),
                       event.position,
@@ -382,7 +382,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                   }
                 }
               },
-              onPointerMoved: (event) {
+              onPointerMoved: (event) async {
                 if (_isLinking) {
                   _onLinkUpdate(event.localPosition);
                 } else if (event.buttons == kPrimaryMouseButton) {
@@ -390,13 +390,13 @@ class _NodeWidgetState extends State<NodeWidget> {
                   widget.controller.dragSelection(event.delta);
                 }
               },
-              onPointerReleased: (event) {
+              onPointerReleased: (event) async {
                 if (_isLinking) {
                   final locator = _isNearPort(event.localPosition);
                   if (locator != null) {
                     _onLinkEnd(locator);
                   } else {
-                    createAndShowContextMenu(
+                    await createAndShowContextMenu(
                       context,
                       createSubmenuEntries(event.localPosition),
                       event.position,
@@ -427,11 +427,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                     border: Border.all(
                       color: widget.node.state.isSelected
                           ? widget.node.color
-                          : widget.node.color.withValues(
-                              red: widget.node.color.r / 1.35,
-                              green: widget.node.color.g / 1.35,
-                              blue: widget.node.color.b / 1.35,
-                            ),
+                          : Colors.transparent,
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(8.0),
@@ -528,7 +524,39 @@ class _NodeWidgetState extends State<NodeWidget> {
     );
   }
 
-  void _removeOverlay(OverlayEntry? overlayEntry) {
+  void _showFieldEditorOverlay(FieldInstance field, TapDownDetails details) {
+    final overlay = Overlay.of(context);
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: () => _removeFieldEditorOverlay(overlayEntry),
+              child: Container(color: Colors.transparent),
+            ),
+            Positioned(
+              left: details.globalPosition.dx,
+              top: details.globalPosition.dy,
+              child: Material(
+                color: Colors.transparent,
+                child: field.editorBuilder(
+                  context,
+                  () => _removeFieldEditorOverlay(overlayEntry),
+                  field,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    overlay.insert(overlayEntry);
+  }
+
+  void _removeFieldEditorOverlay(OverlayEntry? overlayEntry) {
     overlayEntry?.remove();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() {});
@@ -542,37 +570,7 @@ class _NodeWidgetState extends State<NodeWidget> {
       spacing: 4,
       children: [
         GestureDetector(
-          onTapDown: (details) {
-            final overlay = Overlay.of(context);
-            OverlayEntry? overlayEntry;
-
-            overlayEntry = OverlayEntry(
-              builder: (context) {
-                return Stack(
-                  children: [
-                    GestureDetector(
-                      onTap: () => _removeOverlay(overlayEntry),
-                      child: Container(color: Colors.transparent),
-                    ),
-                    Positioned(
-                      left: details.globalPosition.dx,
-                      top: details.globalPosition.dy,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: field.editorBuilder(
-                          context,
-                          () => _removeOverlay(overlayEntry),
-                          field,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-
-            overlay.insert(overlayEntry);
-          },
+          onTapDown: (details) => _showFieldEditorOverlay(field, details),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(

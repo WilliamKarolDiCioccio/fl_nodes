@@ -40,8 +40,8 @@ class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
     return NodeEditorRenderBox(
       style: style,
       behavior: behavior,
-      offset: controller.offset,
-      zoom: controller.zoom,
+      offset: controller.viewportOffset,
+      zoom: controller.viewportZoom,
       tempLink: controller.renderTempLink,
       selectionArea: controller.selectionArea,
       nodePositions: controller.nodesAsList.map((node) => node.offset).toList(),
@@ -55,8 +55,8 @@ class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
     NodeEditorRenderBox renderObject,
   ) {
     renderObject
-      ..offset = controller.offset
-      ..zoom = controller.zoom
+      ..offset = controller.viewportOffset
+      ..zoom = controller.viewportZoom
       ..tempLink = controller.renderTempLink
       ..selectionArea = controller.selectionArea
       ..updateNodePositions(

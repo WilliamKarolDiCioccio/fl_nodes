@@ -37,9 +37,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     super.initState();
 
     _nodeEditorController.registerNodePrototype(
-      'add',
-      () => NodePrototype(
+      NodePrototype(
         name: 'Add',
+        description: 'Adds two numbers together.',
         color: Colors.amber,
         ports: [
           InputPortPrototype(name: 'A', dataType: double),
@@ -51,9 +51,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     );
 
     _nodeEditorController.registerNodePrototype(
-      'input',
-      () => NodePrototype(
+      NodePrototype(
         name: 'Input',
+        description: 'Inputs a value.',
         color: Colors.red,
         ports: [
           OutputPortPrototype(name: 'Value', dataType: double),
@@ -63,9 +63,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     );
 
     _nodeEditorController.registerNodePrototype(
-      'output',
-      () => NodePrototype(
+      NodePrototype(
         name: 'Output',
+        description: 'Outputs a value.',
         color: Colors.green,
         ports: [
           InputPortPrototype(
@@ -78,9 +78,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     );
 
     _nodeEditorController.registerNodePrototype(
-      'round',
-      () => NodePrototype(
+      NodePrototype(
         name: 'Round',
+        description: 'Rounds a number to a specified number of decimals.',
         color: Colors.blue,
         ports: [
           InputPortPrototype(name: 'Value', dataType: double),
@@ -215,7 +215,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                             Text(' - Ctrl + C: Copy Node'),
                             Text(' - Ctrl + V: Paste Node'),
                             Text(' - Ctrl + X: Cut Node'),
-                            Text(' - Delete: Remove Node'),
+                            Text(' - Delete | Backspace: Remove Node'),
                             Text(' - Ctrl + Z: Undo'),
                             Text(' - Ctrl + Y: Redo'),
                           ],

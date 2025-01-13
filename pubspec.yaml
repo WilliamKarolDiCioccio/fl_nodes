@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_context_menu: ^0.2.0
+  keymap: ^0.0.92
   tuple: ^2.0.2
   uuid: ^4.5.1
 

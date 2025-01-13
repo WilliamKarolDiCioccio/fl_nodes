@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 /// Events are used to communicate between the [FlNodeEditorController] and the Widgets composing the Node Editor.
 /// Events can (where applicable) carry data to be used by the Widgets to update their state.
+/// Events can be handled by the Widgets to prevent the event from bubbling up to the parent Widgets.
+/// Events can be used to trigger animations, or to update the state of the Widgets.
+/// There is no one to one match between controller emthods and events, the latter only exist if there is data to be passed to the Widgets.
 
 /// Event base class for the [FlNodeEditorController] events bus.
 class NodeEditorEvent {

@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_context_menu/flutter_context_menu.dart';
+import 'package:keymap/keymap.dart';
 import 'package:tuple/tuple.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
@@ -64,9 +65,6 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
   // Core state
   Offset _offset = Offset.zero;
   double _zoom = 1.0;
-
-  // Focus node
-  final FocusNode _focusNode = FocusNode();
 
   // Interaction state
   bool _isDragging = false;
@@ -378,7 +376,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
       )..addListener(() {
           setState(() {
             _offset = _offsetAnimation.value;
-            widget.controller.offset = _offset;
+            widget.controller.viewportOffset = _offset;
           });
         });
 
@@ -386,7 +384,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
     } else {
       setState(() {
         _offset = endOffset;
-        widget.controller.offset = _offset;
+        widget.controller.viewportOffset = _offset;
       });
     }
   }
@@ -417,7 +415,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
       )..addListener(() {
           setState(() {
             _zoom = _zoomAnimation.value;
-            widget.controller.zoom = _zoom;
+            widget.controller.viewportZoom = _zoom;
           });
         });
 
@@ -425,14 +423,14 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
     } else {
       setState(() {
         _zoom = endZoom;
-        widget.controller.zoom = _zoom;
+        widget.controller.viewportZoom = _zoom;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<ContextMenuEntry> createSubmenuEntries(Offset position) {
+    List<ContextMenuEntry> createSubmenuEntries(Offset worldPosition) {
       final fromLink = _tempLink != null;
 
       final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
@@ -443,16 +441,14 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
 
         widget.controller.nodePrototypes.forEach(
           (key, value) {
-            if (value()
-                .ports
-                .any((port) => port.isInput != startPort.isInput)) {
-              compatiblePrototypes.add(MapEntry(key, value()));
+            if (value.ports.any((port) => port.isInput != startPort.isInput)) {
+              compatiblePrototypes.add(MapEntry(key, value));
             }
           },
         );
       } else {
         widget.controller.nodePrototypes.forEach(
-          (key, value) => compatiblePrototypes.add(MapEntry(key, value())),
+          (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
         );
       }
 
@@ -461,13 +457,6 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           label: entry.value.name,
           icon: Icons.widgets,
           onSelected: () {
-            final worldPosition = screenToWorld(
-              position,
-              getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
-              _offset,
-              _zoom,
-            );
-
             widget.controller.addNode(
               entry.key,
               offset: worldPosition,
@@ -503,6 +492,13 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
     }
 
     List<ContextMenuEntry> editorContextMenuEntries(Offset position) {
+      final worldPosition = screenToWorld(
+        position,
+        getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
+        _offset,
+        _zoom,
+      );
+
       return [
         const MenuHeader(text: "Editor Menu"),
         MenuItem(
@@ -523,12 +519,13 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
         MenuItem.submenu(
           label: 'Create',
           icon: Icons.add,
-          items: createSubmenuEntries(position),
+          items: createSubmenuEntries(worldPosition),
         ),
         MenuItem(
           label: 'Paste',
           icon: Icons.paste,
-          onSelected: () {},
+          onSelected: () =>
+              widget.controller.pasteSelectedNodes(position: worldPosition),
         ),
         const MenuDivider(),
         MenuItem(
@@ -582,27 +579,53 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
               onScaleEnd: (details) => _onDragEnd(),
               child: child,
             )
-          : KeyboardListener(
-              autofocus: true,
-              focusNode: _focusNode,
-              onKeyEvent: (value) {
-                if (value.logicalKey == LogicalKeyboardKey.delete ||
-                    value.logicalKey == LogicalKeyboardKey.backspace) {
-                  widget.controller.removeNodes(
-                    widget.controller.selectedNodeIds,
-                  );
-                  widget.controller.clearSelection();
-                }
-              },
+          : KeyboardWidget(
+              bindings: [
+                KeyAction(
+                  LogicalKeyboardKey.delete,
+                  "Remove selected nodes",
+                  () {
+                    widget.controller.removeNodes(
+                      widget.controller.selectedNodeIds,
+                    );
+                  },
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.backspace,
+                  "Remove selected nodes",
+                  () {
+                    widget.controller.removeNodes(
+                      widget.controller.selectedNodeIds,
+                    );
+                    widget.controller.clearSelection();
+                  },
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyC,
+                  "Copy selected nodes",
+                  () => widget.controller.copySelectedNodes(),
+                  isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyV,
+                  "Paste selected nodes",
+                  () => widget.controller.pasteSelectedNodes(),
+                  isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyX,
+                  "Cut selected nodes",
+                  () => widget.controller.cutSelectedNodes(),
+                  isControlPressed: true,
+                ),
+              ],
               child: MouseRegion(
                 cursor: _isDragging
                     ? SystemMouseCursors.move
                     : SystemMouseCursors.basic,
                 child: ImprovedListener(
                   onDoubleClick: () => widget.controller.clearSelection(),
-                  onPointerPressed: (event) {
-                    _focusNode.requestFocus();
-
+                  onPointerPressed: (event) async {
                     final locator = _isNearPort(event.localPosition);
 
                     if (event.buttons == kMiddleMouseButton) {
@@ -620,7 +643,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                     } else if (event.buttons == kSecondaryMouseButton) {
                       if (locator != null) {
                         /// If a port is near the cursor, show the port context menu
-                        createAndShowContextMenu(
+                        await createAndShowContextMenu(
                           context,
                           portContextMenuEntries(
                             event.localPosition,
@@ -630,7 +653,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                         );
                       } else if (!isContextMenuVisible) {
                         // Else show the editor context menu
-                        createAndShowContextMenu(
+                        await createAndShowContextMenu(
                           context,
                           editorContextMenuEntries(event.localPosition),
                           event.position,
@@ -638,7 +661,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                       }
                     }
                   },
-                  onPointerMoved: (event) {
+                  onPointerMoved: (event) async {
                     if (_isDragging &&
                         widget.controller.behavior.panSensitivity > 0) {
                       _onDragUpdate(event.localDelta);
@@ -649,7 +672,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                       _onSelectUpdate(event.localPosition);
                     }
                   },
-                  onPointerReleased: (event) {
+                  onPointerReleased: (event) async {
                     if (_isDragging) {
                       _onDragEnd();
                     } else if (_isLinking) {
@@ -659,7 +682,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                         _onLinkEnd(locator);
                       } else if (!isContextMenuVisible) {
                         // Show the create submenu if no port is near the cursor
-                        createAndShowContextMenu(
+                        await createAndShowContextMenu(
                           context,
                           createSubmenuEntries(event.localPosition),
                           event.position,
@@ -716,8 +739,8 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                 ),
             if (kDebugMode)
               DebugInfoWidget(
-                offset: widget.controller.offset,
-                zoom: widget.controller.zoom,
+                offset: widget.controller.viewportOffset,
+                zoom: widget.controller.viewportZoom,
               ),
           ],
         ),

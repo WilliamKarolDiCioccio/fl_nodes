@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math';
 
-import 'package:fl_nodes/src/core/utils/platform.dart';
-import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:fl_nodes/src/core/utils/constants.dart';
+import 'package:fl_nodes/src/core/utils/platform.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
+import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
 
 import '../models/entities.dart';
 
@@ -151,8 +152,8 @@ class FlNodeEditorController {
   }
 
   // Viewport
-  Offset offset = Offset.zero;
-  double zoom = 1.0;
+  Offset viewportOffset = Offset.zero;
+  double viewportZoom = 1.0;
 
   void setViewportOffset(
     Offset coords, {
@@ -160,17 +161,17 @@ class FlNodeEditorController {
     bool absolute = false,
   }) {
     if (absolute) {
-      offset = coords;
+      viewportOffset = coords;
     } else {
-      offset += coords;
+      viewportOffset += coords;
     }
 
-    eventBus.emit(ViewportOffsetEvent(offset, animate: animate));
+    eventBus.emit(ViewportOffsetEvent(viewportOffset, animate: animate));
   }
 
   void setViewportZoom(double amount, {bool animate = true}) {
-    zoom = amount;
-    eventBus.emit(ViewportZoomEvent(zoom));
+    viewportZoom = amount;
+    eventBus.emit(ViewportZoomEvent(viewportZoom));
   }
 
   // This is used for rendering purposes only. For computation, use the links list in the Port class.
@@ -191,13 +192,13 @@ class FlNodeEditorController {
   }
 
   // Nodes and links
-  final Map<String, NodePrototype Function()> _nodePrototypes = {};
+  final Map<String, NodePrototype> _nodePrototypes = {};
   final SpatialHashGrid _spatialHashGrid = SpatialHashGrid();
   final Map<String, NodeInstance> _nodes = {};
 
   List<NodePrototype> get nodePrototypesAsList =>
-      _nodePrototypes.values.map((e) => e()).toList();
-  Map<String, NodePrototype Function()> get nodePrototypes => _nodePrototypes;
+      _nodePrototypes.values.map((e) => e).toList();
+  Map<String, NodePrototype> get nodePrototypes => _nodePrototypes;
 
   List<NodeInstance> get nodesAsList {
     final nodesList = _nodes.values.toList();
@@ -220,37 +221,71 @@ class FlNodeEditorController {
   Map<String, NodeInstance> get nodes => _nodes;
   SpatialHashGrid get spatialHashGrid => _spatialHashGrid;
 
-  void registerNodePrototype(String type, NodePrototype Function() node) {
-    _nodePrototypes[type] = node;
+  /// NOTE: node prototypes are identified by human-readable strings instead of UUIDs.
+  void registerNodePrototype(NodePrototype name) {
+    _nodePrototypes.putIfAbsent(
+      name.name,
+      () => name,
+    );
   }
 
-  void unregisterNodePrototype(String type) {
-    _nodePrototypes.remove(type);
+  /// NOTE: node prototypes are identified by human-readable strings instead of UUIDs.
+  void unregisterNodePrototype(String name) {
+    if (!_nodePrototypes.containsKey(name)) {
+      throw Exception('Node prototype $name does not exist.');
+    } else {
+      _nodePrototypes.remove(name);
+    }
   }
 
-  NodeInstance addNode(String type, {Offset? offset}) {
-    final node = createNode(
-      _nodePrototypes[type]!(),
+  NodeInstance addNode(String name, {Offset? offset}) {
+    if (!_nodePrototypes.containsKey(name)) {
+      throw Exception('Node prototype $name does not exist.');
+    }
+
+    final instance = createNode(
+      _nodePrototypes[name]!,
       offset: offset,
-      onRendered: (node) {
-        _spatialHashGrid.remove(node.id);
-        _spatialHashGrid.insert(Tuple2(node.id, getNodeBoundsInWorld(node)!));
-      },
+      onRendered: _onRenderedCallback,
     );
 
     _nodes.putIfAbsent(
-      node.id,
-      () => node,
+      instance.id,
+      () => instance,
     );
 
     // The node is added to the spatial hash grid directly in the widget as it needs to be rendered first.
 
-    eventBus.emit(AddNodeEvent(node.id));
+    eventBus.emit(AddNodeEvent(instance.id));
 
-    return node;
+    return instance;
   }
 
-  void removeNodes(Set<String> ids) {
+  NodeInstance addNodeFromInstance(NodeInstance instance) {
+    _nodes.putIfAbsent(
+      instance.id,
+      () => instance,
+    );
+
+    for (final port in instance.ports.values) {
+      for (final link in port.links) {
+        _renderLinks.putIfAbsent(
+          link.id,
+          () => link,
+        );
+      }
+    }
+
+    // The node is added to the spatial hash grid directly in the widget as it needs to be rendered first.
+
+    eventBus.emit(AddNodeEvent(instance.id));
+
+    return instance;
+  }
+
+  void removeNodes(Set<String> ids) async {
+    if (ids.isEmpty) return;
+
     for (final id in ids) {
       for (final port in _nodes[id]!.ports.values) {
         removeLinks(id, port.id);
@@ -359,6 +394,11 @@ class FlNodeEditorController {
   }
 
   void selectNodesById(Set<String> ids, {bool holdSelection = false}) async {
+    if (ids.isEmpty) {
+      clearSelection();
+      return;
+    }
+
     if (!holdSelection) {
       for (final id in _selectedNodeIds) {
         final node = _nodes[id];
@@ -395,18 +435,8 @@ class FlNodeEditorController {
   }
 
   void focusNodesById(Set<String> ids) {
-    Rect encompassingRect = Rect.zero;
-
-    for (final id in ids) {
-      final nodeBounds = getNodeBoundsInWorld(_nodes[id]!);
-      if (nodeBounds == null) continue;
-
-      if (encompassingRect.isEmpty) {
-        encompassingRect = nodeBounds;
-      } else {
-        encompassingRect = encompassingRect.expandToInclude(nodeBounds);
-      }
-    }
+    final encompassingRect =
+        _calculateEncompassingRect(_selectedNodeIds, _nodes);
 
     selectNodesById(ids, holdSelection: false);
 
@@ -429,11 +459,181 @@ class FlNodeEditorController {
     final results = <String>[];
 
     for (final node in _nodes.values) {
-      if (node.name.toLowerCase().contains(name.toLowerCase())) {
+      if (node.name.contains(name)) {
         results.add(node.id);
       }
     }
 
     return results;
+  }
+
+  // Clipboard
+  Future copySelectedNodes() async {
+    if (_selectedNodeIds.isEmpty) return;
+
+    final encompassingRect =
+        _calculateEncompassingRect(_selectedNodeIds, _nodes);
+
+    final selectedNodes = _selectedNodeIds.map((id) {
+      var nodeCopy = _nodes[id]!.copyWith();
+      final relativeOffset = nodeCopy.offset - encompassingRect.topLeft;
+
+      nodeCopy = nodeCopy.copyWith(
+        offset: relativeOffset,
+        state: NodeState(),
+      );
+
+      // Remove links that are not connected to selected nodes.
+
+      final Set<String> linksToRemove = {};
+
+      for (final port in nodeCopy.ports.values) {
+        for (final link in port.links) {
+          // No need to check for the ports as those are embedded in the nodes.
+          if (!_selectedNodeIds.contains(link.fromTo.item1) ||
+              !_selectedNodeIds.contains(link.fromTo.item3)) {
+            linksToRemove.add(link.id);
+          }
+        }
+      }
+
+      for (final port in nodeCopy.ports.values) {
+        port.links.removeWhere((link) => linksToRemove.contains(link.id));
+      }
+
+      return nodeCopy;
+    }).toList();
+
+    final jsonData = jsonEncode(selectedNodes);
+    await Clipboard.setData(ClipboardData(text: jsonData));
+  }
+
+  void pasteSelectedNodes({Offset? position}) async {
+    final data = await Clipboard.getData('text/plain');
+    if (data == null || data.text!.isEmpty) return;
+
+    List<dynamic> jsonData = [];
+
+    try {
+      jsonData = jsonDecode(data.text!) as List<dynamic>;
+    } catch (e) {
+      logger.log('Failed to paste nodes: $e', NodeEditorLogSeverity.error);
+    } finally {
+      if (position == null) {
+        final viewportSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+
+        position = Rect.fromLTWH(
+          -viewportOffset.dx - viewportSize.width / 2,
+          -viewportOffset.dy - viewportSize.height / 2,
+          viewportSize.width,
+          viewportSize.height,
+        ).center;
+      }
+
+      // Create instances from the JSON data.
+      final instances = jsonData.map((node) {
+        return NodeInstance.fromJson(
+          node,
+          prototypes: _nodePrototypes,
+          onRendered: _onRenderedCallback,
+        );
+      }).toList();
+
+      // Called on each paste, see [FlNodeEditorController._mapToNewIds] for more info.
+      final newIds = await _mapToNewIds(instances);
+
+      for (final instance in instances) {
+        addNodeFromInstance(
+          instance.copyWith(
+            id: newIds[instance.id],
+            offset: instance.offset + position,
+            fields: instance.fields.map((key, field) {
+              return MapEntry(
+                newIds[field.id]!,
+                field.copyWith(id: newIds[field.id]),
+              );
+            }),
+            ports: instance.ports.map((key, port) {
+              return MapEntry(
+                newIds[port.id]!,
+                port.copyWith(
+                  id: newIds[port.id]!,
+                  links: port.links.map((link) {
+                    return link.copyWith(
+                      id: newIds[link.id],
+                      fromTo: Tuple4(
+                        newIds[link.fromTo.item1]!,
+                        newIds[link.fromTo.item2]!,
+                        newIds[link.fromTo.item3]!,
+                        newIds[link.fromTo.item4]!,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            }),
+          ),
+        );
+      }
+    }
+  }
+
+  void cutSelectedNodes() async {
+    await copySelectedNodes();
+    removeNodes(_selectedNodeIds);
+    clearSelection();
+  }
+
+  // Utils
+  void _onRenderedCallback(NodeInstance node) {
+    _spatialHashGrid.remove(node.id);
+    _spatialHashGrid.insert(
+      Tuple2(node.id, getNodeBoundsInWorld(node)!),
+    );
+  }
+
+  /// Maps the IDs of the nodes, ports, and links to new UUIDs.
+  ///
+  /// This function is used when pasting nodes to generate new IDs for the
+  /// pasted nodes, ports, and links. This is done to avoid conflicts with
+  /// existing nodes and to allow for multiple pastes of the same selection.
+  Future<Map<String, String>> _mapToNewIds(List<NodeInstance> nodes) async {
+    final Map<String, String> newIds = {};
+
+    for (final node in nodes) {
+      newIds[node.id] = const Uuid().v4();
+      for (final port in node.ports.values) {
+        newIds[port.id] = const Uuid().v4();
+        for (final link in port.links) {
+          newIds[link.id] = const Uuid().v4();
+        }
+      }
+
+      for (var field in node.fields.values) {
+        newIds[field.id] = const Uuid().v4();
+      }
+    }
+
+    return newIds;
+  }
+
+  Rect _calculateEncompassingRect(
+    Set<String> ids,
+    Map<String, NodeInstance> nodes,
+  ) {
+    Rect encompassingRect = Rect.zero;
+
+    for (final id in ids) {
+      final nodeBounds = getNodeBoundsInWorld(nodes[id]!);
+      if (nodeBounds == null) continue;
+
+      if (encompassingRect.isEmpty) {
+        encompassingRect = nodeBounds;
+      } else {
+        encompassingRect = encompassingRect.expandToInclude(nodeBounds);
+      }
+    }
+
+    return encompassingRect;
   }
 }
