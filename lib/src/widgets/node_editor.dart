@@ -115,7 +115,9 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           event is RemoveNodesEvent ||
           event is AddLinkEvent ||
           event is RemoveLinksEvent ||
-          event is DrawTempLinkEvent) {
+          event is DrawTempLinkEvent ||
+          event is PasteSelectionEvent ||
+          event is CutSelectionEvent) {
         setState(() {});
       }
     });
@@ -525,7 +527,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           label: 'Paste',
           icon: Icons.paste,
           onSelected: () =>
-              widget.controller.pasteSelectedNodes(position: worldPosition),
+              widget.controller.pasteSelection(position: worldPosition),
         ),
         const MenuDivider(),
         MenuItem(
@@ -551,7 +553,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           label: 'Remove Links',
           icon: Icons.remove_circle,
           onSelected: () {
-            widget.controller.removeLinks(
+            widget.controller.breakPortLinks(
               locator.item1,
               locator.item2,
             );
@@ -603,19 +605,19 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                 KeyAction(
                   LogicalKeyboardKey.keyC,
                   "Copy selected nodes",
-                  () => widget.controller.copySelectedNodes(),
+                  () => widget.controller.copySelection(),
                   isControlPressed: true,
                 ),
                 KeyAction(
                   LogicalKeyboardKey.keyV,
                   "Paste selected nodes",
-                  () => widget.controller.pasteSelectedNodes(),
+                  () => widget.controller.pasteSelection(),
                   isControlPressed: true,
                 ),
                 KeyAction(
                   LogicalKeyboardKey.keyX,
                   "Cut selected nodes",
-                  () => widget.controller.cutSelectedNodes(),
+                  () => widget.controller.cutSelection(),
                   isControlPressed: true,
                 ),
               ],

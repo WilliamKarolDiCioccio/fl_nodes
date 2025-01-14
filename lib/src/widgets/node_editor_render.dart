@@ -67,13 +67,15 @@ class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
 
   List<Tuple2<Offset, Offset>> _getLinkPositions() {
     return controller.renderLinksAsList.map((link) {
-      final outNodeOffset = controller.nodes[link.fromTo.item1]!.offset;
-      final inNodeOffset = controller.nodes[link.fromTo.item3]!.offset;
+      final nodes = controller.nodes;
+
+      final outNodeOffset = nodes[link.fromTo.item1]!.offset;
+      final inNodeOffset = nodes[link.fromTo.item3]!.offset;
 
       final outPortRelativeOffset =
-          controller.nodes[link.fromTo.item1]!.ports[link.fromTo.item2]!.offset;
+          nodes[link.fromTo.item1]!.ports[link.fromTo.item2]!.offset;
       final inPortRelativeOffset =
-          controller.nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!.offset;
+          nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!.offset;
 
       return Tuple2(
         outNodeOffset + outPortRelativeOffset,

@@ -246,6 +246,7 @@ class FlNodeEditorController {
     final instance = createNode(
       _nodePrototypes[name]!,
       offset: offset,
+      // Layout is needed to insert the node into the spatial hash grid.
       onRendered: _onRenderedCallback,
     );
 
@@ -254,14 +255,15 @@ class FlNodeEditorController {
       () => instance,
     );
 
-    // The node is added to the spatial hash grid directly in the widget as it needs to be rendered first.
-
     eventBus.emit(AddNodeEvent(instance.id));
 
     return instance;
   }
 
-  NodeInstance addNodeFromInstance(NodeInstance instance) {
+  NodeInstance addNodeFromInstance(
+    NodeInstance instance, {
+    bool isHandled = false,
+  }) {
     _nodes.putIfAbsent(
       instance.id,
       () => instance,
@@ -276,26 +278,38 @@ class FlNodeEditorController {
       }
     }
 
-    // The node is added to the spatial hash grid directly in the widget as it needs to be rendered first.
-
-    eventBus.emit(AddNodeEvent(instance.id));
+    eventBus.emit(AddNodeEvent(instance.id, isHandled: isHandled));
 
     return instance;
   }
 
-  void removeNodes(Set<String> ids) async {
+  void removeNodes(Set<String> ids, {bool isHandled = false}) async {
     if (ids.isEmpty) return;
+
+    // Collect all links associated with the nodes to be removed
+    final Set<String> linksToRemove = {};
 
     for (final id in ids) {
       for (final port in _nodes[id]!.ports.values) {
-        removeLinks(id, port.id);
+        linksToRemove.addAll(port.links.map((link) => link.id));
       }
-
-      _spatialHashGrid.remove(id);
-      _nodes.remove(id);
     }
 
-    eventBus.emit(RemoveNodesEvent(ids));
+    // Remove the links associated with the nodes
+    for (final linkId in linksToRemove) {
+      removeLinkById(linkId, isHandled: true);
+    }
+
+    // Remove the nodes themselves
+    for (final id in ids) {
+      if (_nodes.containsKey(id)) {
+        _spatialHashGrid.remove(id);
+        _nodes.remove(id);
+      }
+    }
+
+    // Emit the event after the cleanup is complete
+    eventBus.emit(RemoveNodesEvent(ids, isHandled: isHandled));
   }
 
   Link? addLink(
@@ -324,7 +338,7 @@ class FlNodeEditorController {
     );
 
     fromPort.links.add(link);
-    _nodes[toNodeId]!.ports[toPortId]!.links.add(link);
+    toPort.links.add(link);
 
     _renderLinks.putIfAbsent(
       link.id,
@@ -336,22 +350,33 @@ class FlNodeEditorController {
     return link;
   }
 
-  void removeLinks(String nodeId, String portId) {
-    final port = _nodes[nodeId]!.ports[portId]!;
+  void removeLinkById(String linkId, {bool isHandled = false}) {
+    final link = _renderLinks[linkId]!;
 
-    final linksToRemove = List<Link>.from(port.links);
+    // Remove the link from its associated ports
+    final fromPort = _nodes[link.fromTo.item1]?.ports[link.fromTo.item2];
+    final toPort = _nodes[link.fromTo.item3]?.ports[link.fromTo.item4];
 
-    for (final link in linksToRemove) {
-      final fromPort = _nodes[link.fromTo.item1]!.ports[link.fromTo.item2]!;
-      final toPort = _nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!;
+    fromPort?.links.remove(link);
+    toPort?.links.remove(link);
 
-      fromPort.links.remove(link);
-      toPort.links.remove(link);
+    _renderLinks.remove(linkId);
 
-      _renderLinks.remove(link.id);
+    eventBus.emit(RemoveLinksEvent(linkId, isHandled: isHandled));
+  }
+
+  void breakPortLinks(String nodeId, String portId, {bool isHandled = false}) {
+    final node = _nodes[nodeId]!;
+    final port = node.ports[portId]!;
+
+    // Collect all link IDs associated with the port
+    final linkIds = port.links.map((link) => link.id).toList();
+
+    for (final linkId in linkIds) {
+      removeLinkById(linkId, isHandled: true);
     }
 
-    eventBus.emit(RemoveLinksEvent('$nodeId-$portId'));
+    eventBus.emit(RemoveLinksEvent('$nodeId-$portId', isHandled: isHandled));
   }
 
   void setNodeOffset(String id, Offset offset) {
@@ -424,14 +449,17 @@ class FlNodeEditorController {
     _selectionArea = Rect.zero;
   }
 
-  void clearSelection() {
+  void clearSelection({bool isHandled = false}) {
     for (final id in _selectedNodeIds) {
       final node = _nodes[id];
       node?.state.isSelected = false;
     }
 
     _selectedNodeIds.clear();
-    eventBus.emit(SelectionEvent(_selectedNodeIds.toSet()));
+
+    eventBus.emit(
+      SelectionEvent(_selectedNodeIds.toSet(), isHandled: isHandled),
+    );
   }
 
   void focusNodesById(Set<String> ids) {
@@ -468,47 +496,43 @@ class FlNodeEditorController {
   }
 
   // Clipboard
-  Future copySelectedNodes() async {
+  Future copySelection() async {
     if (_selectedNodeIds.isEmpty) return;
 
     final encompassingRect =
         _calculateEncompassingRect(_selectedNodeIds, _nodes);
 
     final selectedNodes = _selectedNodeIds.map((id) {
-      var nodeCopy = _nodes[id]!.copyWith();
+      final nodeCopy = _nodes[id]!.copyWith();
+
       final relativeOffset = nodeCopy.offset - encompassingRect.topLeft;
 
-      nodeCopy = nodeCopy.copyWith(
+      // We make deep copies as we only want to copy the links that are within the selection.
+      final updatedPorts = nodeCopy.ports.map((portId, port) {
+        final deepCopiedLinks = port.links.where((link) {
+          return _selectedNodeIds.contains(link.fromTo.item1) &&
+              _selectedNodeIds.contains(link.fromTo.item3);
+        }).toList();
+
+        return MapEntry(
+          portId,
+          port.copyWith(links: deepCopiedLinks),
+        );
+      });
+
+      // Update the node with deep copied ports, state, and relative offset
+      return nodeCopy.copyWith(
         offset: relativeOffset,
         state: NodeState(),
+        ports: updatedPorts,
       );
-
-      // Remove links that are not connected to selected nodes.
-
-      final Set<String> linksToRemove = {};
-
-      for (final port in nodeCopy.ports.values) {
-        for (final link in port.links) {
-          // No need to check for the ports as those are embedded in the nodes.
-          if (!_selectedNodeIds.contains(link.fromTo.item1) ||
-              !_selectedNodeIds.contains(link.fromTo.item3)) {
-            linksToRemove.add(link.id);
-          }
-        }
-      }
-
-      for (final port in nodeCopy.ports.values) {
-        port.links.removeWhere((link) => linksToRemove.contains(link.id));
-      }
-
-      return nodeCopy;
     }).toList();
 
     final jsonData = jsonEncode(selectedNodes);
     await Clipboard.setData(ClipboardData(text: jsonData));
   }
 
-  void pasteSelectedNodes({Offset? position}) async {
+  void pasteSelection({Offset? position}) async {
     final data = await Clipboard.getData('text/plain');
     if (data == null || data.text!.isEmpty) return;
 
@@ -544,6 +568,7 @@ class FlNodeEditorController {
 
       for (final instance in instances) {
         addNodeFromInstance(
+          isHandled: true,
           instance.copyWith(
             id: newIds[instance.id],
             offset: instance.offset + position,
@@ -575,13 +600,17 @@ class FlNodeEditorController {
           ),
         );
       }
+
+      eventBus.emit(PasteSelectionEvent(newIds.values.toSet(), position));
     }
   }
 
-  void cutSelectedNodes() async {
-    await copySelectedNodes();
-    removeNodes(_selectedNodeIds);
-    clearSelection();
+  void cutSelection() async {
+    await copySelection();
+    removeNodes(_selectedNodeIds, isHandled: true);
+    clearSelection(isHandled: true);
+
+    eventBus.emit(CutSelectionEvent(_selectedNodeIds));
   }
 
   // Utils

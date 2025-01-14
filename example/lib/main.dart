@@ -1,9 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    BrowserContextMenu.disableContextMenu();
+  }
+
   runApp(const NodeEditorExampleApp());
 }
 

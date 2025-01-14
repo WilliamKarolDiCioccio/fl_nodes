@@ -235,12 +235,12 @@ class _NodeWidgetState extends State<NodeWidget> {
         MenuItem(
           label: 'Cut',
           icon: Icons.content_cut,
-          onSelected: () => widget.controller.cutSelectedNodes(),
+          onSelected: () => widget.controller.cutSelection(),
         ),
         MenuItem(
           label: 'Copy',
           icon: Icons.copy,
-          onSelected: () => widget.controller.copySelectedNodes(),
+          onSelected: () => widget.controller.copySelection(),
         ),
       ];
     }
@@ -255,7 +255,7 @@ class _NodeWidgetState extends State<NodeWidget> {
           label: 'Remove Links',
           icon: Icons.remove_circle,
           onSelected: () {
-            widget.controller.removeLinks(
+            widget.controller.breakPortLinks(
               locator.item1,
               locator.item2,
             );
