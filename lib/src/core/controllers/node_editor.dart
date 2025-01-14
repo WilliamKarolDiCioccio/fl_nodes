@@ -529,17 +529,19 @@ class FlNodeEditorController {
     }).toList();
 
     final jsonData = jsonEncode(selectedNodes);
-    await Clipboard.setData(ClipboardData(text: jsonData));
+    final base64Data = base64Encode(utf8.encode(jsonData));
+    await Clipboard.setData(ClipboardData(text: base64Data));
   }
 
   void pasteSelection({Offset? position}) async {
-    final data = await Clipboard.getData('text/plain');
-    if (data == null || data.text!.isEmpty) return;
+    final clipboardData = await Clipboard.getData('text/plain');
+    if (clipboardData == null || clipboardData.text!.isEmpty) return;
 
-    List<dynamic> jsonData = [];
+    final jsonData = utf8.decode(base64Decode(clipboardData.text!));
+    late List<dynamic> nodesJson;
 
     try {
-      jsonData = jsonDecode(data.text!) as List<dynamic>;
+      nodesJson = jsonDecode(jsonData);
     } catch (e) {
       logger.log('Failed to paste nodes: $e', NodeEditorLogSeverity.error);
     } finally {
@@ -555,7 +557,7 @@ class FlNodeEditorController {
       }
 
       // Create instances from the JSON data.
-      final instances = jsonData.map((node) {
+      final instances = nodesJson.map((node) {
         return NodeInstance.fromJson(
           node,
           prototypes: _nodePrototypes,
