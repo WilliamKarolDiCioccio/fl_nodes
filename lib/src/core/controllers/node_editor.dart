@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:fl_nodes/src/core/utils/snackbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -531,19 +532,27 @@ class FlNodeEditorController {
     final jsonData = jsonEncode(selectedNodes);
     final base64Data = base64Encode(utf8.encode(jsonData));
     await Clipboard.setData(ClipboardData(text: base64Data));
+
+    showNodeEditorSnackbar(
+      'Nodes copied to clipboard.',
+      SnackbarType.success,
+    );
   }
 
   void pasteSelection({Offset? position}) async {
     final clipboardData = await Clipboard.getData('text/plain');
     if (clipboardData == null || clipboardData.text!.isEmpty) return;
 
-    final jsonData = utf8.decode(base64Decode(clipboardData.text!));
     late List<dynamic> nodesJson;
 
     try {
+      final jsonData = utf8.decode(base64Decode(clipboardData.text!));
       nodesJson = jsonDecode(jsonData);
     } catch (e) {
-      logger.log('Failed to paste nodes: $e', NodeEditorLogSeverity.error);
+      showNodeEditorSnackbar(
+        'Failed to paste nodes. Invalid clipboard data.',
+        SnackbarType.error,
+      );
     } finally {
       if (position == null) {
         final viewportSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
