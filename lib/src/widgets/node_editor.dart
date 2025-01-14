@@ -40,7 +40,7 @@ class FlOverlayData {
 
 class FlNodeEditor extends StatefulWidget {
   final FlNodeEditorController controller;
-  final NodeEditorStyle style;
+  final FlNodeEditorStyle style;
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
@@ -48,8 +48,8 @@ class FlNodeEditor extends StatefulWidget {
   const FlNodeEditor({
     super.key,
     required this.controller,
-    this.style = const NodeEditorStyle(
-      gridStyle: GridStyle(),
+    this.style = const FlNodeEditorStyle(
+      gridStyle: FlGridStyle(),
     ),
     this.expandToParent = true,
     this.fixedSize,

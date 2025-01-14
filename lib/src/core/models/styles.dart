@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class GridStyle {
+class FlGridStyle {
   final double gridSpacingX;
   final double gridSpacingY;
   final double lineWidth;
@@ -9,7 +9,7 @@ class GridStyle {
   final double intersectionRadius;
   final bool showGrid;
 
-  const GridStyle({
+  const FlGridStyle({
     this.gridSpacingX = 64.0,
     this.gridSpacingY = 64.0,
     this.lineWidth = 1.0,
@@ -19,7 +19,7 @@ class GridStyle {
     this.showGrid = true,
   });
 
-  GridStyle copyWith({
+  FlGridStyle copyWith({
     double? gridSpacingX,
     double? gridSpacingY,
     double? lineWidth,
@@ -28,7 +28,7 @@ class GridStyle {
     double? intersectionRadius,
     bool? showGrid,
   }) {
-    return GridStyle(
+    return FlGridStyle(
       gridSpacingX: gridSpacingX ?? this.gridSpacingX,
       gridSpacingY: gridSpacingY ?? this.gridSpacingY,
       lineWidth: lineWidth ?? this.lineWidth,
@@ -40,43 +40,43 @@ class GridStyle {
   }
 }
 
-enum LinkCurveType {
+enum FlLinkCurveType {
   straight,
   bezier,
   ninetyDegree,
 }
 
-enum LinkStyle {
+enum FlLinkStyle {
   solid,
   dashed,
   dotted,
 }
 
-class NodeEditorStyle {
+class FlNodeEditorStyle {
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
-  final LinkCurveType linkCurveType;
-  final LinkStyle linkStyle;
-  final GridStyle gridStyle;
+  final FlLinkCurveType linkCurveType;
+  final FlLinkStyle linkStyle;
+  final FlGridStyle gridStyle;
 
-  const NodeEditorStyle({
+  const FlNodeEditorStyle({
     this.decoration = const BoxDecoration(
       color: Colors.transparent,
     ),
     this.padding = const EdgeInsets.all(8.0),
-    this.linkCurveType = LinkCurveType.bezier,
-    this.linkStyle = LinkStyle.solid,
+    this.linkCurveType = FlLinkCurveType.bezier,
+    this.linkStyle = FlLinkStyle.solid,
     required this.gridStyle,
   });
 
-  NodeEditorStyle copyWith({
+  FlNodeEditorStyle copyWith({
     BoxDecoration? decoration,
     EdgeInsetsGeometry? padding,
-    LinkCurveType? linkCurveType,
-    LinkStyle? linkStyle,
-    GridStyle? gridStyle,
+    FlLinkCurveType? linkCurveType,
+    FlLinkStyle? linkStyle,
+    FlGridStyle? gridStyle,
   }) {
-    return NodeEditorStyle(
+    return FlNodeEditorStyle(
       decoration: decoration ?? this.decoration,
       padding: padding ?? this.padding,
       linkCurveType: linkCurveType ?? this.linkCurveType,
@@ -86,7 +86,7 @@ class NodeEditorStyle {
   }
 }
 
-class SearchStyle {
+class FlSearchStyle {
   final BoxDecoration decoration;
   final TextStyle textStyle;
   final IconThemeData iconTheme;
@@ -94,7 +94,7 @@ class SearchStyle {
   final Icon previousResultIcon;
   final Icon nextResultIcon;
 
-  const SearchStyle({
+  const FlSearchStyle({
     this.decoration = const BoxDecoration(
       color: Color(0xFF212121),
       borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -110,7 +110,7 @@ class SearchStyle {
     this.nextResultIcon = const Icon(Icons.arrow_downward),
   });
 
-  SearchStyle copyWith({
+  FlSearchStyle copyWith({
     BoxDecoration? decoration,
     TextStyle? textStyle,
     IconThemeData? iconTheme,
@@ -118,7 +118,7 @@ class SearchStyle {
     Icon? previousResultIcon,
     Icon? nextResultIcon,
   }) {
-    return SearchStyle(
+    return FlSearchStyle(
       decoration: decoration ?? this.decoration,
       textStyle: textStyle ?? this.textStyle,
       iconTheme: iconTheme ?? this.iconTheme,
@@ -129,14 +129,14 @@ class SearchStyle {
   }
 }
 
-class HierarchyStyle {
+class FlHierarchyStyle {
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
   final BoxDecoration nodeDecoration;
   final BoxDecoration selectedNodeDecoration;
   final TextStyle textStyle;
 
-  const HierarchyStyle({
+  const FlHierarchyStyle({
     this.decoration = const BoxDecoration(
       color: Color(0xFF212121),
       borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -155,14 +155,14 @@ class HierarchyStyle {
     ),
   });
 
-  HierarchyStyle copyWith({
+  FlHierarchyStyle copyWith({
     BoxDecoration? decoration,
     EdgeInsetsGeometry? padding,
     BoxDecoration? nodeDecoration,
     BoxDecoration? selectedNodeDecoration,
     TextStyle? textStyle,
   }) {
-    return HierarchyStyle(
+    return FlHierarchyStyle(
       decoration: decoration ?? this.decoration,
       padding: padding ?? this.padding,
       nodeDecoration: nodeDecoration ?? this.nodeDecoration,

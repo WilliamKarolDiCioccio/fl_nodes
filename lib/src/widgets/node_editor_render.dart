@@ -17,7 +17,7 @@ class NodeParentData extends ContainerBoxParentData<RenderBox> {
 class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorController controller;
   final NodeEditorBehavior behavior;
-  final NodeEditorStyle style;
+  final FlNodeEditorStyle style;
 
   NodeEditorRenderWidget({
     super.key,
@@ -90,7 +90,7 @@ class NodeEditorRenderBox extends RenderBox
         ContainerRenderObjectMixin<RenderBox, NodeParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, NodeParentData> {
   NodeEditorRenderBox({
-    required NodeEditorStyle style,
+    required FlNodeEditorStyle style,
     required NodeEditorBehavior behavior,
     required Offset offset,
     required double zoom,
@@ -116,9 +116,9 @@ class NodeEditorRenderBox extends RenderBox
     markNeedsPaint();
   }
 
-  NodeEditorStyle _style;
-  NodeEditorStyle get style => _style;
-  set style(NodeEditorStyle value) {
+  FlNodeEditorStyle _style;
+  FlNodeEditorStyle get style => _style;
+  set style(FlNodeEditorStyle value) {
     if (_style == value) return;
     _style = value;
     markNeedsPaint();
@@ -372,13 +372,13 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     switch (style.linkCurveType) {
-      case LinkCurveType.straight:
+      case FlLinkCurveType.straight:
         paintLinksAsStraights(canvas);
         break;
-      case LinkCurveType.bezier:
+      case FlLinkCurveType.bezier:
         paintLinksAsBeziers(canvas);
         break;
-      case LinkCurveType.ninetyDegree:
+      case FlLinkCurveType.ninetyDegree:
         paintLinksAsNinetyDegrees(canvas);
         break;
     }
@@ -481,13 +481,13 @@ class NodeEditorRenderBox extends RenderBox
     final inPortOffset = tempLink!.item2;
 
     switch (style.linkCurveType) {
-      case LinkCurveType.straight:
+      case FlLinkCurveType.straight:
         _paintStraightLink(canvas, outPortOffset, inPortOffset);
         break;
-      case LinkCurveType.bezier:
+      case FlLinkCurveType.bezier:
         _paintBezierLink(canvas, outPortOffset, inPortOffset);
         break;
-      case LinkCurveType.ninetyDegree:
+      case FlLinkCurveType.ninetyDegree:
         _paintNinetyDegreesLink(canvas, outPortOffset, inPortOffset);
         break;
     }

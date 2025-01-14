@@ -8,7 +8,7 @@ import '../core/controllers/node_editor.dart';
 
 class FlHierarchyWidget extends StatefulWidget {
   final FlNodeEditorController controller;
-  final HierarchyStyle style;
+  final FlHierarchyStyle style;
 
   const FlHierarchyWidget({
     required this.controller,

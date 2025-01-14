@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/models/styles.dart';
 
 void drawGrid(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startX,
@@ -14,7 +14,7 @@ void drawGrid(
 }
 
 void _drawGridLines(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startX,
@@ -34,7 +34,7 @@ void _drawGridLines(
 }
 
 void _drawVerticalLines(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startX,
@@ -50,7 +50,7 @@ void _drawVerticalLines(
 }
 
 void _drawHorizontalLines(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startY,
@@ -66,7 +66,7 @@ void _drawHorizontalLines(
 }
 
 void _drawIntersections(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startX,
@@ -91,7 +91,7 @@ void _drawIntersections(
 }
 
 void _drawCircles(
-  GridStyle style,
+  FlGridStyle style,
   Canvas canvas,
   Rect viewport,
   double startX,

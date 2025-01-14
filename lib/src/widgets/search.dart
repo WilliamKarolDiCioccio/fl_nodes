@@ -5,7 +5,7 @@ import '../core/models/styles.dart';
 
 class FlSearchWidget extends StatefulWidget {
   final FlNodeEditorController controller;
-  final SearchStyle style;
+  final FlSearchStyle style;
 
   const FlSearchWidget({
     required this.controller,

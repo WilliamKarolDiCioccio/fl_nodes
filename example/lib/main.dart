@@ -154,14 +154,14 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
           children: [
             FlHierarchyWidget(
               controller: _nodeEditorController,
-              style: const HierarchyStyle(),
+              style: const FlHierarchyStyle(),
             ),
             Expanded(
               child: FlNodeEditor(
                 controller: _nodeEditorController,
                 expandToParent: true,
-                style: const NodeEditorStyle(
-                  gridStyle: GridStyle(
+                style: const FlNodeEditorStyle(
+                  gridStyle: FlGridStyle(
                     lineWidth: 1,
                     intersectionRadius: 2,
                   ),
@@ -173,7 +173,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                         padding: const EdgeInsets.all(8),
                         child: FlSearchWidget(
                           controller: _nodeEditorController,
-                          style: const SearchStyle(),
+                          style: const FlSearchStyle(),
                         ),
                       ),
                     ),
