@@ -1,4 +1,5 @@
 import 'package:fl_nodes/src/core/models/entities.dart';
+import 'package:fl_nodes/src/core/utils/constants.dart';
 import 'package:flutter/widgets.dart';
 
 /// Retrieves the global offset of a widget identified by a [GlobalKey].
@@ -64,25 +65,32 @@ Rect? getEditorBoundsInScreen(GlobalKey key) {
 }
 
 /// Converts a screen position to a world (canvas) position.
-Offset screenToWorld(
+Offset? screenToWorld(
   Offset screenPosition,
-  Size size,
   Offset offset,
   double zoom,
 ) {
-  final center = Offset(size.width / 2, size.height / 2);
-  final translated = screenPosition - center;
-  return translated / zoom - offset;
-}
+  // Get the bounds of the editor widget on the screen
+  final nodeEditorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
+  if (nodeEditorBounds == null) return null;
+  final size = nodeEditorBounds.size;
 
-/// Converts a world (canvas) position to a screen position.
-Offset worldToScreen(
-  Offset worldPosition,
-  Size size,
-  Offset offset,
-  double zoom,
-) {
-  final center = Offset(size.width / 2, size.height / 2);
-  final translated = (worldPosition + offset) * zoom;
-  return translated + center;
+  // Adjust the screen position relative to the top-left of the editor
+  final adjustedScreenPosition = screenPosition - nodeEditorBounds.topLeft;
+
+  // Calculate the viewport rectangle in canvas space
+  final viewport = Rect.fromLTWH(
+    -size.width / 2 / zoom - offset.dx,
+    -size.height / 2 / zoom - offset.dy,
+    size.width / zoom,
+    size.height / zoom,
+  );
+
+  // Calculate the canvas position corresponding to the screen position
+  final canvasX =
+      viewport.left + (adjustedScreenPosition.dx / size.width) * viewport.width;
+  final canvasY = viewport.top +
+      (adjustedScreenPosition.dy / size.height) * viewport.height;
+
+  return Offset(canvasX, canvasY);
 }

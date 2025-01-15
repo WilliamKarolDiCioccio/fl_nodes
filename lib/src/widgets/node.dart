@@ -130,21 +130,31 @@ class _NodeWidgetState extends State<NodeWidget> {
   }
 
   Tuple2<String, String>? _isNearPort(Offset position) {
-    for (final port in widget.node.ports.values) {
-      final portScreenPosition = worldToScreen(
-        port.offset,
-        getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
-        widget.controller.viewportOffset,
-        widget.controller.viewportZoom,
-      );
+    final worldPosition = screenToWorld(
+      position,
+      _offset,
+      _zoom,
+    );
 
-      final hitBox = Rect.fromCenter(
-        center: portScreenPosition,
-        width: 16,
-        height: 16,
-      );
+    final near = Rect.fromCenter(
+      center: worldPosition!,
+      width: kSpatialHashingCellSize,
+      height: kSpatialHashingCellSize,
+    );
 
-      if (hitBox.contains(position)) return Tuple2(widget.node.id, port.id);
+    final nearNodeIds =
+        widget.controller.spatialHashGrid.queryNodeIdsInArea(near);
+
+    for (final nodeId in nearNodeIds) {
+      final node = widget.controller.nodes[nodeId]!;
+
+      for (final port in node.ports.values) {
+        final absolutePortPosition = node.offset + port.offset;
+
+        if ((worldPosition - absolutePortPosition).distance < 12) {
+          return Tuple2(node.id, port.id);
+        }
+      }
     }
 
     return null;
@@ -160,7 +170,6 @@ class _NodeWidgetState extends State<NodeWidget> {
   void _onLinkUpdate(Offset position) {
     final worldPosition = screenToWorld(
       position,
-      getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
       _offset,
       _zoom,
     );
@@ -170,7 +179,7 @@ class _NodeWidgetState extends State<NodeWidget> {
         .controller.nodes[_tempLink!.item1]!.ports[_tempLink!.item2]!.offset;
     final absolutePortOffset = nodeOffset + portOffset;
 
-    widget.controller.drawTempLink(absolutePortOffset, worldPosition);
+    widget.controller.drawTempLink(absolutePortOffset, worldPosition!);
   }
 
   void _onLinkCancel() {
@@ -204,6 +213,28 @@ class _NodeWidgetState extends State<NodeWidget> {
     List<ContextMenuEntry> nodeContextMenuEntries() {
       return [
         const MenuHeader(text: 'Node Menu'),
+        MenuItem(
+          label: 'See Description',
+          icon: Icons.info,
+          onSelected: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text(widget.node.name),
+                  content: Text(widget.node.description),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        const MenuDivider(),
         MenuItem(
           label: widget.node.state.isCollapsed ? 'Expand' : 'Collapse',
           icon: widget.node.state.isCollapsed
@@ -286,18 +317,17 @@ class _NodeWidgetState extends State<NodeWidget> {
         );
       }
 
+      final worldPosition = screenToWorld(
+        position,
+        _offset,
+        _zoom,
+      );
+
       return compatiblePrototypes.map((entry) {
         return MenuItem(
           label: entry.value.name,
           icon: Icons.widgets,
           onSelected: () {
-            final worldPosition = screenToWorld(
-              position,
-              getSizeFromGlobalKey(kNodeEditorWidgetKey)!,
-              _offset,
-              _zoom,
-            );
-
             widget.controller.addNode(
               entry.key,
               offset: worldPosition,
@@ -323,9 +353,7 @@ class _NodeWidgetState extends State<NodeWidget> {
               _isLinking = false;
               _tempLink = null;
 
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                setState(() {});
-              });
+              setState(() {});
             }
           },
         );
@@ -338,7 +366,7 @@ class _NodeWidgetState extends State<NodeWidget> {
           : ImprovedListener(
               behavior: HitTestBehavior.translucent,
               onPointerPressed: (event) async {
-                final locator = _isNearPort(event.localPosition);
+                final locator = _isNearPort(event.position);
 
                 if (event.buttons == kSecondaryMouseButton) {
                   if (!widget.node.state.isSelected) {
@@ -351,7 +379,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                     await createAndShowContextMenu(
                       context,
                       portContextMenuEntries(
-                        event.localPosition,
+                        event.position,
                         locator: locator,
                       ),
                       event.position,
@@ -384,7 +412,7 @@ class _NodeWidgetState extends State<NodeWidget> {
               },
               onPointerMoved: (event) async {
                 if (_isLinking) {
-                  _onLinkUpdate(event.localPosition);
+                  _onLinkUpdate(event.position);
                 } else if (event.buttons == kPrimaryMouseButton) {
                   _startEdgeTimer(event.position);
                   widget.controller.dragSelection(event.delta);
@@ -392,13 +420,13 @@ class _NodeWidgetState extends State<NodeWidget> {
               },
               onPointerReleased: (event) async {
                 if (_isLinking) {
-                  final locator = _isNearPort(event.localPosition);
+                  final locator = _isNearPort(event.position);
                   if (locator != null) {
                     _onLinkEnd(locator);
                   } else {
                     await createAndShowContextMenu(
                       context,
-                      createSubmenuEntries(event.localPosition),
+                      createSubmenuEntries(event.position),
                       event.position,
                     ).then((value) {
                       _onLinkCancel();
@@ -558,9 +586,7 @@ class _NodeWidgetState extends State<NodeWidget> {
 
   void _removeFieldEditorOverlay(OverlayEntry? overlayEntry) {
     overlayEntry?.remove();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() {});
-    });
+    setState(() {});
   }
 
   Widget _buildField(FieldInstance field) {

@@ -553,67 +553,68 @@ class FlNodeEditorController {
         'Failed to paste nodes. Invalid clipboard data.',
         SnackbarType.error,
       );
-    } finally {
-      if (position == null) {
-        final viewportSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
-
-        position = Rect.fromLTWH(
-          -viewportOffset.dx - viewportSize.width / 2,
-          -viewportOffset.dy - viewportSize.height / 2,
-          viewportSize.width,
-          viewportSize.height,
-        ).center;
-      }
-
-      // Create instances from the JSON data.
-      final instances = nodesJson.map((node) {
-        return NodeInstance.fromJson(
-          node,
-          prototypes: _nodePrototypes,
-          onRendered: _onRenderedCallback,
-        );
-      }).toList();
-
-      // Called on each paste, see [FlNodeEditorController._mapToNewIds] for more info.
-      final newIds = await _mapToNewIds(instances);
-
-      for (final instance in instances) {
-        addNodeFromInstance(
-          isHandled: true,
-          instance.copyWith(
-            id: newIds[instance.id],
-            offset: instance.offset + position,
-            fields: instance.fields.map((key, field) {
-              return MapEntry(
-                newIds[field.id]!,
-                field.copyWith(id: newIds[field.id]),
-              );
-            }),
-            ports: instance.ports.map((key, port) {
-              return MapEntry(
-                newIds[port.id]!,
-                port.copyWith(
-                  id: newIds[port.id]!,
-                  links: port.links.map((link) {
-                    return link.copyWith(
-                      id: newIds[link.id],
-                      fromTo: Tuple4(
-                        newIds[link.fromTo.item1]!,
-                        newIds[link.fromTo.item2]!,
-                        newIds[link.fromTo.item3]!,
-                        newIds[link.fromTo.item4]!,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            }),
-          ),
-        );
-      }
-
-      eventBus.emit(PasteSelectionEvent(newIds.values.toSet(), position));
+      return;
     }
+
+    if (position == null) {
+      final viewportSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+
+      position = Rect.fromLTWH(
+        -viewportOffset.dx - viewportSize.width / 2,
+        -viewportOffset.dy - viewportSize.height / 2,
+        viewportSize.width,
+        viewportSize.height,
+      ).center;
+    }
+
+    // Create instances from the JSON data.
+    final instances = nodesJson.map((node) {
+      return NodeInstance.fromJson(
+        node,
+        prototypes: _nodePrototypes,
+        onRendered: _onRenderedCallback,
+      );
+    }).toList();
+
+    // Called on each paste, see [FlNodeEditorController._mapToNewIds] for more info.
+    final newIds = await _mapToNewIds(instances);
+
+    for (final instance in instances) {
+      addNodeFromInstance(
+        isHandled: true,
+        instance.copyWith(
+          id: newIds[instance.id],
+          offset: instance.offset + position,
+          fields: instance.fields.map((key, field) {
+            return MapEntry(
+              newIds[field.id]!,
+              field.copyWith(id: newIds[field.id]),
+            );
+          }),
+          ports: instance.ports.map((key, port) {
+            return MapEntry(
+              newIds[port.id]!,
+              port.copyWith(
+                id: newIds[port.id]!,
+                links: port.links.map((link) {
+                  return link.copyWith(
+                    id: newIds[link.id],
+                    fromTo: Tuple4(
+                      newIds[link.fromTo.item1]!,
+                      newIds[link.fromTo.item2]!,
+                      newIds[link.fromTo.item3]!,
+                      newIds[link.fromTo.item4]!,
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          }),
+        ),
+      );
+    }
+
+    eventBus.emit(PasteSelectionEvent(newIds.values.toSet(), position));
   }
 
   void cutSelection() async {
