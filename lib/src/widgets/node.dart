@@ -400,12 +400,11 @@ class _NodeWidgetState extends State<NodeWidget> {
                     } else {
                       _onLinkStart(locator);
                     }
-                  } else {
+                  } else if (!widget.controller.selectedNodeIds
+                      .contains(widget.node.id)) {
                     widget.controller.selectNodesById(
                       {widget.node.id},
-                      holdSelection: widget.node.state.isSelected
-                          ? true
-                          : HardwareKeyboard.instance.isControlPressed,
+                      holdSelection: HardwareKeyboard.instance.isControlPressed,
                     );
                   }
                 }

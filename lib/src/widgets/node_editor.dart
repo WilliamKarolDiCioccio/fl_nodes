@@ -504,8 +504,6 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
         _zoom,
       )!;
 
-      print('worldPosition: $worldPosition');
-
       return [
         const MenuHeader(text: "Editor Menu"),
         MenuItem(
