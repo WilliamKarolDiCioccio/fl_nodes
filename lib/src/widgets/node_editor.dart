@@ -707,6 +707,12 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                       _setZoomFromRawInput(event.scrollDelta.dy);
                     }
                   },
+                  onPointerPanZoomUpdate: (event) {
+                    if (widget.controller.behavior.panSensitivity > 0 &&
+                        event.localPanDelta != Offset.zero) {
+                      _setOffsetFromRawInput(event.localPanDelta);
+                    }
+                  },
                   child: child,
                 ),
               ),
