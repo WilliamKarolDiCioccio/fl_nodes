@@ -8,6 +8,9 @@ class ImprovedListener extends StatefulWidget {
   final PointerUpEventListener? onPointerReleased;
   final PointerCancelEventListener? onPointerCanceled;
   final PointerSignalEventListener? onPointerSignalReceived;
+  final PointerPanZoomStartEventListener? onPointerPanZoomStart;
+  final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
+  final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
   final VoidCallback? onDoubleClick;
   final Duration doubleClickThreshold;
   final HitTestBehavior behavior;
@@ -20,6 +23,9 @@ class ImprovedListener extends StatefulWidget {
     this.onPointerReleased,
     this.onPointerCanceled,
     this.onPointerSignalReceived,
+    this.onPointerPanZoomStart,
+    this.onPointerPanZoomUpdate,
+    this.onPointerPanZoomEnd,
     this.onDoubleClick,
     this.doubleClickThreshold = const Duration(milliseconds: 300),
     this.behavior = HitTestBehavior.deferToChild,
@@ -56,6 +62,9 @@ class _ImprovedListenerState extends State<ImprovedListener> {
       onPointerUp: widget.onPointerReleased,
       onPointerCancel: widget.onPointerCanceled,
       onPointerSignal: widget.onPointerSignalReceived,
+      onPointerPanZoomStart: widget.onPointerPanZoomStart,
+      onPointerPanZoomUpdate: widget.onPointerPanZoomUpdate,
+      onPointerPanZoomEnd: widget.onPointerPanZoomEnd,
       child: widget.child,
     );
   }
