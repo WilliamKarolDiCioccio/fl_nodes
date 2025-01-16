@@ -326,6 +326,19 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
     _setOffset(targetOffset, animate: false);
   }
 
+  void _setZoomFromRawScaleDelta(double rawScaleDelta) {
+    // Calculate the scaled delta, accounting for sensitivity
+    final sensitivity = widget.controller.behavior.zoomSensitivity;
+    final adjustedDelta = (rawScaleDelta - 1) * sensitivity + 1;
+
+    // Clamp the zoom within the min and max bounds
+    final minZoom = widget.controller.behavior.minZoom;
+    final maxZoom = widget.controller.behavior.maxZoom;
+    final targetZoom = (_zoom * adjustedDelta).clamp(minZoom, maxZoom);
+
+    _setZoom(targetZoom, animate: false);
+  }
+
   void _setZoomFromRawInput(double amount) {
     const double baseSpeed =
         0.05; // Base zoom speed and damping factor (magic number)
@@ -726,6 +739,18 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                     if (widget.controller.behavior.zoomSensitivity > 0 &&
                         event is PointerScrollEvent) {
                       _setZoomFromRawInput(event.scrollDelta.dy);
+                    }
+                  },
+                  onPointerPanZoomUpdate: (event) {
+                    // NOTE: `event.position` returns the offset of the cursor
+                    if (widget.controller.behavior.zoomSensitivity > 0 &&
+                        event.scale != 1.0) {
+                      _setZoomFromRawScaleDelta(event.scale);
+                    }
+
+                    if (widget.controller.behavior.panSensitivity > 0 &&
+                        event.localPanDelta != Offset.zero) {
+                      _setOffsetFromRawInput(event.localPanDelta);
                     }
                   },
                   child: child,
