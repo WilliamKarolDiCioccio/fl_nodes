@@ -1,19 +1,17 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:fl_nodes/src/core/utils/snackbar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:fl_nodes/src/core/utils/constants.dart';
-import 'package:fl_nodes/src/core/utils/platform.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
+import 'package:fl_nodes/src/core/utils/snackbar.dart';
 import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
+import 'package:fl_nodes/src/core/utils/stack.dart';
 
 import '../models/entities.dart';
 
@@ -29,63 +27,27 @@ import 'node_editor_events.dart';
 /// Events can object instances should extend the [NodeEditorEvent] class.
 class _NodeEditorEventBus {
   final _streamController = StreamController<NodeEditorEvent>.broadcast();
-  final Queue<NodeEditorEvent> _eventHistory = Queue();
+  final _undoStack = LIFOStack<NodeEditorEvent>();
+  final _redoStack = FIFOStack<NodeEditorEvent>();
+  bool _isSaved = true;
 
   void emit(NodeEditorEvent event) {
     _streamController.add(event);
-
-    if (_eventHistory.length >= kMaxEventHistory) {
-      _eventHistory.removeFirst();
-    }
-
-    _eventHistory.add(event);
   }
 
   void dispose() {
     _streamController.close();
+    _undoStack.clear();
+    _redoStack.clear();
+  }
+
+  void clear() {
+    _undoStack.clear();
+    _redoStack.clear();
   }
 
   Stream<NodeEditorEvent> get events => _streamController.stream;
-  NodeEditorEvent get lastEvent => _eventHistory.last;
-}
-
-enum NodeEditorLogSeverity {
-  info,
-  warning,
-  error,
-}
-
-class NodeEditorLog {
-  final String message;
-  final DateTime timestamp;
-  final NodeEditorLogSeverity severity;
-
-  NodeEditorLog({
-    required this.message,
-    required this.timestamp,
-    required this.severity,
-  });
-}
-
-/// A class that acts as a logger for the Node Editor. It serves
-/// internal purposes but can still be accessed by the developer
-/// to check the logs for debugging or giving feedback to the user.
-class _NodeEditorLogger {
-  final List<NodeEditorLog> _logs = [];
-
-  void log(String message, NodeEditorLogSeverity severity) {
-    final log = NodeEditorLog(
-      message: message,
-      timestamp: DateTime.now(),
-      severity: severity,
-    );
-
-    _logs.add(log);
-  }
-
-  void clearLogs() {
-    _logs.clear();
-  }
+  bool get isSaved => _isSaved;
 }
 
 /// A class that defines the behavior of a node editor.
@@ -123,30 +85,18 @@ class NodeEditorBehavior {
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
 class FlNodeEditorController {
-  // Streams
   final eventBus = _NodeEditorEventBus();
-  final logger = _NodeEditorLogger();
-
-  // Behavior
   final NodeEditorBehavior behavior;
+  final Function(Map<String, dynamic> jsonData)? projectSaver;
+  final Future<Map<String, dynamic>?> Function(bool isSaved)? projectLoader;
+  final Future<bool> Function(bool isSaved)? projectCreator;
 
   FlNodeEditorController({
     this.behavior = const NodeEditorBehavior(),
-  }) {
-    if (kDebugMode) {
-      logger.log(
-        'FlNodes is running in debug mode. This may affect performance.',
-        NodeEditorLogSeverity.warning,
-      );
-    }
-
-    if (isMobile()) {
-      logger.log(
-        'FlNodes is view only on mobile devices. Editing is only available on desktop.',
-        NodeEditorLogSeverity.info,
-      );
-    }
-  }
+    this.projectSaver,
+    this.projectLoader,
+    this.projectCreator,
+  });
 
   void dispose() {
     eventBus.dispose();
@@ -175,24 +125,7 @@ class FlNodeEditorController {
     eventBus.emit(ViewportZoomEvent(viewportZoom));
   }
 
-  // This is used for rendering purposes only. For computation, use the links list in the Port class.
-  final Map<String, Link> _renderLinks = {};
-  Tuple2<Offset, Offset>? _renderTempLink;
-
-  List<Link> get renderLinksAsList => _renderLinks.values.toList();
-  Tuple2<Offset, Offset>? get renderTempLink => _renderTempLink;
-
-  void drawTempLink(Offset from, Offset to) {
-    _renderTempLink = Tuple2(from, to);
-    eventBus.emit(DrawTempLinkEvent(from, to));
-  }
-
-  void clearTempLink() {
-    _renderTempLink = null;
-    eventBus.emit(DrawTempLinkEvent(Offset.zero, Offset.zero));
-  }
-
-  // Nodes and links
+  // Nodes, links and groups
   final Map<String, NodePrototype> _nodePrototypes = {};
   final SpatialHashGrid _spatialHashGrid = SpatialHashGrid();
   final Map<String, NodeInstance> _nodes = {};
@@ -366,6 +299,23 @@ class FlNodeEditorController {
     eventBus.emit(RemoveLinksEvent(linkId, isHandled: isHandled));
   }
 
+  // This is used for rendering purposes only. For computation, use the links list in the Port class.
+  final Map<String, Link> _renderLinks = {};
+  Tuple2<Offset, Offset>? _renderTempLink;
+
+  List<Link> get renderLinksAsList => _renderLinks.values.toList();
+  Tuple2<Offset, Offset>? get renderTempLink => _renderTempLink;
+
+  void drawTempLink(Offset from, Offset to) {
+    _renderTempLink = Tuple2(from, to);
+    eventBus.emit(DrawTempLinkEvent(from, to));
+  }
+
+  void clearTempLink() {
+    _renderTempLink = null;
+    eventBus.emit(DrawTempLinkEvent(Offset.zero, Offset.zero));
+  }
+
   void breakPortLinks(String nodeId, String portId, {bool isHandled = false}) {
     final node = _nodes[nodeId]!;
     final port = node.ports[portId]!;
@@ -378,6 +328,14 @@ class FlNodeEditorController {
     }
 
     eventBus.emit(RemoveLinksEvent('$nodeId-$portId', isHandled: isHandled));
+  }
+
+  void setFieldData(String nodeId, String fieldId, dynamic data) {
+    final node = _nodes[nodeId]!;
+    final field = node.fields[fieldId]!;
+    field.data = data;
+
+    eventBus.emit(NodeFieldEditEvent(nodeId, fieldId, data));
   }
 
   void setNodeOffset(String id, Offset offset) {
@@ -461,6 +419,16 @@ class FlNodeEditorController {
     eventBus.emit(
       SelectionEvent(_selectedNodeIds.toSet(), isHandled: isHandled),
     );
+  }
+
+  void _clearAll() {
+    _nodes.clear();
+    _spatialHashGrid.clear();
+    _selectedNodeIds.clear();
+    _renderLinks.clear();
+    viewportOffset = Offset.zero;
+    viewportZoom = 1.0;
+    _selectionArea = Rect.zero;
   }
 
   void focusNodesById(Set<String> ids) {
@@ -625,7 +593,101 @@ class FlNodeEditorController {
     eventBus.emit(CutSelectionEvent(_selectedNodeIds));
   }
 
+  // Serialization and deserialization
+
+  Map<String, dynamic> _toJson() {
+    final nodesJson = _nodes.values.map((node) => node.toJson()).toList();
+
+    return {
+      'viewport': {
+        'offset': [viewportOffset.dx, viewportOffset.dy],
+        'zoom': viewportZoom,
+      },
+      'nodes': nodesJson,
+    };
+  }
+
+  void _fromJson(Map<String, dynamic> json) {
+    if (json.isEmpty) return;
+
+    final viewportJson = json['viewport'] as Map<String, dynamic>;
+
+    viewportOffset = Offset(
+      viewportJson['offset'][0] as double,
+      viewportJson['offset'][1] as double,
+    );
+    viewportZoom = viewportJson['zoom'] as double;
+
+    setViewportOffset(viewportOffset, absolute: true, animate: false);
+    setViewportZoom(viewportZoom, animate: false);
+
+    final nodesJson = json['nodes'] as List<dynamic>;
+
+    for (final nodeJson in nodesJson) {
+      final node = NodeInstance.fromJson(
+        nodeJson,
+        prototypes: _nodePrototypes,
+        onRendered: _onRenderedCallback,
+      );
+
+      addNodeFromInstance(node, isHandled: true);
+    }
+  }
+
+  void saveProject() {
+    final jsonData = _toJson();
+    projectSaver?.call(jsonData);
+    eventBus.emit(SaveProjectEvent());
+    eventBus._isSaved = true;
+
+    showNodeEditorSnackbar(
+      'Project saved successfully.',
+      SnackbarType.success,
+    );
+  }
+
+  void loadProject() async {
+    final jsonData = await projectLoader?.call(eventBus._isSaved);
+
+    if (jsonData == null) {
+      showNodeEditorSnackbar(
+        'Failed to load project. Invalid project data.',
+        SnackbarType.error,
+      );
+      return;
+    }
+
+    _clearAll();
+    _fromJson(jsonData);
+    eventBus.emit(LoadProjectEvent());
+
+    showNodeEditorSnackbar(
+      'Project loaded successfully.',
+      SnackbarType.success,
+    );
+  }
+
+  void newProject() async {
+    final shouldProceed = await projectCreator?.call(eventBus._isSaved);
+
+    if (shouldProceed == true) {
+      _clearAll();
+      eventBus.emit(NewProjectEvent());
+    }
+
+    showNodeEditorSnackbar(
+      'New project created successfully.',
+      SnackbarType.success,
+    );
+  }
+
   // Utils
+
+  /// Callback function that is called when a node is rendered.
+  ///
+  /// This function is used to update the spatial hash grid with the new bounds
+  /// of the node after it has been rendered. This is necessary to keep the grid
+  /// up to date with the latest positions of the nodes.
   void _onRenderedCallback(NodeInstance node) {
     _spatialHashGrid.remove(node.id);
     _spatialHashGrid.insert(

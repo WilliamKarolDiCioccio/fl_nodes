@@ -74,13 +74,15 @@ class _FlHierarchyWidgetState extends State<FlHierarchyWidget> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     onTap: () {
-                      final focusedNodes = [
-                        node.id,
-                        if (HardwareKeyboard.instance.isControlPressed)
-                          ...widget.controller.selectedNodeIds,
-                      ];
+                      widget.controller.selectNodesById(
+                        {node.id},
+                        holdSelection:
+                            HardwareKeyboard.instance.isControlPressed,
+                      );
 
-                      widget.controller.focusNodesById(focusedNodes.toSet());
+                      widget.controller.focusNodesById(
+                        widget.controller.selectedNodeIds.toSet(),
+                      );
                     },
                   ),
                 );

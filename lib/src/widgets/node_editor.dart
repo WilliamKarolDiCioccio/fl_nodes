@@ -117,7 +117,10 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           event is DrawTempLinkEvent ||
           event is CutSelectionEvent) {
         setState(() {});
-      } else if (event is AddLinkEvent || event is PasteSelectionEvent) {
+      } else if (event is AddLinkEvent ||
+          event is PasteSelectionEvent ||
+          event is LoadProjectEvent ||
+          event is NewProjectEvent) {
         setState(() {});
         // We perform a delayed setState to ensure that the UI has been built and updated the keys
         SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -635,6 +638,25 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                   "Cut selected nodes",
                   () => widget.controller.cutSelection(),
                   isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyS,
+                  "Save project",
+                  () => widget.controller.saveProject(),
+                  isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyO,
+                  "Open project",
+                  () => widget.controller.loadProject(),
+                  isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyN,
+                  "Create new project",
+                  () => widget.controller.newProject(),
+                  isControlPressed: true,
+                  isShiftPressed: true,
                 ),
               ],
               child: MouseRegion(

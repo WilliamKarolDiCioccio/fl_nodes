@@ -84,6 +84,10 @@ class _NodeWidgetState extends State<NodeWidget> {
         if (event.ids.contains(widget.node.id)) {
           setState(() {});
         }
+      } else if (event is NodeFieldEditEvent) {
+        if (event.id == widget.node.id) {
+          setState(() {});
+        }
       }
     });
   }
@@ -551,7 +555,11 @@ class _NodeWidgetState extends State<NodeWidget> {
     );
   }
 
-  void _showFieldEditorOverlay(FieldInstance field, TapDownDetails details) {
+  void _showFieldEditorOverlay(
+    String nodeId,
+    FieldInstance field,
+    TapDownDetails details,
+  ) {
     final overlay = Overlay.of(context);
     OverlayEntry? overlayEntry;
 
@@ -560,7 +568,7 @@ class _NodeWidgetState extends State<NodeWidget> {
         return Stack(
           children: [
             GestureDetector(
-              onTap: () => _removeFieldEditorOverlay(overlayEntry),
+              onTap: () => overlayEntry?.remove(),
               child: Container(color: Colors.transparent),
             ),
             Positioned(
@@ -568,10 +576,17 @@ class _NodeWidgetState extends State<NodeWidget> {
               top: details.globalPosition.dy,
               child: Material(
                 color: Colors.transparent,
-                child: field.editorBuilder(
+                child: field.editorBuilder!(
                   context,
-                  () => _removeFieldEditorOverlay(overlayEntry),
-                  field,
+                  () => overlayEntry?.remove(),
+                  field.data,
+                  (value) {
+                    widget.controller.setFieldData(
+                      nodeId,
+                      field.id,
+                      value,
+                    );
+                  },
                 ),
               ),
             ),
@@ -583,11 +598,6 @@ class _NodeWidgetState extends State<NodeWidget> {
     overlay.insert(overlayEntry);
   }
 
-  void _removeFieldEditorOverlay(OverlayEntry? overlayEntry) {
-    overlayEntry?.remove();
-    setState(() {});
-  }
-
   Widget _buildField(FieldInstance field) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -595,20 +605,20 @@ class _NodeWidgetState extends State<NodeWidget> {
       spacing: 4,
       children: [
         GestureDetector(
-          onTapDown: (details) => _showFieldEditorOverlay(field, details),
+          onTapDown: (details) =>
+              field.onVisualizerTap ??
+              _showFieldEditorOverlay(
+                widget.node.id,
+                field,
+                details,
+              ),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: const Color(0xFF333333),
               borderRadius: BorderRadius.circular(4.0),
             ),
-            child: Text(
-              field.data.toString(),
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-              ),
-            ),
+            child: field.visualizerBuilder(field.data),
           ),
         ),
         Text(
@@ -619,7 +629,7 @@ class _NodeWidgetState extends State<NodeWidget> {
           ),
         ),
         Text(
-          field.dataType.toString(),
+          field.dataType.runtimeType.toString(),
           style: const TextStyle(
             color: Colors.white54,
             fontSize: 12,

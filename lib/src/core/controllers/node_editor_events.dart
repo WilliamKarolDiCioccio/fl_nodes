@@ -11,8 +11,9 @@ import 'package:flutter/material.dart';
 /// Event base class for the [FlNodeEditorController] events bus.
 class NodeEditorEvent {
   final bool isHandled;
+  final bool isUndoable;
 
-  NodeEditorEvent({this.isHandled = false});
+  NodeEditorEvent({this.isHandled = false, this.isUndoable = false});
 }
 
 final class ViewportOffsetEvent extends NodeEditorEvent {
@@ -35,6 +36,13 @@ final class SelectionAreaEvent extends NodeEditorEvent {
   SelectionAreaEvent(this.area, {super.isHandled});
 }
 
+class DragSelectionStartEvent extends NodeEditorEvent {
+  final Set<String> ids;
+  final Offset position;
+
+  DragSelectionStartEvent(this.ids, this.position, {super.isHandled});
+}
+
 final class DragSelectionEvent extends NodeEditorEvent {
   final Set<String> ids;
   final Offset delta;
@@ -42,28 +50,36 @@ final class DragSelectionEvent extends NodeEditorEvent {
   DragSelectionEvent(this.ids, this.delta, {super.isHandled});
 }
 
+class DragSelectionEndEvent extends NodeEditorEvent {
+  final Set<String> ids;
+  final Offset position;
+
+  DragSelectionEndEvent(this.ids, this.position, {super.isHandled})
+      : super(isUndoable: true);
+}
+
 final class SelectionEvent extends NodeEditorEvent {
   final Set<String> ids;
 
-  SelectionEvent(this.ids, {super.isHandled});
+  SelectionEvent(this.ids, {super.isHandled}) : super(isUndoable: true);
 }
 
 final class AddNodeEvent extends NodeEditorEvent {
   final String id;
 
-  AddNodeEvent(this.id, {super.isHandled});
+  AddNodeEvent(this.id, {super.isHandled}) : super(isUndoable: true);
 }
 
 final class RemoveNodesEvent extends NodeEditorEvent {
   final Set<String> ids;
 
-  RemoveNodesEvent(this.ids, {super.isHandled});
+  RemoveNodesEvent(this.ids, {super.isHandled}) : super(isUndoable: true);
 }
 
 final class AddLinkEvent extends NodeEditorEvent {
   final String id;
 
-  AddLinkEvent(this.id, {super.isHandled});
+  AddLinkEvent(this.id, {super.isHandled}) : super(isUndoable: true);
 }
 
 final class DrawTempLinkEvent extends NodeEditorEvent {
@@ -76,7 +92,7 @@ final class DrawTempLinkEvent extends NodeEditorEvent {
 final class RemoveLinksEvent extends NodeEditorEvent {
   final String id;
 
-  RemoveLinksEvent(this.id, {super.isHandled});
+  RemoveLinksEvent(this.id, {super.isHandled}) : super(isUndoable: true);
 }
 
 final class CollapseNodeEvent extends NodeEditorEvent {
@@ -102,4 +118,25 @@ final class CutSelectionEvent extends NodeEditorEvent {
   final Set<String> ids;
 
   CutSelectionEvent(this.ids, {super.isHandled});
+}
+
+class NodeFieldEditEvent extends NodeEditorEvent {
+  final String id;
+  final String field;
+  final dynamic value;
+
+  NodeFieldEditEvent(this.id, this.field, this.value, {super.isHandled})
+      : super(isUndoable: true);
+}
+
+class SaveProjectEvent extends NodeEditorEvent {
+  SaveProjectEvent() : super(isHandled: false, isUndoable: false);
+}
+
+class LoadProjectEvent extends NodeEditorEvent {
+  LoadProjectEvent() : super(isHandled: false, isUndoable: false);
+}
+
+class NewProjectEvent extends NodeEditorEvent {
+  NewProjectEvent() : super(isHandled: false, isUndoable: false);
 }
