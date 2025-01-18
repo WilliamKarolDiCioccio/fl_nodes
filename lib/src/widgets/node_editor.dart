@@ -161,6 +161,9 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   late Animation<Offset> _offsetAnimation;
   late Animation<double> _zoomAnimation;
 
+  // Gesture recognizers
+  late final ScaleGestureRecognizer _scaleGestureRecognizer;
+
   @override
   void initState() {
     super.initState();
@@ -169,6 +172,10 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
     _offsetAnimationController = AnimationController(vsync: this);
     _zoomAnimationController = AnimationController(vsync: this);
+    _scaleGestureRecognizer = ScaleGestureRecognizer()
+      ..onStart = _onScaleStart
+      ..onUpdate = _onScaleUpdate
+      ..onEnd = _onScaleEnd;
   }
 
   @override
@@ -231,6 +238,30 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
       _isDragging = false;
       _kineticEnergy = _lastPositionDelta;
     });
+  }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _onDragStart();
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    debugPrint('scale: ${details.scale}\npan: ${details.focalPointDelta}');
+    _onDragUpdate(details.focalPointDelta);
+
+    if (widget.controller.behavior.zoomSensitivity > 0 &&
+        details.scale != 1.0) {
+      _setZoomFromRawScaleDelta(details.scale);
+    }
+
+    if (widget.controller.behavior.panSensitivity > 0 &&
+        details.focalPointDelta != Offset.zero) {
+      _setOffsetFromRawInput(details.focalPointDelta);
+      _onDragUpdate(details.focalPointDelta);
+    }
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    _onDragEnd();
   }
 
   void _onSelectStart(Offset position) {
@@ -820,20 +851,8 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                       _setZoomFromRawInput(event.scrollDelta.dy);
                     }
                   },
-                  onPointerPanZoomStart: (event) => _onDragStart(),
-                  onPointerPanZoomUpdate: (event) {
-                    if (widget.controller.behavior.zoomSensitivity > 0 &&
-                        event.scale != 1.0) {
-                      _setZoomFromRawScaleDelta(event.scale);
-                    }
-
-                    if (widget.controller.behavior.panSensitivity > 0 &&
-                        event.panDelta != Offset.zero) {
-                      _setOffsetFromRawInput(event.panDelta);
-                      _onDragUpdate(event.panDelta);
-                    }
-                  },
-                  onPointerPanZoomEnd: (event) => _onDragEnd(),
+                  onPointerPanZoomStart: (event) =>
+                      _scaleGestureRecognizer.addPointerPanZoom(event),
                   child: child,
                 ),
               ),
