@@ -162,7 +162,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   late Animation<double> _zoomAnimation;
 
   // Gesture recognizers
-  late final ScaleGestureRecognizer _scaleGestureRecognizer;
+  late final ScaleGestureRecognizer _trackpadGestureRecognizer;
 
   @override
   void initState() {
@@ -172,16 +172,17 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
     _offsetAnimationController = AnimationController(vsync: this);
     _zoomAnimationController = AnimationController(vsync: this);
-    _scaleGestureRecognizer = ScaleGestureRecognizer()
-      ..onStart = _onScaleStart
+    _trackpadGestureRecognizer = ScaleGestureRecognizer()
+      ..onStart = ((details) => _onDragStart())
       ..onUpdate = _onScaleUpdate
-      ..onEnd = _onScaleEnd;
+      ..onEnd = ((details) => _onDragEnd());
   }
 
   @override
   void dispose() {
     _offsetAnimationController.dispose();
     _zoomAnimationController.dispose();
+    _trackpadGestureRecognizer.dispose();
     super.dispose();
   }
 
@@ -240,28 +241,17 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     });
   }
 
-  void _onScaleStart(ScaleStartDetails details) {
-    _onDragStart();
-  }
-
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    debugPrint('scale: ${details.scale}\npan: ${details.focalPointDelta}');
-    _onDragUpdate(details.focalPointDelta);
-
     if (widget.controller.behavior.zoomSensitivity > 0 &&
         details.scale != 1.0) {
+      // TODO: `details.scale` is no longer a stream of deltas, but the overall delta
+      // TODO: Fix kintetics while zooming after panning
       _setZoomFromRawScaleDelta(details.scale);
-    }
-
-    if (widget.controller.behavior.panSensitivity > 0 &&
+    } else if (widget.controller.behavior.panSensitivity > 0 &&
         details.focalPointDelta != Offset.zero) {
-      _setOffsetFromRawInput(details.focalPointDelta);
       _onDragUpdate(details.focalPointDelta);
+      _setOffsetFromRawInput(details.focalPointDelta);
     }
-  }
-
-  void _onScaleEnd(ScaleEndDetails details) {
-    _onDragEnd();
   }
 
   void _onSelectStart(Offset position) {
@@ -489,10 +479,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     final sensitivity = widget.controller.behavior.zoomSensitivity;
     final adjustedDelta = (rawScaleDelta - 1) * sensitivity + 1;
 
-    // Clamp the zoom within the min and max bounds
-    final minZoom = widget.controller.behavior.minZoom;
-    final maxZoom = widget.controller.behavior.maxZoom;
-    final targetZoom = (_zoom * adjustedDelta).clamp(minZoom, maxZoom);
+    final targetZoom = _zoom * adjustedDelta;
 
     _setZoom(targetZoom, animate: false);
   }
@@ -776,7 +763,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                     : SystemMouseCursors.basic,
                 child: ImprovedListener(
                   onDoubleClick: () => widget.controller.clearSelection(),
-                  onPointerPressed: (event) async {
+                  onPointerPressed: (event) {
                     _isLinking = false;
                     _tempLink = null;
                     _isSelecting = false;
@@ -814,7 +801,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                       }
                     }
                   },
-                  onPointerMoved: (event) async {
+                  onPointerMoved: (event) {
                     if (_isDragging &&
                         widget.controller.behavior.panSensitivity > 0) {
                       _onDragUpdate(event.localDelta);
@@ -824,7 +811,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                       _onSelectUpdate(event.position);
                     }
                   },
-                  onPointerReleased: (event) async {
+                  onPointerReleased: (event) {
                     if (_isDragging) {
                       _onDragEnd();
                     } else if (_isLinking) {
@@ -851,8 +838,8 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                       _setZoomFromRawInput(event.scrollDelta.dy);
                     }
                   },
-                  onPointerPanZoomStart: (event) =>
-                      _scaleGestureRecognizer.addPointerPanZoom(event),
+                  onPointerPanZoomStart:
+                      _trackpadGestureRecognizer.addPointerPanZoom,
                   child: child,
                 ),
               ),
