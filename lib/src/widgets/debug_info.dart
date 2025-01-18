@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 class DebugInfoWidget extends StatelessWidget {
   final Offset offset;
   final double zoom;
+  final int selectionCount;
 
-  const DebugInfoWidget({super.key, required this.offset, required this.zoom});
+  const DebugInfoWidget({
+    super.key,
+    required this.offset,
+    required this.zoom,
+    required this.selectionCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +27,10 @@ class DebugInfoWidget extends StatelessWidget {
           Text(
             'Zoom: ${zoom.toStringAsFixed(2)}',
             style: const TextStyle(color: Colors.green, fontSize: 16),
+          ),
+          Text(
+            'Selection count: $selectionCount',
+            style: const TextStyle(color: Colors.blue, fontSize: 16),
           ),
         ],
       ),

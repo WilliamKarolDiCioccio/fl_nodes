@@ -15,7 +15,7 @@ import 'package:fl_nodes/src/core/utils/platform.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/utils/context_menu.dart';
 import 'package:fl_nodes/src/utils/improved_listener.dart';
-import 'package:fl_nodes/src/widgets/node_editor_render.dart';
+import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
 
 import '../core/controllers/node_editor_events.dart';
 import '../core/utils/constants.dart';
@@ -38,14 +38,14 @@ class FlOverlayData {
   });
 }
 
-class FlNodeEditor extends StatefulWidget {
+class FlNodeEditorWidget extends StatelessWidget {
   final FlNodeEditorController controller;
   final FlNodeEditorStyle style;
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
 
-  const FlNodeEditor({
+  const FlNodeEditorWidget({
     super.key,
     required this.controller,
     this.style = const FlNodeEditorStyle(
@@ -57,10 +57,87 @@ class FlNodeEditor extends StatefulWidget {
   });
 
   @override
-  State<FlNodeEditor> createState() => _FlNodeEditorWidgetState();
+  Widget build(BuildContext context) {
+    final Widget editor = Container(
+      decoration: style.decoration,
+      padding: style.padding,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            child: _NodeEditorDataLayer(
+              controller: controller,
+              style: style,
+              expandToParent: expandToParent,
+              fixedSize: fixedSize,
+              overlay: overlay,
+            ),
+          ),
+          ...overlay().map(
+            (overlayData) => Positioned(
+              top: overlayData.top,
+              left: overlayData.left,
+              bottom: overlayData.bottom,
+              right: overlayData.right,
+              child: RepaintBoundary(
+                child: overlayData.child,
+              ),
+            ),
+          ),
+          if (kDebugMode)
+            DebugInfoWidget(
+              offset: controller.viewportOffset,
+              zoom: controller.viewportZoom,
+              selectionCount: controller.selectedNodeIds.length,
+            ),
+        ],
+      ),
+    );
+
+    if (expandToParent) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: editor,
+          );
+        },
+      );
+    } else {
+      return SizedBox(
+        width: fixedSize?.width ?? 100,
+        height: fixedSize?.height ?? 100,
+        child: editor,
+      );
+    }
+  }
 }
 
-class _FlNodeEditorWidgetState extends State<FlNodeEditor>
+class _NodeEditorDataLayer extends StatefulWidget {
+  final FlNodeEditorController controller;
+  final FlNodeEditorStyle style;
+  final bool expandToParent;
+  final Size? fixedSize;
+  final List<FlOverlayData> Function() overlay;
+
+  const _NodeEditorDataLayer({
+    required this.controller,
+    required this.style,
+    required this.expandToParent,
+    required this.fixedSize,
+    required this.overlay,
+  });
+
+  @override
+  State<_NodeEditorDataLayer> createState() => _NodeEditorDataLayerState();
+}
+
+class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     with TickerProviderStateMixin {
   // Core state
   Offset _offset = Offset.zero;
@@ -121,9 +198,11 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
           event is PasteSelectionEvent ||
           event is LoadProjectEvent ||
           event is NewProjectEvent ||
+          event is CollapseNodeEvent ||
+          event is ExpandNodeEvent ||
           event is NodeFieldEvent && event.eventType == FieldEventType.submit) {
         setState(() {});
-        // We perform a delayed setState to ensure that the UI has been built and updated the keys
+        // We delay the second setState to ensure that the UI has been built and  the keys updated
         SchedulerBinding.instance.addPostFrameCallback((_) {
           setState(() {});
         });
@@ -255,9 +334,9 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
   }
 
   void _onLinkCancel() {
-    widget.controller.clearTempLink();
     _isLinking = false;
     _tempLink = null;
+    widget.controller.clearTempLink();
   }
 
   void _onLinkEnd(Tuple2<String, String> locator) {
@@ -270,7 +349,6 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
 
     _isLinking = false;
     _tempLink = null;
-
     widget.controller.clearTempLink();
   }
 
@@ -480,6 +558,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
       return compatiblePrototypes.map((entry) {
         return MenuItem(
           label: entry.value.name,
+          value: entry.value.name,
           icon: Icons.widgets,
           onSelected: () {
             widget.controller.addNode(
@@ -667,24 +746,26 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                 child: ImprovedListener(
                   onDoubleClick: () => widget.controller.clearSelection(),
                   onPointerPressed: (event) async {
+                    _isLinking = false;
+                    _tempLink = null;
+                    _isSelecting = false;
+
                     final locator = _isNearPort(event.position);
 
                     if (event.buttons == kMiddleMouseButton) {
                       _onDragStart();
                     } else if (event.buttons == kPrimaryMouseButton) {
-                      if (locator != null) {
-                        if (_isLinking && _tempLink != null) {
-                          _onLinkEnd(locator);
-                        } else {
-                          _onLinkStart(locator);
-                        }
+                      if (locator != null && !_isLinking && _tempLink == null) {
+                        _onLinkStart(locator);
                       } else {
                         _onSelectStart(event.position);
                       }
                     } else if (event.buttons == kSecondaryMouseButton) {
-                      if (locator != null) {
+                      if (locator != null &&
+                          !widget.controller.nodes[locator.item1]!.state
+                              .isCollapsed) {
                         /// If a port is near the cursor, show the port context menu
-                        await createAndShowContextMenu(
+                        createAndShowContextMenu(
                           context,
                           portContextMenuEntries(
                             event.position,
@@ -694,7 +775,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                         );
                       } else if (!isContextMenuVisible) {
                         // Else show the editor context menu
-                        await createAndShowContextMenu(
+                        createAndShowContextMenu(
                           context,
                           editorContextMenuEntries(event.position),
                           event.position,
@@ -706,8 +787,7 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                     if (_isDragging &&
                         widget.controller.behavior.panSensitivity > 0) {
                       _onDragUpdate(event.localDelta);
-                    }
-                    if (_isLinking) {
+                    } else if (_isLinking) {
                       _onLinkUpdate(event.position);
                     } else if (_isSelecting) {
                       _onSelectUpdate(event.position);
@@ -723,13 +803,12 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
                         _onLinkEnd(locator);
                       } else if (!isContextMenuVisible) {
                         // Show the create submenu if no port is near the cursor
-                        await createAndShowContextMenu(
+                        createAndShowContextMenu(
                           context,
                           createSubmenuEntries(event.position),
                           event.position,
-                        ).then((value) {
-                          _onLinkCancel();
-                        });
+                          onDismiss: (value) => _onLinkCancel(),
+                        );
                       }
                     } else if (_isSelecting) {
                       _onSelectEnd();
@@ -759,63 +838,14 @@ class _FlNodeEditorWidgetState extends State<FlNodeEditor>
             );
     }
 
-    final Widget editor = Container(
-      decoration: widget.style.decoration,
-      padding: widget.style.padding,
-      child: controlsWrapper(
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              child: RepaintBoundary(
-                child: NodeEditorRenderWidget(
-                  key: kNodeEditorWidgetKey,
-                  controller: widget.controller,
-                  style: widget.style,
-                ),
-              ),
-            ),
-            ...widget.overlay().map(
-                  (overlayData) => Positioned(
-                    top: overlayData.top,
-                    left: overlayData.left,
-                    bottom: overlayData.bottom,
-                    right: overlayData.right,
-                    child: RepaintBoundary(
-                      child: overlayData.child,
-                    ),
-                  ),
-                ),
-            if (kDebugMode)
-              DebugInfoWidget(
-                offset: widget.controller.viewportOffset,
-                zoom: widget.controller.viewportZoom,
-              ),
-          ],
+    return controlsWrapper(
+      RepaintBoundary(
+        child: NodeEditorRenderObjectWidget(
+          key: kNodeEditorWidgetKey,
+          controller: widget.controller,
+          style: widget.style,
         ),
       ),
     );
-
-    if (widget.expandToParent) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          return SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            child: editor,
-          );
-        },
-      );
-    } else {
-      return SizedBox(
-        width: widget.fixedSize?.width ?? 100,
-        height: widget.fixedSize?.height ?? 100,
-        child: editor,
-      );
-    }
   }
 }

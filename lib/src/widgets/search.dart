@@ -19,17 +19,10 @@ class FlSearchWidget extends StatefulWidget {
 
 class _FlSearchWidgetState extends State<FlSearchWidget> {
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   final List<String> _searchResults = [];
   String? _currentFocus;
   bool _isSearching = false;
   bool _showSearch = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode.requestFocus();
-  }
 
   @override
   void dispose() {
@@ -105,7 +98,7 @@ class _FlSearchWidgetState extends State<FlSearchWidget> {
                           key: ValueKey<bool>(_showSearch),
                           width: 200,
                           child: TextField(
-                            focusNode: _focusNode,
+                            autofocus: true,
                             controller: _searchController,
                             decoration: const InputDecoration(
                               hintText: 'Search nodes by name...',
@@ -140,13 +133,12 @@ class _FlSearchWidgetState extends State<FlSearchWidget> {
                               if (_currentFocus == null) {
                                 _currentFocus = _searchResults.first;
 
-                                widget.controller
-                                    .focusNodesById({_currentFocus!});
+                                widget.controller.focusNodesById(
+                                  {_currentFocus!},
+                                );
                               } else {
                                 _toNextResult();
                               }
-
-                              _focusNode.requestFocus();
                             },
                           ),
                         ),

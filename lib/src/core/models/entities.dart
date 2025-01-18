@@ -384,12 +384,30 @@ final class NodeState {
     this.isCollapsed = false,
   });
 
+  factory NodeState.fromJson(Map<String, dynamic> json) {
+    return NodeState(
+      isSelected: json['isSelected'],
+      isCollapsed: json['isCollapsed'],
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'isSelected': isSelected,
       'isCollapsed': isCollapsed,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NodeState &&
+          runtimeType == other.runtimeType &&
+          isSelected == other.isSelected &&
+          isCollapsed == other.isCollapsed;
+
+  @override
+  int get hashCode => isSelected.hashCode ^ isCollapsed.hashCode;
 }
 
 /// A node is a component in the node editor.
@@ -472,6 +490,10 @@ final class NodeInstance {
     required Map<String, NodePrototype> prototypes,
     required Function(NodeInstance node) onRendered,
   }) {
+    if (!prototypes.containsKey(json['name'].toString())) {
+      throw Exception('Node prototype not found');
+    }
+
     final prototype = prototypes[json['name'].toString()]!;
 
     // Ensure `json['ports']` is properly typed
@@ -498,7 +520,7 @@ final class NodeInstance {
       },
     );
 
-    return NodeInstance(
+    final instance = NodeInstance(
       id: json['id'],
       name: json['name'],
       description: json['description'],
@@ -509,6 +531,11 @@ final class NodeInstance {
       onRendered: onRendered,
       offset: Offset(json['offset'][0], json['offset'][1]),
     );
+
+    instance.state.isSelected = NodeState.fromJson(json['state']).isSelected;
+    instance.state.isCollapsed = NodeState.fromJson(json['state']).isCollapsed;
+
+    return instance;
   }
 }
 

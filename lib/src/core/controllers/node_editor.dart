@@ -444,8 +444,7 @@ class FlNodeEditorController {
   }
 
   void focusNodesById(Set<String> ids) {
-    final encompassingRect =
-        _calculateEncompassingRect(_selectedNodeIds, _nodes);
+    final encompassingRect = _calculateEncompassingRect(ids, _nodes);
 
     selectNodesById(ids, holdSelection: false);
 
@@ -467,8 +466,10 @@ class FlNodeEditorController {
   Future<List<String>> searchNodesByName(String name) async {
     final results = <String>[];
 
+    final regex = RegExp(name, caseSensitive: false);
+
     for (final node in _nodes.values) {
-      if (node.name.contains(name)) {
+      if (regex.hasMatch(node.name)) {
         results.add(node.id);
       }
     }

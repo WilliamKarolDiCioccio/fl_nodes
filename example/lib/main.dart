@@ -275,7 +275,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
               style: const FlHierarchyStyle(),
             ),
             Expanded(
-              child: FlNodeEditor(
+              child: FlNodeEditorWidget(
                 controller: _nodeEditorController,
                 expandToParent: true,
                 style: const FlNodeEditorStyle(

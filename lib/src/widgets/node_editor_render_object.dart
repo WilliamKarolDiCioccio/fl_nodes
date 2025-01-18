@@ -12,14 +12,15 @@ import 'package:fl_nodes/src/widgets/node.dart';
 
 class NodeParentData extends ContainerBoxParentData<RenderBox> {
   Offset nodeOffset = Offset.zero;
+  NodeState state = NodeState();
 }
 
-class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
+class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorController controller;
   final NodeEditorBehavior behavior;
   final FlNodeEditorStyle style;
 
-  NodeEditorRenderWidget({
+  NodeEditorRenderObjectWidget({
     super.key,
     required this.controller,
     required this.style,
@@ -44,7 +45,9 @@ class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
       zoom: controller.viewportZoom,
       tempLink: controller.renderTempLink,
       selectionArea: controller.selectionArea,
-      nodePositions: controller.nodesAsList.map((node) => node.offset).toList(),
+      nodesData: controller.nodesAsList
+          .map((node) => Tuple2(node.offset, node.state))
+          .toList(),
       linkPositions: _getLinkPositions(),
     );
   }
@@ -59,8 +62,10 @@ class NodeEditorRenderWidget extends MultiChildRenderObjectWidget {
       ..zoom = controller.viewportZoom
       ..tempLink = controller.renderTempLink
       ..selectionArea = controller.selectionArea
-      ..updateNodePositions(
-        controller.nodesAsList.map((n) => n.offset).toList(),
+      ..shouldUpdateNodes(
+        controller.nodesAsList
+            .map((node) => Tuple2(node.offset, node.state))
+            .toList(),
       )
       ..linkPositions = _getLinkPositions();
   }
@@ -96,7 +101,7 @@ class NodeEditorRenderBox extends RenderBox
     required double zoom,
     required Tuple2<Offset, Offset>? tempLink,
     required Rect selectionArea,
-    required List<Offset> nodePositions,
+    required List<Tuple2<Offset, NodeState>> nodesData,
     required List<Tuple2<Offset, Offset>> linkPositions,
   })  : _style = style,
         _behavior = behavior,
@@ -105,7 +110,7 @@ class NodeEditorRenderBox extends RenderBox
         _tempLink = tempLink,
         _selectionArea = selectionArea,
         _linkPositions = linkPositions {
-    _updateNodePositions(nodePositions);
+    shouldUpdateNodes(nodesData);
   }
 
   NodeEditorBehavior _behavior;
@@ -165,41 +170,48 @@ class NodeEditorRenderBox extends RenderBox
     markNeedsPaint();
   }
 
-  List<Offset> _nodePositions = [];
+  List<Tuple2<Offset, NodeState>> _nodesData = [];
 
-  void updateNodePositions(List<Offset> newNodePositions) {
-    if (_areNodePositionsEqual(newNodePositions)) return;
-    _updateNodePositions(newNodePositions);
-    markNeedsLayout();
+  void shouldUpdateNodes(List<Tuple2<Offset, NodeState>> nodesData) {
+    if (!_didNodesUpdate(nodesData)) {
+      _updateNodes(nodesData);
+      markNeedsLayout();
+    }
   }
 
-  void _updateNodePositions(List<Offset> positions) {
-    _nodePositions = positions;
+  void _updateNodes(List<Tuple2<Offset, NodeState>> nodesData) {
+    _nodesData = nodesData;
 
     RenderBox? child = firstChild;
     int index = 0;
 
-    while (child != null && index < positions.length) {
+    while (child != null && index < nodesData.length) {
       final NodeParentData childParentData =
           child.parentData! as NodeParentData;
-      childParentData.nodeOffset = positions[index];
+      childParentData.nodeOffset = nodesData[index].item1;
+      childParentData.state = NodeState(
+        isSelected: nodesData[index].item2.isSelected,
+        isCollapsed: nodesData[index].item2.isCollapsed,
+      );
       child = childParentData.nextSibling;
       index++;
     }
   }
 
-  bool _areNodePositionsEqual(List<Offset> newPositions) {
-    if (childCount != newPositions.length) {
+  bool _didNodesUpdate(List<Tuple2<Offset, NodeState>> nodesData) {
+    if (childCount != nodesData.length) {
       return false;
     }
 
     RenderBox? child = firstChild;
     int index = 0;
 
-    while (child != null && index < newPositions.length) {
+    while (child != null && index < nodesData.length) {
       final NodeParentData childParentData =
           child.parentData! as NodeParentData;
-      if (childParentData.nodeOffset != newPositions[index]) {
+
+      if (childParentData.nodeOffset != nodesData[index].item1 ||
+          childParentData.state != nodesData[index].item2) {
         return false;
       }
       child = childParentData.nextSibling;
@@ -221,8 +233,9 @@ class NodeEditorRenderBox extends RenderBox
     setupParentData(child);
     super.insert(child, after: after);
     final index = indexOf(child);
-    if (index >= 0 && index < _nodePositions.length) {
-      (child.parentData as NodeParentData).nodeOffset = _nodePositions[index];
+    if (index >= 0 && index < _nodesData.length) {
+      (child.parentData as NodeParentData).nodeOffset = _nodesData[index].item1;
+      (child.parentData as NodeParentData).state = _nodesData[index].item2;
     }
   }
 
