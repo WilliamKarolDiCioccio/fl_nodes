@@ -15,39 +15,7 @@ import 'package:fl_nodes/src/core/utils/stack.dart';
 
 import '../models/entities.dart';
 
-import 'node_editor_events.dart';
-
-/// A class that acts as an event bus for the Node Editor.
-///
-/// This class is responsible for handling and dispatching events
-/// related to the node editor. It allows different parts of the
-/// application to communicate with each other by sending and
-/// receiving events.
-///
-/// Events can object instances should extend the [NodeEditorEvent] class.
-class _NodeEditorEventBus {
-  final _streamController = StreamController<NodeEditorEvent>.broadcast();
-  final _undoStack = LIFOStack<NodeEditorEvent>();
-  final _redoStack = FIFOStack<NodeEditorEvent>();
-  bool _isSaved = true;
-
-  void emit(NodeEditorEvent event) {
-    _streamController.add(event);
-  }
-
-  void dispose() {
-    _streamController.close();
-    _undoStack.clear();
-    _redoStack.clear();
-  }
-
-  void clear() {
-    _undoStack.clear();
-    _redoStack.clear();
-  }
-
-  Stream<NodeEditorEvent> get events => _streamController.stream;
-  bool get isSaved => _isSaved;
+import 'node_editor_event_bus.dart';
 }
 
 /// A class that defines the behavior of a node editor.
@@ -85,7 +53,7 @@ class NodeEditorBehavior {
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
 class FlNodeEditorController {
-  final eventBus = _NodeEditorEventBus();
+  final eventBus = NodeEditorEventBus();
   final NodeEditorBehavior behavior;
   final Function(Map<String, dynamic> jsonData)? projectSaver;
   final Future<Map<String, dynamic>?> Function(bool isSaved)? projectLoader;
