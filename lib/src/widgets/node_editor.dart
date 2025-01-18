@@ -219,7 +219,9 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   }
 
   void _onDragStart() {
-    _isDragging = true;
+    setState(() {
+      _isDragging = true;
+    });
     _offsetAnimationController.stop();
     _startKineticTimer();
   }
