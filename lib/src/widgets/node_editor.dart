@@ -820,18 +820,20 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                       _setZoomFromRawInput(event.scrollDelta.dy);
                     }
                   },
+                  onPointerPanZoomStart: (event) => _onDragStart(),
                   onPointerPanZoomUpdate: (event) {
-                    // NOTE: `event.position` returns the offset of the cursor
                     if (widget.controller.behavior.zoomSensitivity > 0 &&
                         event.scale != 1.0) {
                       _setZoomFromRawScaleDelta(event.scale);
                     }
 
                     if (widget.controller.behavior.panSensitivity > 0 &&
-                        event.localPanDelta != Offset.zero) {
-                      _setOffsetFromRawInput(event.localPanDelta);
+                        event.panDelta != Offset.zero) {
+                      _setOffsetFromRawInput(event.panDelta);
+                      _onDragUpdate(event.panDelta);
                     }
                   },
+                  onPointerPanZoomEnd: (event) => _onDragEnd(),
                   child: child,
                 ),
               ),
