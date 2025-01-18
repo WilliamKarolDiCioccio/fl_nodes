@@ -404,39 +404,6 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     _setOffset(targetOffset, animate: false);
   }
 
-  void _setZoomFromRawScaleDelta(double rawScaleDelta) {
-    // Calculate the scaled delta, accounting for sensitivity
-    final sensitivity = widget.controller.behavior.zoomSensitivity;
-    final adjustedDelta = (rawScaleDelta - 1) * sensitivity + 1;
-
-    // Clamp the zoom within the min and max bounds
-    final minZoom = widget.controller.behavior.minZoom;
-    final maxZoom = widget.controller.behavior.maxZoom;
-    final targetZoom = (_zoom * adjustedDelta).clamp(minZoom, maxZoom);
-
-    _setZoom(targetZoom, animate: false);
-  }
-
-  void _setZoomFromRawInput(double amount) {
-    const double baseSpeed =
-        0.05; // Base zoom speed and damping factor (magic number)
-    const double scaleFactor =
-        1.5; // Controls how zoom speed scales with zoom level (magic number)
-
-    final double sensitivity = widget.controller.behavior.zoomSensitivity;
-
-    final double dynamicZoomFactor =
-        baseSpeed * (1 + scaleFactor * _zoom) * sensitivity;
-
-    final double zoomFactor =
-        (amount * dynamicZoomFactor).abs().clamp(0.1, 10.0);
-
-    final double targetZoom =
-        (amount < 0 ? _zoom * (1 + zoomFactor) : _zoom / (1 + zoomFactor));
-
-    _setZoom(targetZoom, animate: true);
-  }
-
   void _setOffset(Offset targetOffset, {bool animate = true}) {
     if (_offset == targetOffset) return;
 
@@ -484,6 +451,39 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
         widget.controller.viewportOffset = _offset;
       });
     }
+  }
+
+  void _setZoomFromRawScaleDelta(double rawScaleDelta) {
+    // Calculate the scaled delta, accounting for sensitivity
+    final sensitivity = widget.controller.behavior.zoomSensitivity;
+    final adjustedDelta = (rawScaleDelta - 1) * sensitivity + 1;
+
+    // Clamp the zoom within the min and max bounds
+    final minZoom = widget.controller.behavior.minZoom;
+    final maxZoom = widget.controller.behavior.maxZoom;
+    final targetZoom = (_zoom * adjustedDelta).clamp(minZoom, maxZoom);
+
+    _setZoom(targetZoom, animate: false);
+  }
+
+  void _setZoomFromRawInput(double amount) {
+    const double baseSpeed =
+        0.05; // Base zoom speed and damping factor (magic number)
+    const double scaleFactor =
+        1.5; // Controls how zoom speed scales with zoom level (magic number)
+
+    final double sensitivity = widget.controller.behavior.zoomSensitivity;
+
+    final double dynamicZoomFactor =
+        baseSpeed * (1 + scaleFactor * _zoom) * sensitivity;
+
+    final double zoomFactor =
+        (amount * dynamicZoomFactor).abs().clamp(0.1, 10.0);
+
+    final double targetZoom =
+        (amount < 0 ? _zoom * (1 + zoomFactor) : _zoom / (1 + zoomFactor));
+
+    _setZoom(targetZoom, animate: true);
   }
 
   void _setZoom(double targetZoom, {bool animate = true}) {
