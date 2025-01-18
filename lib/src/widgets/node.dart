@@ -47,7 +47,7 @@ class _NodeWidgetState extends State<NodeWidget> {
   void initState() {
     super.initState();
 
-    _handleControllerEvents();
+    widget.controller.eventBus.events.listen(_handleControllerEvents);
   }
 
   @override
@@ -56,32 +56,30 @@ class _NodeWidgetState extends State<NodeWidget> {
     super.dispose();
   }
 
-  void _handleControllerEvents() {
-    widget.controller.eventBus.events.listen((event) {
-      if (event.isHandled || !mounted) return;
+  void _handleControllerEvents(NodeEditorEvent event) {
+    if (!mounted) return;
 
-      if (event is SelectionEvent) {
-        if (event.ids.contains(widget.node.id)) {
-          setState(() {
-            widget.node.state.isSelected = true;
-          });
-        } else {
-          setState(() {
-            widget.node.state.isSelected = false;
-          });
-        }
-      } else if (event is DragSelectionEvent) {
-        if (event.ids.contains(widget.node.id)) {
-          setState(() {
-            widget.node.offset += event.delta / widget.controller.viewportZoom;
-          });
-        }
-      } else if (event is NodeFieldEvent &&
-          event.id == widget.node.id &&
-          event.eventType == FieldEventType.submit) {
-        setState(() {});
+    if (event is SelectionEvent) {
+      if (event.nodeIds.contains(widget.node.id)) {
+        setState(() {
+          widget.node.state.isSelected = true;
+        });
+      } else {
+        setState(() {
+          widget.node.state.isSelected = false;
+        });
       }
-    });
+    } else if (event is DragSelectionEvent) {
+      if (event.nodeIds.contains(widget.node.id)) {
+        setState(() {
+          widget.node.offset += event.delta / widget.controller.viewportZoom;
+        });
+      }
+    } else if (event is NodeFieldEvent &&
+        event.id == widget.node.id &&
+        event.eventType == FieldEventType.submit) {
+      setState(() {});
+    }
   }
 
   void _startEdgeTimer(Offset position) {

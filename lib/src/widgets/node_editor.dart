@@ -165,7 +165,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   void initState() {
     super.initState();
 
-    _handleControllerEvents();
+    widget.controller.eventBus.events.listen(_handleControllerEvents);
 
     _offsetAnimationController = AnimationController(vsync: this);
     _zoomAnimationController = AnimationController(vsync: this);
@@ -178,36 +178,36 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     super.dispose();
   }
 
-  void _handleControllerEvents() {
-    widget.controller.eventBus.events.listen((event) {
-      if (event.isHandled || !mounted) return;
+  void _handleControllerEvents(NodeEditorEvent event) {
+    if (!mounted) return;
 
-      if (event is ViewportOffsetEvent) {
-        _setOffset(event.offset, animate: event.animate);
-      } else if (event is ViewportZoomEvent) {
-        _setZoom(event.zoom, animate: event.animate);
-      } else if (event is DragSelectionEvent) {
-        _suppressEvents();
-      } else if (event is AddNodeEvent ||
-          event is RemoveNodesEvent ||
-          event is RemoveLinksEvent ||
-          event is DrawTempLinkEvent ||
-          event is CutSelectionEvent) {
+    if (event is ViewportOffsetEvent) {
+      _setOffset(event.offset, animate: event.animate);
+    } else if (event is ViewportZoomEvent) {
+      _setZoom(event.zoom, animate: event.animate);
+    } else if (event is DragSelectionEvent) {
+      _suppressEvents();
+    } else if (event is AddNodeEvent ||
+        event is RemoveNodesEvent ||
+        event is RemoveLinksEvent ||
+        event is DrawTempLinkEvent ||
+        event is CutSelectionEvent) {
+      setState(() {});
+    } else if (event is AddLinkEvent ||
+        event is PasteSelectionEvent ||
+        event is LoadProjectEvent ||
+        event is NewProjectEvent ||
+        event is CollapseNodeEvent ||
+        event is ExpandNodeEvent ||
+        event is NodeFieldEvent &&
+            (event.eventType == FieldEventType.submit ||
+                event.eventType == FieldEventType.cancel)) {
+      setState(() {});
+      // We delay the second setState to ensure that the UI has been built and  the keys updated
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {});
-      } else if (event is AddLinkEvent ||
-          event is PasteSelectionEvent ||
-          event is LoadProjectEvent ||
-          event is NewProjectEvent ||
-          event is CollapseNodeEvent ||
-          event is ExpandNodeEvent ||
-          event is NodeFieldEvent && event.eventType == FieldEventType.submit) {
-        setState(() {});
-        // We delay the second setState to ensure that the UI has been built and  the keys updated
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          setState(() {});
-        });
-      }
-    });
+      });
+    }
   }
 
   void _onDragStart() {
@@ -724,6 +724,18 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                   () => widget.controller.newProject(),
                   isControlPressed: true,
                   isShiftPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyZ,
+                  "Undo",
+                  () => widget.controller.undo(),
+                  isControlPressed: true,
+                ),
+                KeyAction(
+                  LogicalKeyboardKey.keyY,
+                  "Redo",
+                  () => widget.controller.redo(),
+                  isControlPressed: true,
                 ),
               ],
               child: MouseRegion(
