@@ -244,11 +244,10 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (widget.controller.behavior.zoomSensitivity > 0 &&
         details.scale != 1.0) {
-      // TODO: `details.scale` is no longer a stream of deltas, but the overall delta
       // TODO: Fix kintetics while zooming after panning
-      _setZoomFromRawScaleDelta(details.scale);
+      _setZoomFromRawInput(details.scale);
     } else if (widget.controller.behavior.panSensitivity > 0 &&
-        details.focalPointDelta != Offset.zero) {
+        details.focalPointDelta != const Offset(10, 10)) {
       _onDragUpdate(details.focalPointDelta);
       _setOffsetFromRawInput(details.focalPointDelta);
     }
@@ -400,7 +399,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
       final Offset adjustedKineticEnergy = _kineticEnergy / _zoom;
 
-      _setOffset(_offset + adjustedKineticEnergy, animate: false);
+      _setOffset(_offset + adjustedKineticEnergy);
 
       _kineticEnergy *= decayFactor;
 
@@ -422,10 +421,10 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
     final Offset targetOffset = _offset + offsetFactor;
 
-    _setOffset(targetOffset, animate: false);
+    _setOffset(targetOffset);
   }
 
-  void _setOffset(Offset targetOffset, {bool animate = true}) {
+  void _setOffset(Offset targetOffset, {bool animate = false}) {
     if (_offset == targetOffset) return;
 
     final beginOffset = _offset;
@@ -474,16 +473,6 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     }
   }
 
-  void _setZoomFromRawScaleDelta(double rawScaleDelta) {
-    // Calculate the scaled delta, accounting for sensitivity
-    final sensitivity = widget.controller.behavior.zoomSensitivity;
-    final adjustedDelta = (rawScaleDelta - 1) * sensitivity + 1;
-
-    final targetZoom = _zoom * adjustedDelta;
-
-    _setZoom(targetZoom, animate: false);
-  }
-
   void _setZoomFromRawInput(double amount) {
     const double baseSpeed =
         0.05; // Base zoom speed and damping factor (magic number)
@@ -499,12 +488,12 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
         (amount * dynamicZoomFactor).abs().clamp(0.1, 10.0);
 
     final double targetZoom =
-        (amount < 0 ? _zoom * (1 + zoomFactor) : _zoom / (1 + zoomFactor));
+        (amount > 1 ? _zoom * (1 + zoomFactor) : _zoom / (1 + zoomFactor));
 
-    _setZoom(targetZoom, animate: true);
+    _setZoom(targetZoom);
   }
 
-  void _setZoom(double targetZoom, {bool animate = true}) {
+  void _setZoom(double targetZoom, {bool animate = false}) {
     if (_zoom == targetZoom) return;
 
     final beginZoom = _zoom;
@@ -684,17 +673,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
           ? GestureDetector(
               onDoubleTap: () => widget.controller.clearSelection(),
               onScaleStart: (details) => _onDragStart(),
-              onScaleUpdate: (details) {
-                if (widget.controller.behavior.zoomSensitivity > 0 &&
-                    details.scale.abs() > 0.01) {
-                  _setZoomFromRawInput(details.scale);
-                }
-
-                if (widget.controller.behavior.panSensitivity > 0 &&
-                    details.focalPointDelta > const Offset(10, 10)) {
-                  _setOffsetFromRawInput(details.focalPointDelta);
-                }
-              },
+              onScaleUpdate: (details) => _onScaleUpdate(details),
               onScaleEnd: (details) => _onDragEnd(),
               child: child,
             )
