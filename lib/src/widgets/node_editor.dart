@@ -229,9 +229,9 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   void _onDragUpdate(Offset delta) {
     setState(() {
       _lastPositionDelta = delta;
-      _resetKineticTimer();
-      _setOffsetFromRawInput(delta);
     });
+    _resetKineticTimer();
+    _setOffsetFromRawInput(delta);
   }
 
   void _onDragCancel() => _onDragEnd();
@@ -246,12 +246,12 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (widget.controller.behavior.zoomSensitivity > 0 &&
         details.scale != 1.0) {
-      // TODO: Fix kintetics while zooming after panning
       _setZoomFromRawInput(details.scale);
-    } else if (widget.controller.behavior.panSensitivity > 0 &&
+    }
+
+    if (widget.controller.behavior.panSensitivity > 0 &&
         details.focalPointDelta != const Offset(10, 10)) {
       _onDragUpdate(details.focalPointDelta);
-      _setOffsetFromRawInput(details.focalPointDelta);
     }
   }
 
