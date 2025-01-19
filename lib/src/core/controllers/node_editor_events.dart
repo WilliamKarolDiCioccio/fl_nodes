@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../models/entities.dart';
+
 /// Events are used to communicate between the [FlNodeEditorController] and the Widgets composing the Node Editor.
 /// Events can (where applicable) carry data to be used by the Widgets to update their state.
 /// Events can be used to trigger animations, or to update the state of the Widgets.
@@ -9,115 +11,154 @@ import 'package:flutter/material.dart';
 /// if there is data to be passed or rebuilds to be triggered.
 
 /// Event base class for the [FlNodeEditorController] events bus.
-class NodeEditorEvent {
+abstract class NodeEditorEvent {
+  final String id;
   final bool isHandled;
   final bool isUndoable;
 
-  NodeEditorEvent({this.isHandled = false, this.isUndoable = false});
+  NodeEditorEvent({
+    required this.id,
+    this.isHandled = false,
+    this.isUndoable = false,
+  });
 }
 
 final class ViewportOffsetEvent extends NodeEditorEvent {
   final Offset offset;
   final bool animate;
 
-  ViewportOffsetEvent(this.offset, {this.animate = true, super.isHandled});
+  ViewportOffsetEvent(
+    this.offset, {
+    this.animate = true,
+    required super.id,
+    super.isHandled,
+  });
 }
 
 final class ViewportZoomEvent extends NodeEditorEvent {
   final double zoom;
   final bool animate;
 
-  ViewportZoomEvent(this.zoom, {this.animate = true, super.isHandled});
+  ViewportZoomEvent(
+    this.zoom, {
+    this.animate = true,
+    required super.id,
+    super.isHandled,
+  });
 }
 
 final class SelectionAreaEvent extends NodeEditorEvent {
   final Rect area;
 
-  SelectionAreaEvent(this.area, {super.isHandled});
-}
-
-class DragSelectionStartEvent extends NodeEditorEvent {
-  final Set<String> ids;
-  final Offset position;
-
-  DragSelectionStartEvent(this.ids, this.position, {super.isHandled});
+  SelectionAreaEvent(this.area, {required super.id, super.isHandled});
 }
 
 final class DragSelectionEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
   final Offset delta;
 
-  DragSelectionEvent(this.ids, this.delta, {super.isHandled});
-}
-
-class DragSelectionEndEvent extends NodeEditorEvent {
-  final Set<String> ids;
-  final Offset position;
-
-  DragSelectionEndEvent(this.ids, this.position, {super.isHandled})
-      : super(isUndoable: true);
+  DragSelectionEvent(
+    this.nodeIds,
+    this.delta, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 }
 
 final class SelectionEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
 
-  SelectionEvent(this.ids, {super.isHandled}) : super(isUndoable: true);
+  SelectionEvent(this.nodeIds, {required super.id, super.isHandled});
 }
 
 final class AddNodeEvent extends NodeEditorEvent {
-  final String id;
+  final String nodeId;
+  final NodeInstance node;
 
-  AddNodeEvent(this.id, {super.isHandled}) : super(isUndoable: true);
+  AddNodeEvent(
+    this.nodeId,
+    this.node, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 }
 
 final class RemoveNodesEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
+  final Set<NodeInstance> removedNodes = {};
 
-  RemoveNodesEvent(this.ids, {super.isHandled}) : super(isUndoable: true);
+  RemoveNodesEvent(this.nodeIds, {required super.id, super.isHandled})
+      : super(isUndoable: true);
 }
 
 final class AddLinkEvent extends NodeEditorEvent {
-  final String id;
+  final String linkId;
+  final Link link;
 
-  AddLinkEvent(this.id, {super.isHandled}) : super(isUndoable: true);
+  AddLinkEvent(
+    this.linkId,
+    this.link, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
+}
+
+final class RemoveLinksEvent extends NodeEditorEvent {
+  final String portId;
+  final Set<Link> removedLinks = {};
+
+  RemoveLinksEvent(this.portId, {required super.id, super.isHandled})
+      : super(isUndoable: true);
 }
 
 final class DrawTempLinkEvent extends NodeEditorEvent {
   final Offset from;
   final Offset to;
 
-  DrawTempLinkEvent(this.from, this.to, {super.isHandled});
-}
-
-final class RemoveLinksEvent extends NodeEditorEvent {
-  final String id;
-
-  RemoveLinksEvent(this.id, {super.isHandled}) : super(isUndoable: true);
+  DrawTempLinkEvent(
+    this.from,
+    this.to, {
+    required super.id,
+    super.isHandled,
+  });
 }
 
 final class CollapseNodeEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
 
-  CollapseNodeEvent(this.ids, {super.isHandled});
+  CollapseNodeEvent(this.nodeIds, {required super.id, super.isHandled});
 }
 
 final class ExpandNodeEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
 
-  ExpandNodeEvent(this.ids, {super.isHandled});
+  ExpandNodeEvent(this.nodeIds, {required super.id, super.isHandled});
 }
 
-class PasteSelectionEvent extends NodeEditorEvent {
-  final Set<String> ids;
+final class PasteSelectionEvent extends NodeEditorEvent {
+  final Set<String> newNodeIds;
   final Offset position;
+  final String clipboardContent;
 
-  PasteSelectionEvent(this.ids, this.position, {super.isHandled});
+  PasteSelectionEvent(
+    this.newNodeIds,
+    this.position,
+    this.clipboardContent, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 }
 
 final class CutSelectionEvent extends NodeEditorEvent {
-  final Set<String> ids;
+  final Set<String> nodeIds;
+  final String clipboardContent;
 
-  CutSelectionEvent(this.ids, {super.isHandled});
+  CutSelectionEvent(
+    this.nodeIds,
+    this.clipboardContent, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 }
 
 enum FieldEventType {
@@ -126,28 +167,28 @@ enum FieldEventType {
   cancel,
 }
 
-class NodeFieldEvent extends NodeEditorEvent {
-  final String id;
+final class NodeFieldEvent extends NodeEditorEvent {
+  final String nodeId;
   final dynamic value;
   final FieldEventType eventType;
 
   NodeFieldEvent(
-    this.id,
+    this.nodeId,
     this.value,
     this.eventType, {
+    required super.id,
     super.isHandled,
-    super.isUndoable,
   });
 }
 
 class SaveProjectEvent extends NodeEditorEvent {
-  SaveProjectEvent() : super(isHandled: false, isUndoable: false);
+  SaveProjectEvent({required super.id});
 }
 
 class LoadProjectEvent extends NodeEditorEvent {
-  LoadProjectEvent() : super(isHandled: false, isUndoable: false);
+  LoadProjectEvent({required super.id});
 }
 
 class NewProjectEvent extends NodeEditorEvent {
-  NewProjectEvent() : super(isHandled: false, isUndoable: false);
+  NewProjectEvent({required super.id});
 }
