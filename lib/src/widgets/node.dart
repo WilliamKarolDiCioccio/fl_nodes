@@ -57,7 +57,7 @@ class _NodeWidgetState extends State<NodeWidget> {
   }
 
   void _handleControllerEvents(NodeEditorEvent event) {
-    if (!mounted) return;
+    if (!mounted || event.isHandled) return;
 
     if (event is SelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) {

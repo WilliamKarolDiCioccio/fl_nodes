@@ -179,7 +179,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
   }
 
   void _handleControllerEvents(NodeEditorEvent event) {
-    if (!mounted) return;
+    if (!mounted || event.isHandled) return;
 
     if (event is ViewportOffsetEvent) {
       _setOffset(event.offset, animate: event.animate);

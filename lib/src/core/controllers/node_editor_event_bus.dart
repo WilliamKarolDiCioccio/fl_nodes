@@ -14,7 +14,6 @@ class NodeEditorEventBus {
   final _streamController = StreamController<NodeEditorEvent>.broadcast();
 
   void emit(NodeEditorEvent event) {
-    if (event.isHandled) return;
     _streamController.add(event);
   }
 
