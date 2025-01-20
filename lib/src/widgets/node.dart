@@ -71,12 +71,10 @@ class _NodeWidgetState extends State<NodeWidget> {
       }
     } else if (event is DragSelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) {
-        setState(() {
-          widget.node.offset += event.delta / widget.controller.viewportZoom;
-        });
+        setState(() {});
       }
     } else if (event is NodeFieldEvent &&
-        event.id == widget.node.id &&
+        event.nodeId == widget.node.id &&
         event.eventType == FieldEventType.submit) {
       setState(() {});
     }

@@ -348,8 +348,21 @@ class FlNodeEditorController {
   Set<String> get selectedNodeIds => _selectedNodeIds;
   Rect get selectionArea => _selectionArea;
 
-  void dragSelection(Offset delta) {
-    eventBus.emit(DragSelectionEvent(_selectedNodeIds.toSet(), delta));
+  void dragSelection(Offset delta, {String? eventId}) {
+    if (_selectedNodeIds.isEmpty) return;
+
+    for (final id in _selectedNodeIds) {
+      final node = _nodes[id];
+      node?.offset += delta / viewportZoom;
+    }
+
+    eventBus.emit(
+      DragSelectionEvent(
+        id: eventId ?? const Uuid().v4(),
+        _selectedNodeIds.toSet(),
+        delta / viewportZoom,
+      ),
+    );
   }
 
   void setSelectionArea(Rect area) {
