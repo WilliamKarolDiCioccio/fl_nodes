@@ -186,7 +186,9 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     } else if (event is ViewportZoomEvent) {
       _setZoom(event.zoom, animate: event.animate);
     } else if (event is DragSelectionEvent) {
-      _suppressEvents();
+      setState(() {
+        _suppressEvents();
+      });
     } else if (event is AddNodeEvent ||
         event is RemoveNodesEvent ||
         event is RemoveLinksEvent ||
@@ -616,15 +618,36 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
               widget.controller.pasteSelection(position: worldPosition),
         ),
         const MenuDivider(),
-        MenuItem(
-          label: 'Undo',
-          icon: Icons.undo,
-          onSelected: () {},
-        ),
-        MenuItem(
-          label: 'Redo',
-          icon: Icons.redo,
-          onSelected: () {},
+        MenuItem.submenu(
+          label: 'Project',
+          icon: Icons.folder,
+          items: [
+            MenuItem(
+              label: 'Undo',
+              icon: Icons.undo,
+              onSelected: () => widget.controller.undo(),
+            ),
+            MenuItem(
+              label: 'Redo',
+              icon: Icons.redo,
+              onSelected: () => widget.controller.redo(),
+            ),
+            MenuItem(
+              label: 'Save',
+              icon: Icons.save,
+              onSelected: () => widget.controller.saveProject(),
+            ),
+            MenuItem(
+              label: 'Open',
+              icon: Icons.folder_open,
+              onSelected: () => widget.controller.loadProject(),
+            ),
+            MenuItem(
+              label: 'New',
+              icon: Icons.new_label,
+              onSelected: () => widget.controller.newProject(),
+            ),
+          ],
         ),
       ];
     }
