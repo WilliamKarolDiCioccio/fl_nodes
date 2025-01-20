@@ -1,9 +1,22 @@
 /// LIFO Stack: Operates like a traditional stack (Last-In-First-Out)
 class LIFOStack<T> {
   final List<T> _list = [];
+  final int? _maxSize;
+
+  LIFOStack([this._maxSize]) {
+    assert(
+      _maxSize == null || _maxSize! > 0,
+      "Max size must be null or a positive integer.",
+    );
+  }
 
   /// Pushes an element to the end of the stack.
+  /// Throws an exception if the stack is at its size limit.
   void push(T element) {
+    if (_maxSize != null && _list.length >= _maxSize!) {
+      throw StateError(
+          "Stack overflow: Cannot add more elements, stack is full.");
+    }
     _list.add(element); // Add to the end of the list
   }
 
@@ -43,4 +56,7 @@ class LIFOStack<T> {
 
   /// Returns the number of elements in the stack.
   int get length => _list.length;
+
+  /// Checks if the stack is full (only applicable if a max size is set).
+  bool get isFull => _maxSize != null && _list.length >= _maxSize!;
 }
