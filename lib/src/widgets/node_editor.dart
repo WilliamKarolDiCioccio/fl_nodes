@@ -184,8 +184,8 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
         _suppressEvents();
       });
     } else if (event is AddNodeEvent ||
-        event is RemoveNodesEvent ||
-        event is RemoveLinksEvent ||
+        event is RemoveNodeEvent ||
+        event is RemoveLinkEvent ||
         event is DrawTempLinkEvent ||
         event is CutSelectionEvent) {
       setState(() {});
@@ -689,18 +689,18 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                   LogicalKeyboardKey.delete,
                   "Remove selected nodes",
                   () {
-                    widget.controller.removeNodes(
-                      widget.controller.selectedNodeIds,
-                    );
+                    for (final nodeId in widget.controller.selectedNodeIds) {
+                      widget.controller.removeNode(nodeId);
+                    }
                   },
                 ),
                 KeyAction(
                   LogicalKeyboardKey.backspace,
                   "Remove selected nodes",
                   () {
-                    widget.controller.removeNodes(
-                      widget.controller.selectedNodeIds,
-                    );
+                    for (final nodeId in widget.controller.selectedNodeIds) {
+                      widget.controller.removeNode(nodeId);
+                    }
                     widget.controller.clearSelection();
                   },
                 ),

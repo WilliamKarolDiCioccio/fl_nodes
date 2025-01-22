@@ -72,42 +72,36 @@ final class SelectionEvent extends NodeEditorEvent {
 }
 
 final class AddNodeEvent extends NodeEditorEvent {
-  final String nodeId;
   final NodeInstance node;
 
   AddNodeEvent(
-    this.nodeId,
     this.node, {
     required super.id,
     super.isHandled,
   }) : super(isUndoable: true);
 }
 
-final class RemoveNodesEvent extends NodeEditorEvent {
-  final Set<String> nodeIds;
-  final Set<NodeInstance> removedNodes = {};
+final class RemoveNodeEvent extends NodeEditorEvent {
+  final NodeInstance node;
 
-  RemoveNodesEvent(this.nodeIds, {required super.id, super.isHandled})
+  RemoveNodeEvent(this.node, {required super.id, super.isHandled})
       : super(isUndoable: true);
 }
 
 final class AddLinkEvent extends NodeEditorEvent {
-  final String linkId;
   final Link link;
 
   AddLinkEvent(
-    this.linkId,
     this.link, {
     required super.id,
     super.isHandled,
   }) : super(isUndoable: true);
 }
 
-final class RemoveLinksEvent extends NodeEditorEvent {
-  final String portId;
-  final Set<Link> removedLinks = {};
+final class RemoveLinkEvent extends NodeEditorEvent {
+  final Link link;
 
-  RemoveLinksEvent(this.portId, {required super.id, super.isHandled})
+  RemoveLinkEvent(this.link, {required super.id, super.isHandled})
       : super(isUndoable: true);
 }
 
@@ -136,29 +130,25 @@ final class ExpandNodeEvent extends NodeEditorEvent {
 }
 
 final class PasteSelectionEvent extends NodeEditorEvent {
-  final Set<String> newNodeIds;
   final Offset position;
   final String clipboardContent;
 
   PasteSelectionEvent(
-    this.newNodeIds,
     this.position,
     this.clipboardContent, {
     required super.id,
     super.isHandled,
-  }) : super(isUndoable: true);
+  });
 }
 
 final class CutSelectionEvent extends NodeEditorEvent {
-  final Set<String> nodeIds;
   final String clipboardContent;
 
   CutSelectionEvent(
-    this.nodeIds,
     this.clipboardContent, {
     required super.id,
     super.isHandled,
-  }) : super(isUndoable: true);
+  });
 }
 
 enum FieldEventType {

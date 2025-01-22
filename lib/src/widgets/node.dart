@@ -246,11 +246,13 @@ class _NodeWidgetState extends State<NodeWidget> {
           icon: Icons.delete,
           onSelected: () {
             if (widget.node.state.isSelected) {
-              widget.controller.removeNodes(
-                widget.controller.selectedNodeIds,
-              );
+              for (final nodeId in widget.controller.selectedNodeIds) {
+                widget.controller.removeNode(nodeId);
+              }
             } else {
-              widget.controller.removeNodes({widget.node.id});
+              for (final nodeId in widget.controller.selectedNodeIds) {
+                widget.controller.removeNode(nodeId);
+              }
             }
             widget.controller.clearSelection();
           },

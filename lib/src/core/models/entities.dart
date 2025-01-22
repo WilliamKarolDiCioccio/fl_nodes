@@ -165,7 +165,7 @@ final class PortInstance {
   final Type dataType;
   final bool isInput;
   final bool allowMultipleLinks;
-  List<Link> links = [];
+  Set<Link> links = {};
   Offset offset; // Determined by Flutter
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
@@ -205,7 +205,7 @@ final class PortInstance {
 
     instance.links = (json['links'] as List<dynamic>)
         .map((linkJson) => Link.fromJson(linkJson))
-        .toList();
+        .toSet();
 
     return instance;
   }
@@ -217,7 +217,7 @@ final class PortInstance {
     Type? dataType,
     bool? isInput,
     bool? allowMultipleLinks,
-    List<Link>? links,
+    Set<Link>? links,
     Offset? offset,
   }) {
     final instance = PortInstance(
