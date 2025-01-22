@@ -15,12 +15,11 @@ import 'package:fl_nodes/src/core/utils/platform.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/utils/context_menu.dart';
 import 'package:fl_nodes/src/utils/improved_listener.dart';
+import 'package:fl_nodes/src/widgets/debug_info.dart';
 import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
 
 import '../core/controllers/node_editor_events.dart';
 import '../core/utils/constants.dart';
-
-import 'debug_info.dart';
 
 class FlOverlayData {
   final Widget child;
@@ -88,12 +87,7 @@ class FlNodeEditorWidget extends StatelessWidget {
               ),
             ),
           ),
-          if (kDebugMode)
-            DebugInfoWidget(
-              offset: controller.viewportOffset,
-              zoom: controller.viewportZoom,
-              selectionCount: controller.selectedNodeIds.length,
-            ),
+          if (kDebugMode) DebugInfoWidget(controller: controller),
         ],
       ),
     );
@@ -599,12 +593,11 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
             absolute: true,
           ),
         ),
-        if (_zoom != 1.0)
-          MenuItem(
-            label: 'Reset Zoom',
-            icon: _zoom < 1.0 ? Icons.zoom_in_map : Icons.zoom_out_map,
-            onSelected: () => widget.controller.setViewportZoom(1.0),
-          ),
+        MenuItem(
+          label: 'Reset Zoom',
+          icon: Icons.zoom_in,
+          onSelected: () => widget.controller.setViewportZoom(1.0),
+        ),
         const MenuDivider(),
         MenuItem.submenu(
           label: 'Create',

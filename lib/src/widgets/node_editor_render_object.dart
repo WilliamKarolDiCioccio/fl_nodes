@@ -359,6 +359,20 @@ class NodeEditorRenderBox extends RenderBox
     canvas.drawRect(viewport, debugPaint);
   }
 
+  @visibleForTesting
+  void paintDebugOffset(Canvas canvas, Size size) {
+    final Paint debugPaint = Paint()
+      ..color = Colors.green.withAlpha(200)
+      ..style = PaintingStyle.fill;
+
+    // Draw the offset point
+    canvas.drawCircle(Offset.zero, 5, debugPaint);
+  }
+
+  double _calculateStart(double viewportEdge, double gridSpacing) {
+    return (viewportEdge / gridSpacing).floor() * gridSpacing;
+  }
+
   void _paintLinks(Canvas canvas) {
     void paintLinksAsBeziers(Canvas canvas) {
       for (final link in linkPositions) {
@@ -519,20 +533,6 @@ class NodeEditorRenderBox extends RenderBox
       ..strokeWidth = 0.5;
 
     canvas.drawRect(selectionArea, borderPaint);
-  }
-
-  @visibleForTesting
-  void paintDebugOffset(Canvas canvas, Size size) {
-    final Paint debugPaint = Paint()
-      ..color = Colors.green.withAlpha(200)
-      ..style = PaintingStyle.fill;
-
-    // Draw the offset point
-    canvas.drawCircle(Offset.zero, 5, debugPaint);
-  }
-
-  double _calculateStart(double viewportEdge, double gridSpacing) {
-    return (viewportEdge / gridSpacing).floor() * gridSpacing;
   }
 
   @override

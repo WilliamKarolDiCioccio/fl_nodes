@@ -71,8 +71,34 @@ class FlNodeEditorController {
   }
 
   // Viewport
-  Offset viewportOffset = Offset.zero;
-  double viewportZoom = 1.0;
+  Offset _viewportOffset = Offset.zero;
+  double _viewportZoom = 1.0;
+
+  Offset get viewportOffset => _viewportOffset;
+  double get viewportZoom => _viewportZoom;
+
+  set viewportOffset(Offset offset) {
+    _viewportOffset = offset;
+    eventBus.emit(
+      ViewportOffsetEvent(
+        id: const Uuid().v4(),
+        _viewportOffset,
+        animate: false,
+        isHandled: true,
+      ),
+    );
+  }
+
+  set viewportZoom(double zoom) {
+    _viewportZoom = zoom;
+    eventBus.emit(
+      ViewportZoomEvent(
+        id: const Uuid().v4(),
+        _viewportZoom,
+        isHandled: true,
+      ),
+    );
+  }
 
   void setViewportOffset(
     Offset coords, {

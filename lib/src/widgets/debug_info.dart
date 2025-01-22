@@ -1,16 +1,37 @@
+import 'package:fl_nodes/src/core/controllers/node_editor_events.dart';
 import 'package:flutter/material.dart';
 
-class DebugInfoWidget extends StatelessWidget {
-  final Offset offset;
-  final double zoom;
-  final int selectionCount;
+import 'package:fl_nodes/src/core/controllers/node_editor.dart';
+
+class DebugInfoWidget extends StatefulWidget {
+  final FlNodeEditorController controller;
 
   const DebugInfoWidget({
     super.key,
-    required this.offset,
-    required this.zoom,
-    required this.selectionCount,
+    required this.controller,
   });
+
+  @override
+  State<StatefulWidget> createState() => _DebugInfoWidgetState();
+}
+
+class _DebugInfoWidgetState extends State<DebugInfoWidget> {
+  double get viewportZoom => widget.controller.viewportZoom;
+  Offset get viewportOffset => widget.controller.viewportOffset;
+  int get selectionCount => widget.controller.selectedNodeIds.length;
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.controller.eventBus.events.listen((event) {
+      if (event is ViewportOffsetEvent ||
+          event is ViewportZoomEvent ||
+          event is SelectionEvent) {
+        setState(() {});
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +42,11 @@ class DebugInfoWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            'X: ${offset.dx.toStringAsFixed(2)}, Y: ${offset.dy.toStringAsFixed(2)}',
+            'X: ${viewportOffset.dx.toStringAsFixed(2)}, Y: ${viewportOffset.dy.toStringAsFixed(2)}',
             style: const TextStyle(color: Colors.red, fontSize: 16),
           ),
           Text(
-            'Zoom: ${zoom.toStringAsFixed(2)}',
+            'Zoom: ${viewportZoom.toStringAsFixed(2)}',
             style: const TextStyle(color: Colors.green, fontSize: 16),
           ),
           Text(

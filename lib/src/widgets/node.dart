@@ -40,8 +40,8 @@ class _NodeWidgetState extends State<NodeWidget> {
   Timer? _edgeTimer;
   Tuple2<String, String>? _tempLink;
 
-  double get _zoom => widget.controller.viewportZoom;
-  Offset get _offset => widget.controller.viewportOffset;
+  double get viewportZoom => widget.controller.viewportZoom;
+  Offset get viewportOffset => widget.controller.viewportOffset;
 
   @override
   void initState() {
@@ -81,9 +81,10 @@ class _NodeWidgetState extends State<NodeWidget> {
   }
 
   void _startEdgeTimer(Offset position) {
-    const edgeThreshold = 50.0; // Distance from edge to start moving
-    final moveAmount =
-        5.0 / widget.controller.viewportZoom; // Amount to move per frame
+    // Distance from edge to start moving
+    const edgeThreshold = 50.0;
+    // Amount to move per frame
+    final moveAmount = 5.0 / widget.controller.viewportZoom;
 
     final editorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
     if (editorBounds == null) return;
@@ -110,7 +111,7 @@ class _NodeWidgetState extends State<NodeWidget> {
       if (dx != 0 || dy != 0) {
         widget.controller.dragSelection(Offset(dx, dy));
         widget.controller.setViewportOffset(
-          Offset(-dx / _zoom, -dy / _zoom),
+          Offset(-dx / viewportZoom, -dy / viewportZoom),
           animate: false,
         );
       }
@@ -124,8 +125,8 @@ class _NodeWidgetState extends State<NodeWidget> {
   Tuple2<String, String>? _isNearPort(Offset position) {
     final worldPosition = screenToWorld(
       position,
-      _offset,
-      _zoom,
+      viewportOffset,
+      viewportZoom,
     );
 
     final near = Rect.fromCenter(
@@ -162,8 +163,8 @@ class _NodeWidgetState extends State<NodeWidget> {
   void _onLinkUpdate(Offset position) {
     final worldPosition = screenToWorld(
       position,
-      _offset,
-      _zoom,
+      viewportOffset,
+      viewportZoom,
     );
 
     final nodeOffset = widget.controller.nodes[_tempLink!.item1]!.offset;
@@ -310,8 +311,8 @@ class _NodeWidgetState extends State<NodeWidget> {
 
       final worldPosition = screenToWorld(
         position,
-        _offset,
-        _zoom,
+        viewportOffset,
+        viewportZoom,
       );
 
       return compatiblePrototypes.map((entry) {
