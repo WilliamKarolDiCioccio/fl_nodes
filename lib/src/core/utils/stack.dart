@@ -1,9 +1,9 @@
-/// LIFO Stack: Operates like a traditional stack (Last-In-First-Out)
-class LIFOStack<T> {
+/// Stack: Operates like a traditional stack (Last-In-First-Out)
+class Stack<T> {
   final List<T> _list = [];
   final int? _maxSize;
 
-  LIFOStack([this._maxSize]) {
+  Stack([this._maxSize]) {
     assert(
       _maxSize == null || _maxSize! > 0,
       "Max size must be null or a positive integer.",
@@ -15,7 +15,8 @@ class LIFOStack<T> {
   void push(T element) {
     if (_maxSize != null && _list.length >= _maxSize!) {
       throw StateError(
-          "Stack overflow: Cannot add more elements, stack is full.");
+        "Stack overflow: Cannot add more elements, stack is full.",
+      );
     }
     _list.add(element); // Add to the end of the list
   }
