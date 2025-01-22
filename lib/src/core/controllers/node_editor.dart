@@ -18,31 +18,6 @@ import '../models/entities.dart';
 import 'node_editor_event_bus.dart';
 import 'node_editor_events.dart';
 
-/// A class that defines the behavior of a node editor.
-///
-/// This class is responsible for handling the interactions and
-/// behaviors associated with a node editor, such as node selection,
-/// movement, and other editor-specific functionalities.
-class NodeEditorBehavior {
-  final double zoomSensitivity;
-  final double minZoom;
-  final double maxZoom;
-  final double panSensitivity;
-  final double maxPanX;
-  final double maxPanY;
-  final bool enableKineticScrolling;
-
-  const NodeEditorBehavior({
-    this.zoomSensitivity = 0.1,
-    this.minZoom = 0.1,
-    this.maxZoom = 10.0,
-    this.panSensitivity = 1.0,
-    this.maxPanX = 100000.0,
-    this.maxPanY = 100000.0,
-    this.enableKineticScrolling = true,
-  });
-}
-
 /// A controller class for the Node Editor.
 ///
 /// This class is responsible for managing the state of the node editor,
