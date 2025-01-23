@@ -690,7 +690,11 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                   "Remove selected nodes",
                   () {
                     for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNode(nodeId);
+                      widget.controller.removeNode(
+                        nodeId,
+                        isHandled:
+                            nodeId != widget.controller.selectedNodeIds.last,
+                      );
                     }
                   },
                 ),
@@ -699,7 +703,11 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                   "Remove selected nodes",
                   () {
                     for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNode(nodeId);
+                      widget.controller.removeNode(
+                        nodeId,
+                        isHandled:
+                            nodeId != widget.controller.selectedNodeIds.last,
+                      );
                     }
                     widget.controller.clearSelection();
                   },

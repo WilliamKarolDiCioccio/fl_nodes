@@ -234,9 +234,9 @@ class FlNodeEditorController {
     final node = _nodes[id]!;
 
     for (final port in node.ports.values) {
-      final linkToRemove = port.links.map((link) => link.id).toList();
+      final linksToRemove = port.links.map((link) => link.id).toList();
 
-      for (final linkId in linkToRemove) {
+      for (final linkId in linksToRemove) {
         removeLinkById(linkId, isHandled: true);
       }
     }
