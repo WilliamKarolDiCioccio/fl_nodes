@@ -145,11 +145,11 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
           InputPortPrototype(name: 'B', dataType: double),
           OutputPortPrototype(name: 'Result', dataType: double),
         ],
-        onExecute: (ports, fields) {
-          final double a = ports['A'] as double;
-          final double b = ports['B'] as double;
+        onExecute: (ports, fields) async {
+          final double a = ports['A']!.data as double;
+          final double b = ports['B']!.data as double;
 
-          ports['Result'] = a + b;
+          ports['Result']!.data = a + b;
         },
       ),
     );
@@ -161,8 +161,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
         ports: [
           OutputPortPrototype(name: 'Value', dataType: double),
         ],
-        onExecute: (ports, fields) {
-          ports['Value'] = Random().nextDouble();
+        onExecute: (ports, fields) async {
+          ports['Value']!.data = Random().nextDouble();
         },
       ),
     );
@@ -177,8 +177,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
             dataType: double,
           ),
         ],
-        onExecute: (ports, fields) {
-          debugPrint('Output: ${ports['Value']}');
+        onExecute: (ports, fields) async {
+          debugPrint('Output: ${ports['Value']!.data}');
         },
       ),
     );
@@ -258,11 +258,12 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
             ),
           ),
         ],
-        onExecute: (ports, fields) {
-          final double value = ports['Value'] as double;
-          final int decimals = fields['Decimals'] as int;
+        onExecute: (ports, fields) async {
+          final double value = ports['Value']!.data as double;
+          final int decimals = fields['Decimals']!.data as int;
 
-          ports['Rounded'] = double.parse(value.toStringAsFixed(decimals));
+          ports['Rounded']!.data =
+              double.parse(value.toStringAsFixed(decimals));
         },
       ),
     );
