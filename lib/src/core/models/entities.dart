@@ -373,6 +373,8 @@ final class NodeInstance {
   ) onExecute;
   final Function(NodeInstance node) onRendered;
   Offset offset; // User or system defined offset
+  // This is used for algorithm visualization purposes during development
+  Color debugColor = Colors.grey;
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
   NodeInstance({

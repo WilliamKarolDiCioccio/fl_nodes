@@ -43,7 +43,8 @@ class _NodeWidgetState extends State<NodeWidget> {
   double get viewportZoom => widget.controller.viewportZoom;
   Offset get viewportOffset => widget.controller.viewportOffset;
   String get nodeName => widget.node.prototype.name;
-  Color get nodeColor => widget.node.prototype.color;
+  Color get nodeColor =>
+      kDebugMode ? widget.node.debugColor : widget.node.prototype.color;
 
   @override
   void initState() {
