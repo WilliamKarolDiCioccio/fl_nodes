@@ -303,10 +303,14 @@ class FlNodeEditorController {
     }
 
     // Check if the link already exists.
-    if (port1.links.any((link) =>
-            link.fromTo.item1 == node2Id && link.fromTo.item2 == port2Id) ||
-        port2.links.any((link) =>
-            link.fromTo.item1 == node1Id && link.fromTo.item2 == port1Id)) {
+    if (port1.links.any(
+          (link) =>
+              link.fromTo.item1 == node2Id && link.fromTo.item2 == port2Id,
+        ) ||
+        port2.links.any(
+          (link) =>
+              link.fromTo.item1 == node1Id && link.fromTo.item2 == port1Id,
+        )) {
       return null;
     }
 
