@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:file_picker/file_picker.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
 
@@ -138,13 +140,17 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       NodePrototype(
         name: 'Add',
         description: 'Adds two numbers together.',
-        color: Colors.amber,
         ports: [
           InputPortPrototype(name: 'A', dataType: double),
           InputPortPrototype(name: 'B', dataType: double),
           OutputPortPrototype(name: 'Result', dataType: double),
         ],
-        onExecute: (inputs, fields, outputs) {},
+        onExecute: (ports, fields) {
+          final double a = ports['A'] as double;
+          final double b = ports['B'] as double;
+
+          ports['Result'] = a + b;
+        },
       ),
     );
 
@@ -152,11 +158,12 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       NodePrototype(
         name: 'Input',
         description: 'Inputs a value.',
-        color: Colors.red,
         ports: [
           OutputPortPrototype(name: 'Value', dataType: double),
         ],
-        onExecute: (inputs, fields, outputs) {},
+        onExecute: (ports, fields) {
+          ports['Value'] = Random().nextDouble();
+        },
       ),
     );
 
@@ -164,14 +171,15 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       NodePrototype(
         name: 'Output',
         description: 'Outputs a value.',
-        color: Colors.green,
         ports: [
           InputPortPrototype(
             name: 'Value',
             dataType: double,
           ),
         ],
-        onExecute: (inputs, fields, outputs) {},
+        onExecute: (ports, fields) {
+          debugPrint('Output: ${ports['Value']}');
+        },
       ),
     );
 
@@ -179,7 +187,6 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       NodePrototype(
         name: 'Round',
         description: 'Rounds a number to a specified number of decimals.',
-        color: Colors.blue,
         ports: [
           InputPortPrototype(name: 'Value', dataType: double),
           OutputPortPrototype(name: 'Rounded', dataType: int),
@@ -251,7 +258,12 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
             ),
           ),
         ],
-        onExecute: (input, fields, outputs) {},
+        onExecute: (ports, fields) {
+          final double value = ports['Value'] as double;
+          final int decimals = fields['Decimals'] as int;
+
+          ports['Rounded'] = double.parse(value.toStringAsFixed(decimals));
+        },
       ),
     );
   }
@@ -306,7 +318,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () =>
+                                _nodeEditorController.runner.executeGraph(),
                             icon: const Icon(
                               Icons.play_arrow,
                               size: 32,
