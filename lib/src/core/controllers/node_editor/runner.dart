@@ -25,7 +25,8 @@ class Subgraph {
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
   final List<Subgraph> _topSubgraphs = [];
-  final Map<String, dynamic> _results = {};
+
+  Map<String, NodeInstance> get nodes => controller.nodes;
 
   FlNodeEditorRunner(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
@@ -36,69 +37,14 @@ class FlNodeEditorRunner {
         event is RemoveNodeEvent ||
         event is AddLinkEvent ||
         event is RemoveLinkEvent) {
-      _topSubgraphs.clear();
-      _results.clear();
-
       _identifySubgraphs();
-    }
-  }
-
-  /// Executes a single node
-  Future<void> _executeNode(NodeInstance node) async {
-    try {
-      await Future.microtask(
-        () => node.onExecute(
-          node.ports,
-          node.fields,
-        ),
-      );
-    } on RunnerException {
-      controller.focusNodesById({node.id});
-      showNodeEditorSnackbar(
-        'Error executing node ${node.id}.',
-        SnackbarType.error,
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        controller.focusNodesById({node.id});
-        debugPrint('Error executing node ${node.id}: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Executes the entire graph asynchronously
-  Future<void> executeGraph() async {
-    if (controller.nodes.isEmpty) return;
-
-    final futures = <Future<void>>[];
-
-    for (final subgraph in _topSubgraphs) {
-      futures.add(_executeSubgraph(subgraph));
-    }
-
-    // Await all subgraph executions to complete
-    await Future.wait(futures);
-  }
-
-  /// Executes a single subgraph asynchronously
-  Future<void> _executeSubgraph(Subgraph subgraph) async {
-    try {
-      for (final node in subgraph.nodes) {
-        await _executeNode(node);
-      }
-
-      _results[subgraph.nodes.first.id] = 'Subgraph completed successfully.';
-    } on RunnerException catch (e) {
-      controller.focusNodesById({e.nodeId});
-      showNodeEditorSnackbar(e.message, SnackbarType.error);
-    } catch (e) {
-      debugPrint('Unexpected error during subgraph execution: $e');
     }
   }
 
   /// Identifies independent subgraphs in the graph.
   void _identifySubgraphs() {
+    _topSubgraphs.clear();
+
     final Set<NodeInstance> visitedNodes = {};
 
     // Find nodes with only input ports or no input links
@@ -114,7 +60,7 @@ class FlNodeEditorRunner {
       }
     }
 
-    _debugColorNodes();
+    if (kDebugMode) _debugColorNodes();
   }
 
   /// Recursively collects nodes in a subgraph from input links.
@@ -154,6 +100,72 @@ class FlNodeEditorRunner {
     } else {
       final connectedNode = controller.nodes[connectedNodeIds.first]!;
       _collectSubgraphFromLinks(connectedNode, visitedNodes, currentSubgraph);
+    }
+  }
+
+  /// Executes the entire graph asynchronously
+  Future<void> executeGraph() async {
+    if (controller.nodes.isEmpty) return;
+
+    final futures = <Future<void>>[];
+
+    for (final subgraph in _topSubgraphs) {
+      futures.add(_executeSubgraph(subgraph));
+    }
+
+    // Await all subgraph executions to complete
+    await Future.wait(futures);
+  }
+
+  /// Executes a single subgraph asynchronously
+  Future<void> _executeSubgraph(Subgraph subgraph) async {
+    for (final child in subgraph.children) {
+      await _executeSubgraph(child);
+    }
+
+    for (final node in subgraph.nodes.reversed) {
+      await _executeNode(node);
+    }
+  }
+
+  /// Executes a single node
+  Future<void> _executeNode(NodeInstance node) async {
+    try {
+      await Future.microtask(() async {
+        await node.onExecute(
+          node.ports.map(
+            (key, value) => MapEntry(value.prototype.name, value),
+          ),
+          node.fields.map(
+            (key, value) => MapEntry(value.prototype.name, value),
+          ),
+        );
+
+        for (final port in node.ports.values) {
+          if (port.prototype.portType == PortType.output) {
+            for (final link in port.links) {
+              nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!.data =
+                  port.data;
+            }
+          }
+        }
+      });
+    } on RunnerException catch (e) {
+      controller.focusNodesById({node.id});
+      showNodeEditorSnackbar(
+        'Error executing node ${node.id}: $e',
+        SnackbarType.error,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        controller.focusNodesById({node.id});
+        showNodeEditorSnackbar(
+          'Error executing node ${node.id}: $e',
+          SnackbarType.error,
+        );
+        debugPrint('Error executing node ${node.id}: $e');
+      }
+      rethrow;
     }
   }
 
