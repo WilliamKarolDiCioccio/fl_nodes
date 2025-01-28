@@ -289,7 +289,6 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     _paintLinks(canvas);
-    _paintTemporaryLink(canvas);
 
     RenderBox? child = firstChild;
     while (child != null) {
@@ -312,6 +311,12 @@ class NodeEditorRenderBox extends RenderBox
       child = childParentData.nextSibling;
     }
 
+    // We paint this after the nodes so that the temporary link is always on top
+    if (tempLink != null) {
+      _paintTemporaryLink(canvas);
+    }
+
+    // Same as above, we paint this after the nodes so that the selection area is always on top
     if (!selectionArea.isEmpty) {
       _paintSelectionArea(canvas, viewport);
     }
@@ -506,8 +511,6 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _paintTemporaryLink(Canvas canvas) {
-    if (tempLink == null) return;
-
     final outPortOffset = tempLink!.item1;
     final inPortOffset = tempLink!.item2;
 
