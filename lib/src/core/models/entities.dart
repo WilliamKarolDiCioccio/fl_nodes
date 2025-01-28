@@ -133,13 +133,11 @@ abstract class PortPrototype {
   final String name;
   final Type dataType;
   final PortType portType;
-  final bool allowMultipleLinks;
 
   PortPrototype({
     required this.name,
     this.dataType = dynamic,
     required this.portType,
-    this.allowMultipleLinks = true,
   });
 }
 
@@ -147,7 +145,6 @@ class InputPortPrototype extends PortPrototype {
   InputPortPrototype({
     required super.name,
     super.dataType,
-    super.allowMultipleLinks,
   }) : super(portType: PortType.input);
 }
 
@@ -155,7 +152,6 @@ class OutputPortPrototype extends PortPrototype {
   OutputPortPrototype({
     required super.name,
     super.dataType,
-    super.allowMultipleLinks,
   }) : super(portType: PortType.output);
 }
 

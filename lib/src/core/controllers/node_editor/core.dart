@@ -10,6 +10,7 @@ import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:fl_nodes/src/core/utils/constants.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
+import 'package:fl_nodes/src/core/utils/snackbar.dart';
 import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
 
 import '../../models/entities.dart';
@@ -288,19 +289,18 @@ class FlNodeEditorController {
     String? eventId,
   }) {
     // Check for self-links
-    if (node1Id == node2Id || port1Id == port2Id) return null;
-
-    final port1 = _nodes[node1Id]!.ports[port1Id]!;
-    final port2 = _nodes[node2Id]!.ports[port2Id]!;
-
-    // Check if the ports are compatible
-    if (port1.prototype.portType == port2.prototype.portType) return null;
-
-    // Check if the ports allow multiple links
-    if (port1.links.length > 1 && !port1.prototype.allowMultipleLinks ||
-        port2.links.length > 1 && !port2.prototype.allowMultipleLinks) {
+    if (node1Id == node2Id || port1Id == port2Id) {
+      showNodeEditorSnackbar(
+        'Cannot create a link to the same port',
+        SnackbarType.error,
+      );
       return null;
     }
+
+    final node1 = _nodes[node1Id]!;
+    final port1 = node1.ports[port1Id]!;
+    final node2 = _nodes[node2Id]!;
+    final port2 = node2.ports[port2Id]!;
 
     // Check if the link already exists.
     if (port1.links.any(
@@ -322,6 +322,35 @@ class FlNodeEditorController {
     } else {
       fromTo = Tuple4(node2Id, port2Id, node1Id, port1Id);
     }
+
+    bool canConnect(Tuple4<String, String, String, String> fromTo) {
+      final fromNode = _nodes[fromTo.item1]!;
+      final fromPort = fromNode.ports[fromTo.item2]!;
+      final toNode = _nodes[fromTo.item3]!;
+      final toPort = toNode.ports[fromTo.item4]!;
+
+      // Check if the ports are compatible
+      if (fromPort.prototype.portType == toPort.prototype.portType) {
+        showNodeEditorSnackbar(
+          'Cannot connect two ports of the same type: ${fromPort.prototype.name} and ${toPort.prototype.name}',
+          SnackbarType.error,
+        );
+        return false;
+      }
+
+      // Check if the input port already has a link
+      if (toPort.links.isNotEmpty) {
+        showNodeEditorSnackbar(
+          'Cannot connect multiple links to an input port: ${toPort.prototype.name} in node ${toNode.prototype.name}',
+          SnackbarType.error,
+        );
+        return false;
+      }
+
+      return true;
+    }
+
+    if (!canConnect(fromTo)) return null;
 
     final link = Link(
       id: const Uuid().v4(),
