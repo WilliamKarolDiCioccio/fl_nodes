@@ -232,7 +232,9 @@ class FieldPrototype {
   final bool isEditable;
   final dynamic defaultData;
   final Widget Function(dynamic data) visualizerBuilder;
-  final Function(FieldInstance field)? onVisualizerTap;
+  final Function(
+    Function(dynamic data) setData,
+  )? onVisualizerTap;
   final Widget Function(
     BuildContext context,
     Function() removeOverlay,
