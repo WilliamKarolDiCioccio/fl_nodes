@@ -156,13 +156,92 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
     _nodeEditorController.registerNodePrototype(
       NodePrototype(
-        name: 'Input',
-        description: 'Inputs a value.',
+        name: 'Random',
+        description: 'Outputs a random number between 0 and 1.',
         ports: [
           OutputPortPrototype(name: 'Value', dataType: double),
         ],
         onExecute: (ports, fields) async {
           ports['Value']!.data = Random().nextDouble();
+        },
+      ),
+    );
+
+    _nodeEditorController.registerNodePrototype(
+      NodePrototype(
+        name: 'Value',
+        description: 'Holds a constant double value.',
+        ports: [
+          OutputPortPrototype(name: 'Value', dataType: double),
+        ],
+        fields: [
+          FieldPrototype(
+            name: 'Value',
+            dataType: double,
+            defaultData: 0.0,
+            visualizerBuilder: (data) => Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF333333),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    data.toString(),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.edit,
+                    size: 16,
+                    color: Colors.white70,
+                  ),
+                ],
+              ),
+            ),
+            editorBuilder: (context, removeOverlay, data, setData) => Container(
+              constraints: const BoxConstraints(
+                minHeight: 20,
+                minWidth: 50,
+                maxWidth: 200,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[800]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(128),
+                    blurRadius: 2,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                initialValue: data.toString(),
+                onChanged: (value) => setData(
+                  double.tryParse(value) ?? 0.0,
+                  eventType: FieldEventType.change,
+                ),
+                onFieldSubmitted: (value) {
+                  setData(
+                    double.tryParse(value) ?? 0.0,
+                    eventType: FieldEventType.submit,
+                  );
+                  removeOverlay.call();
+                },
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(4),
+                ),
+              ),
+            ),
+          ),
+        ],
+        onExecute: (ports, fields) async {
+          ports['Value']!.data = fields['Value']!.data as double;
         },
       ),
     );
@@ -178,7 +257,21 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
           ),
         ],
         onExecute: (ports, fields) async {
-          debugPrint('Output: ${ports['Value']!.data}');
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Output'),
+                content: Text('Output: ${ports['Value']!.data}'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         },
       ),
     );
