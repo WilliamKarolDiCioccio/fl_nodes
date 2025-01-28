@@ -24,9 +24,8 @@ class Subgraph {
 
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
-  final List<Subgraph> _topSubgraphs = [];
-
-  Map<String, NodeInstance> get nodes => controller.nodes;
+  Map<String, NodeInstance> _nodes = {};
+  List<Subgraph> _topSubgraphs = [];
 
   FlNodeEditorRunner(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
@@ -36,19 +35,49 @@ class FlNodeEditorRunner {
     if (event is AddNodeEvent ||
         event is RemoveNodeEvent ||
         event is AddLinkEvent ||
-        event is RemoveLinkEvent) {
+        event is RemoveLinkEvent ||
+        (event is NodeFieldEvent && event.eventType == FieldEventType.submit)) {
       _identifySubgraphs();
     }
   }
 
   /// Identifies independent subgraphs in the graph.
   void _identifySubgraphs() {
-    _topSubgraphs.clear();
+    _topSubgraphs = [];
+
+    // This isolates and avoids async access issues
+    _nodes = controller.nodes.map((id, node) {
+      final deepCopiedPorts = node.ports.map((portId, port) {
+        final deepCopiedLinks = port.links.map((link) {
+          return link.copyWith();
+        }).toSet();
+
+        return MapEntry(
+          portId,
+          port.copyWith(links: deepCopiedLinks),
+        );
+      });
+
+      final deepCopiedFields = node.fields.map((fieldId, field) {
+        return MapEntry(
+          fieldId,
+          field.copyWith(),
+        );
+      });
+
+      return MapEntry(
+        id,
+        node.copyWith(
+          ports: deepCopiedPorts,
+          fields: deepCopiedFields,
+        ),
+      );
+    });
 
     final Set<NodeInstance> visitedNodes = {};
 
     // Find nodes with only input ports or no input links
-    for (final node in controller.nodes.values) {
+    for (final node in _nodes.values) {
       final hasOnlyInputPorts = node.ports.values.every(
         (port) => port.prototype.portType == PortType.input,
       );
@@ -83,7 +112,7 @@ class FlNodeEditorRunner {
 
     for (final port in inputPorts) {
       for (final link in port.links) {
-        final connectedNode = controller.nodes[link.fromTo.item1]!;
+        final connectedNode = _nodes[link.fromTo.item1]!;
         connectedNodeIds.add(connectedNode.id);
       }
     }
@@ -92,20 +121,20 @@ class FlNodeEditorRunner {
 
     if (connectedNodeIds.length > 1) {
       for (final connectedNodeId in connectedNodeIds) {
-        final nodeInstance = controller.nodes[connectedNodeId]!;
+        final nodeInstance = _nodes[connectedNodeId]!;
         final childSubgraph = Subgraph([], []);
         _collectSubgraphFromLinks(nodeInstance, visitedNodes, childSubgraph);
         currentSubgraph.children.add(childSubgraph);
       }
     } else {
-      final connectedNode = controller.nodes[connectedNodeIds.first]!;
+      final connectedNode = _nodes[connectedNodeIds.first]!;
       _collectSubgraphFromLinks(connectedNode, visitedNodes, currentSubgraph);
     }
   }
 
   /// Executes the entire graph asynchronously
   Future<void> executeGraph() async {
-    if (controller.nodes.isEmpty) return;
+    if (_nodes.isEmpty) return;
 
     final futures = <Future<void>>[];
 
@@ -144,7 +173,7 @@ class FlNodeEditorRunner {
         for (final port in node.ports.values) {
           if (port.prototype.portType == PortType.output) {
             for (final link in port.links) {
-              nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!.data =
+              _nodes[link.fromTo.item3]!.ports[link.fromTo.item4]!.data =
                   port.data;
             }
           }
@@ -184,7 +213,7 @@ class FlNodeEditorRunner {
       final randomColor = generateRandomColor();
 
       for (final node in subgraph.nodes) {
-        node.debugColor = randomColor;
+        controller.nodes[node.id]?.debugColor = randomColor;
       }
 
       for (final child in subgraph.children) {
