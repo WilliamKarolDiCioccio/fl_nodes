@@ -25,7 +25,9 @@ class Subgraph {
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
   Map<String, NodeInstance> _nodes = {};
+  Map<String, String> _nodeToSubgraph = {};
   List<Subgraph> _topSubgraphs = [];
+  Set<String> _executedSubgraphs = {};
 
   FlNodeEditorRunner(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
@@ -44,6 +46,7 @@ class FlNodeEditorRunner {
   /// Identifies independent subgraphs in the graph.
   void _identifySubgraphs() {
     _topSubgraphs = [];
+    _nodeToSubgraph = {};
 
     // This isolates and avoids async access issues
     _nodes = controller.nodes.map((id, node) {
@@ -74,9 +77,7 @@ class FlNodeEditorRunner {
       );
     });
 
-    final Set<NodeInstance> visitedNodes = {};
-
-    // Find nodes with only input ports or no input links
+    // Detect top-level subgraphs
     for (final node in _nodes.values) {
       final hasOnlyInputPorts = node.ports.values.every(
         (port) => port.prototype.portType == PortType.input,
@@ -84,51 +85,86 @@ class FlNodeEditorRunner {
 
       if (hasOnlyInputPorts) {
         final Subgraph subgraph = Subgraph([], []);
-        _collectSubgraphFromLinks(node, visitedNodes, subgraph);
         _topSubgraphs.add(subgraph);
+
+        _collectSubgraphFromLinks(
+          node,
+          subgraph,
+        );
       }
     }
 
     if (kDebugMode) _debugColorNodes();
   }
 
-  /// Recursively collects nodes in a subgraph from input links.
-  /// Handles subgraph nesting by spawning new subgraphs when inputs come from multiple nodes.
-  void _collectSubgraphFromLinks(
-    NodeInstance node,
-    Set<NodeInstance> visitedNodes,
-    Subgraph currentSubgraph,
-  ) {
-    if (visitedNodes.contains(node)) return;
+  Set<String> connectedNodeIds(NodeInstance node, PortType portType) {
+    final connectedNodeIds = <String>{};
 
-    visitedNodes.add(node);
-    currentSubgraph.nodes.add(node);
-
-    final Set<String> connectedNodeIds = {};
-
-    final inputPorts = node.ports.values.where(
-      (port) => port.prototype.portType == PortType.input,
+    final ports = node.ports.values.where(
+      (port) => port.prototype.portType == portType,
     );
 
-    for (final port in inputPorts) {
+    for (final port in ports) {
       for (final link in port.links) {
-        final connectedNode = _nodes[link.fromTo.item1]!;
+        final connectedNode = _nodes[portType == PortType.input
+            ? link.fromTo.item1
+            : link.fromTo.item3]!;
         connectedNodeIds.add(connectedNode.id);
       }
     }
 
-    if (connectedNodeIds.isEmpty) return;
+    return connectedNodeIds;
+  }
 
-    if (connectedNodeIds.length > 1) {
-      for (final connectedNodeId in connectedNodeIds) {
-        final nodeInstance = _nodes[connectedNodeId]!;
-        final childSubgraph = Subgraph([], []);
-        _collectSubgraphFromLinks(nodeInstance, visitedNodes, childSubgraph);
-        currentSubgraph.children.add(childSubgraph);
+  /// Recursively collects nodes in a subgraph from input links.
+  /// Handles subgraph nesting by spawning new subgraphs when inputs come from multiple nodes.
+  void _collectSubgraphFromLinks(
+    NodeInstance currentNode,
+    Subgraph currentSubgraph,
+  ) {
+    if (_nodeToSubgraph.containsKey(currentNode.id)) return;
+
+    final lastNode = currentSubgraph.nodes.lastOrNull;
+
+    final currentInputNodeIds = connectedNodeIds(
+      currentNode,
+      PortType.input,
+    );
+    final currentOutputNodeIds = connectedNodeIds(
+      currentNode,
+      PortType.output,
+    );
+
+    if (lastNode == null) {
+      currentSubgraph.nodes.add(currentNode);
+      _nodeToSubgraph[currentNode.id] = currentSubgraph.id;
+
+      for (final inputNodeId in currentInputNodeIds) {
+        _collectSubgraphFromLinks(_nodes[inputNodeId]!, currentSubgraph);
       }
     } else {
-      final connectedNode = _nodes[connectedNodeIds.first]!;
-      _collectSubgraphFromLinks(connectedNode, visitedNodes, currentSubgraph);
+      final lastInputNodeIds = connectedNodeIds(
+        lastNode,
+        PortType.input,
+      );
+
+      if (lastInputNodeIds.length > 1 || currentOutputNodeIds.length > 1) {
+        final newSubgraph = Subgraph([], []);
+        newSubgraph.nodes.add(currentNode);
+        currentSubgraph.children.add(newSubgraph);
+        _nodeToSubgraph[currentNode.id] = newSubgraph.id;
+
+        for (final inputNodeId in currentInputNodeIds) {
+          _collectSubgraphFromLinks(_nodes[inputNodeId]!, newSubgraph);
+        }
+      } else {
+        currentSubgraph.nodes.add(currentNode);
+        _nodeToSubgraph[currentNode.id] = currentSubgraph.id;
+
+        for (final inputNodeId in currentInputNodeIds) {
+          _collectSubgraphFromLinks(_nodes[inputNodeId]!, currentSubgraph);
+        }
+      }
     }
   }
 
@@ -148,6 +184,10 @@ class FlNodeEditorRunner {
 
   /// Executes a single subgraph asynchronously
   Future<void> _executeSubgraph(Subgraph subgraph) async {
+    if (_executedSubgraphs.contains(subgraph.id)) return;
+
+    _executedSubgraphs.add(subgraph.id);
+
     for (final child in subgraph.children) {
       await _executeSubgraph(child);
     }
@@ -155,10 +195,13 @@ class FlNodeEditorRunner {
     for (final node in subgraph.nodes.reversed) {
       await _executeNode(node);
     }
+
+    _executedSubgraphs.clear();
   }
 
   /// Executes a single node
   Future<void> _executeNode(NodeInstance node) async {
+    print('Executing node ${node.prototype.name}');
     try {
       await Future.microtask(() async {
         await node.onExecute(
