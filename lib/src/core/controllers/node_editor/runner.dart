@@ -16,16 +16,31 @@ import 'core.dart';
 
 class Subgraph {
   final String id;
-  final List<NodeInstance> nodes;
-  final List<Subgraph> children;
+  final Set<String> nodeIds = {};
+  final List<NodeInstance> nodes = [];
+  final Set<String> childrenIds = {};
+  final List<Subgraph> children = [];
+  final Set<String> parentIds = {};
+  final List<Subgraph> parents = [];
 
-  Subgraph(this.nodes, this.children) : id = const Uuid().v4();
+  Subgraph() : id = const Uuid().v4();
+
+  void addNode(NodeInstance node) {
+    nodeIds.add(node.id);
+    nodes.add(node);
+  }
+
+  void addSubgraph(Subgraph newSubgraph) {
+    newSubgraph.parentIds.add(newSubgraph.id);
+    newSubgraph.parents.add(newSubgraph);
+    childrenIds.add(newSubgraph.id);
+    children.add(newSubgraph);
+  }
 }
 
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
   Map<String, NodeInstance> _nodes = {};
-  Map<String, String> _nodeToSubgraph = {};
   List<Subgraph> _topSubgraphs = [];
   Set<String> _executedSubgraphs = {};
 
@@ -33,6 +48,7 @@ class FlNodeEditorRunner {
     controller.eventBus.events.listen(_handleRunnerEvents);
   }
 
+  /// Handles events from the controller and updates the graph accordingly.
   void _handleRunnerEvents(NodeEditorEvent event) {
     if (event is AddNodeEvent ||
         event is RemoveNodeEvent ||
@@ -46,7 +62,6 @@ class FlNodeEditorRunner {
   /// Identifies independent subgraphs in the graph.
   void _identifySubgraphs() {
     _topSubgraphs = [];
-    _nodeToSubgraph = {};
 
     // This isolates and avoids async access issues
     _nodes = controller.nodes.map((id, node) {
@@ -84,12 +99,14 @@ class FlNodeEditorRunner {
       );
 
       if (hasOnlyInputPorts) {
-        final Subgraph subgraph = Subgraph([], []);
+        final Set<String> visitedNodes = {};
+        final Subgraph subgraph = Subgraph();
         _topSubgraphs.add(subgraph);
 
         _collectSubgraphFromLinks(
           node,
           subgraph,
+          visitedNodes,
         );
       }
     }
@@ -97,6 +114,7 @@ class FlNodeEditorRunner {
     if (kDebugMode) _debugColorNodes();
   }
 
+  /// Returns the unique IDs of nodes connected to a given node's input or output ports.
   Set<String> connectedNodeIds(NodeInstance node, PortType portType) {
     final connectedNodeIds = <String>{};
 
@@ -117,12 +135,34 @@ class FlNodeEditorRunner {
   }
 
   /// Recursively collects nodes in a subgraph from input links.
-  /// Handles subgraph nesting by spawning new subgraphs when inputs come from multiple nodes.
   void _collectSubgraphFromLinks(
     NodeInstance currentNode,
     Subgraph currentSubgraph,
+    Set<String> visitedNodes,
   ) {
-    if (_nodeToSubgraph.containsKey(currentNode.id)) return;
+    void showCircularDependencyError(Set<String> nodes) {
+      controller.focusNodesById(nodes);
+      showNodeEditorSnackbar(
+        'Circular dependency detected',
+        SnackbarType.error,
+      );
+    }
+
+    // Check if the node has already been visited
+    if (visitedNodes.contains(currentNode.id)) {
+      // If it has, and it's in the current subgraph, it's a circular dependency
+      if (currentSubgraph.nodeIds.contains(currentNode.id)) {
+        showCircularDependencyError({
+          currentNode.id,
+          currentSubgraph.nodes.last.id,
+        });
+      }
+
+      // Otherwise, it's a merge point, so we don't need to do anything
+      return;
+    }
+
+    visitedNodes.add(currentNode.id);
 
     final lastNode = currentSubgraph.nodes.lastOrNull;
 
@@ -135,12 +175,26 @@ class FlNodeEditorRunner {
       PortType.output,
     );
 
+    // Check for direct circular dependencies between subgraphsà
+    for (final inputNodeId in currentInputNodeIds) {
+      if (currentOutputNodeIds.contains(inputNodeId)) {
+        showCircularDependencyError({
+          currentNode.id,
+          inputNodeId,
+        });
+        return;
+      }
+    }
+
     if (lastNode == null) {
-      currentSubgraph.nodes.add(currentNode);
-      _nodeToSubgraph[currentNode.id] = currentSubgraph.id;
+      currentSubgraph.addNode(currentNode);
 
       for (final inputNodeId in currentInputNodeIds) {
-        _collectSubgraphFromLinks(_nodes[inputNodeId]!, currentSubgraph);
+        _collectSubgraphFromLinks(
+          _nodes[inputNodeId]!,
+          currentSubgraph,
+          visitedNodes,
+        );
       }
     } else {
       final lastInputNodeIds = connectedNodeIds(
@@ -149,20 +203,26 @@ class FlNodeEditorRunner {
       );
 
       if (lastInputNodeIds.length > 1 || currentOutputNodeIds.length > 1) {
-        final newSubgraph = Subgraph([], []);
-        newSubgraph.nodes.add(currentNode);
-        currentSubgraph.children.add(newSubgraph);
-        _nodeToSubgraph[currentNode.id] = newSubgraph.id;
+        final newSubgraph = Subgraph();
+        newSubgraph.addNode(currentNode);
+        currentSubgraph.addSubgraph(newSubgraph);
 
         for (final inputNodeId in currentInputNodeIds) {
-          _collectSubgraphFromLinks(_nodes[inputNodeId]!, newSubgraph);
+          _collectSubgraphFromLinks(
+            _nodes[inputNodeId]!,
+            newSubgraph,
+            visitedNodes,
+          );
         }
       } else {
-        currentSubgraph.nodes.add(currentNode);
-        _nodeToSubgraph[currentNode.id] = currentSubgraph.id;
+        currentSubgraph.addNode(currentNode);
 
         for (final inputNodeId in currentInputNodeIds) {
-          _collectSubgraphFromLinks(_nodes[inputNodeId]!, currentSubgraph);
+          _collectSubgraphFromLinks(
+            _nodes[inputNodeId]!,
+            currentSubgraph,
+            visitedNodes,
+          );
         }
       }
     }
@@ -196,12 +256,11 @@ class FlNodeEditorRunner {
       await _executeNode(node);
     }
 
-    _executedSubgraphs.clear();
+    _executedSubgraphs = {};
   }
 
   /// Executes a single node
   Future<void> _executeNode(NodeInstance node) async {
-    print('Executing node ${node.prototype.name}');
     try {
       await Future.microtask(() async {
         await node.onExecute(
