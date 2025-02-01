@@ -19,7 +19,7 @@ dependencies:
   gap: ^3.0.1
   provider: ^6.1.2
   uuid: ^4.5.1
-  file_picker: ^8.1.7
+  file_picker: ^8.3.1
 
 flutter:
   uses-material-design: true
