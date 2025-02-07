@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../constants.dart';
 import '../../models/entities.dart';
 import '../../models/events.dart';
-import '../../../constants.dart';
 import '../../utils/json_extensions.dart';
 import '../../utils/renderbox.dart';
 import '../../utils/snackbar.dart';
@@ -65,19 +65,30 @@ class FlNodeEditorClipboard {
       );
     }).toList();
 
-    final selectedNodesJson = selectedNodes
-        .map((node) => node.toJson(controller.project.dataHandlers))
-        .toList();
+    late final String base64Data;
 
-    final nodesJsonData = jsonEncode(selectedNodesJson);
-    final encompassingRectJsonData = jsonEncode(encompassingRect.toJson());
+    try {
+      final selectedNodesJson = selectedNodes
+          .map((node) => node.toJson(controller.project.dataHandlers))
+          .toList();
 
-    final jsonData = jsonEncode({
-      'nodes': nodesJsonData,
-      'encompassingRect': encompassingRectJsonData,
-    });
+      final nodesJsonData = jsonEncode(selectedNodesJson);
+      final encompassingRectJsonData = jsonEncode(encompassingRect.toJson());
 
-    final base64Data = base64Encode(utf8.encode(jsonData));
+      final jsonData = jsonEncode({
+        'nodes': nodesJsonData,
+        'encompassingRect': encompassingRectJsonData,
+      });
+
+      base64Data = base64Encode(utf8.encode(jsonData));
+    } catch (e) {
+      showNodeEditorSnackbar(
+        'Failed to copy nodes. Invalid clipboard data. ($e)',
+        SnackbarType.error,
+      );
+      return '';
+    }
+
     await Clipboard.setData(ClipboardData(text: base64Data));
 
     showNodeEditorSnackbar(
@@ -106,6 +117,7 @@ class FlNodeEditorClipboard {
     try {
       final base64Data = utf8.decode(base64Decode(clipboardData.text!));
       final jsonData = jsonDecode(base64Data) as Map<String, dynamic>;
+
       nodesJson = jsonDecode(jsonData['nodes']) as List<dynamic>;
       encompassingRect = JSONRect.fromJson(
         jsonDecode(jsonData['encompassingRect']),
