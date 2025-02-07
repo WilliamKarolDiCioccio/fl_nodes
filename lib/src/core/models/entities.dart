@@ -195,6 +195,7 @@ final class PortInstance {
 class FieldPrototype {
   final String idName;
   final String displayName;
+  final IconData? icon;
   final Type dataType;
   final dynamic defaultData;
   final Widget Function(dynamic data) visualizerBuilder;
@@ -211,6 +212,7 @@ class FieldPrototype {
   FieldPrototype({
     required this.idName,
     this.displayName = '',
+    this.icon,
     this.dataType = dynamic,
     this.defaultData,
     required this.visualizerBuilder,

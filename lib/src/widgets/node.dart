@@ -517,8 +517,9 @@ class _NodeWidgetState extends State<NodeWidget> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         spacing: widget.node.state.isCollapsed ? 0 : 2,
                         children: [
-                          ...widget.node.fields.values.map(_buildField),
-                          ...widget.node.ports.values.map(_buildPort),
+                          ..._generateRows().map(
+                            (row) => _buildRow(row.item1, row.item2, row.item3),
+                          ),
                         ],
                       ),
                     ),
@@ -529,6 +530,59 @@ class _NodeWidgetState extends State<NodeWidget> {
           ),
         ),
       ),
+    );
+  }
+
+  List<Tuple3<PortInstance?, FieldInstance?, PortInstance?>> _generateRows() {
+    final rows = <Tuple3<PortInstance?, FieldInstance?, PortInstance?>>[];
+
+    final inPorts = widget.node.ports.values
+        .where((port) => port.prototype.direction == PortDirection.input)
+        .toList();
+    final outPorts = widget.node.ports.values
+        .where((port) => port.prototype.direction == PortDirection.output)
+        .toList();
+    final fields = widget.node.fields.values.toList();
+
+    final maxLength = [inPorts.length, fields.length, outPorts.length]
+        .reduce((a, b) => a > b ? a : b);
+
+    for (var i = 0; i < maxLength; i++) {
+      final inPort = i < inPorts.length ? inPorts[i] : null;
+      final field = i < fields.length ? fields[i] : null;
+      final outPort = i < outPorts.length ? outPorts[i] : null;
+      rows.add(Tuple3(inPort, field, outPort));
+    }
+
+    return rows;
+  }
+
+  Widget _buildRow(
+    PortInstance? inPort,
+    FieldInstance? field,
+    PortInstance? outPort,
+  ) {
+    late final MainAxisAlignment alignment;
+
+    if (inPort != null && field == null && outPort == null) {
+      alignment = MainAxisAlignment.start;
+    } else if (inPort == null && field != null && outPort == null) {
+      alignment = MainAxisAlignment.center;
+    } else if (inPort == null && field == null && outPort != null) {
+      alignment = MainAxisAlignment.end;
+    } else {
+      alignment = MainAxisAlignment.spaceBetween;
+    }
+
+    return Row(
+      mainAxisAlignment: alignment,
+      mainAxisSize: MainAxisSize.max,
+      spacing: 16,
+      children: [
+        if (inPort != null) _buildPort(inPort),
+        if (field != null) _buildField(field),
+        if (outPort != null) _buildPort(outPort),
+      ],
     );
   }
 
@@ -625,14 +679,12 @@ class _NodeWidgetState extends State<NodeWidget> {
             fontSize: 13,
           ),
         ),
-        Text(
-          field.prototype.dataType.toString(),
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
+        if (field.prototype.icon != null)
+          Icon(
+            field.prototype.icon,
+            color: Colors.white70,
+            size: 16,
           ),
-        ),
       ],
     );
   }
