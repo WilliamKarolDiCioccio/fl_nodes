@@ -200,6 +200,7 @@ class FieldPrototype {
   final dynamic defaultData;
   final Widget Function(dynamic data) visualizerBuilder;
   final Function(
+    dynamic data,
     Function(dynamic data) setData,
   )? onVisualizerTap;
   final Widget Function(

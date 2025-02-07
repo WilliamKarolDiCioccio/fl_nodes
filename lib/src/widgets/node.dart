@@ -660,6 +660,7 @@ class _NodeWidgetState extends State<NodeWidget> {
           onTapDown: (details) {
             if (field.prototype.onVisualizerTap != null) {
               field.prototype.onVisualizerTap?.call(
+                field.data,
                 (dynamic data) {
                   widget.controller.setFieldData(
                     widget.node.id,
