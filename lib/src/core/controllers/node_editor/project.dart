@@ -188,7 +188,18 @@ class FlNodeEditorProject {
   ///
   /// e.g. Save to a file, save to a database, etc.
   void saveProject() async {
-    final jsonData = _toJson();
+    late final Map<String, dynamic> jsonData;
+
+    try {
+      jsonData = _toJson();
+    } catch (e) {
+      showNodeEditorSnackbar(
+        'Failed to save project.  Unable to serialize project data.',
+        SnackbarType.error,
+      );
+      return;
+    }
+
     if (jsonData.isEmpty) return;
 
     final hasSaved = await projectSaver?.call(jsonData);
@@ -222,7 +233,15 @@ class FlNodeEditorProject {
 
     controller.clear();
 
-    _fromJson(jsonData);
+    try {
+      _fromJson(jsonData);
+    } catch (e) {
+      showNodeEditorSnackbar(
+        'Failed to load project. Unable to deserialize project data.',
+        SnackbarType.error,
+      );
+      return;
+    }
 
     controller.eventBus.emit(LoadProjectEvent(id: const Uuid().v4()));
 
