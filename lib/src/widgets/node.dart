@@ -244,18 +244,6 @@ class _NodeWidgetState extends State<NodeWidget> {
             !widget.node.state.isCollapsed,
           ),
         ),
-        MenuItem(
-          label: widget.node.state.isPortAligmentFlipped
-              ? 'Align Ports Left'
-              : 'Align Ports Right',
-          icon: widget.node.state.isPortAligmentFlipped
-              ? Icons.align_horizontal_left
-              : Icons.align_horizontal_right,
-          onSelected: () =>
-              widget.controller.toggleFlipPortsAlignmentSelectedNodes(
-            !widget.node.state.isPortAligmentFlipped,
-          ),
-        ),
         const MenuDivider(),
         MenuItem(
           label: 'Delete',
@@ -492,7 +480,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                     child: Row(
                       spacing: 8,
                       mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         InkWell(
                           splashColor: Colors.transparent,
@@ -516,21 +504,6 @@ class _NodeWidgetState extends State<NodeWidget> {
                             fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
-                        ),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          onTap: () => widget.controller
-                              .toggleFlipPortsAlignmentSelectedNodes(
-                            !widget.node.state.isPortAligmentFlipped,
-                          ),
-                          child: Icon(
-                            widget.node.state.isPortAligmentFlipped
-                                ? Icons.align_horizontal_right
-                                : Icons.align_horizontal_left,
-                            color: Colors.white,
-                            size: 14,
-                          ),
                         ),
                       ],
                     ),
@@ -675,12 +648,8 @@ class _NodeWidgetState extends State<NodeWidget> {
 
     return Row(
       mainAxisAlignment: port.prototype.direction == PortDirection.input
-          ? (widget.node.state.isPortAligmentFlipped
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start)
-          : (widget.node.state.isPortAligmentFlipped
-              ? MainAxisAlignment.start
-              : MainAxisAlignment.end),
+          ? MainAxisAlignment.start
+          : MainAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       key: port.key,
       spacing: 4,
@@ -727,12 +696,10 @@ class _NodeWidgetState extends State<NodeWidget> {
             );
           }
 
-          final alignRight =
-              (port.prototype.direction == PortDirection.input) !=
-                  widget.node.state.isPortAligmentFlipped;
-
           port.offset = Offset(
-            alignRight ? 0 : constraints.maxWidth,
+            port.prototype.direction == PortDirection.input
+                ? 0
+                : constraints.maxWidth,
             relativeOffset.dy + portBox.size.height / 2,
           );
 
@@ -741,11 +708,10 @@ class _NodeWidgetState extends State<NodeWidget> {
 
           return CustomPaint(
             painter: _PortSymbolPainter(
-              position: Offset(
-                alignRight ? 0 : constraints.maxWidth,
-                relativeOffset.dy + portBox.size.height / 2,
-              ),
-              color: widget.style.portStyle.color[type]![direction]!,
+              position: port.offset,
+              style: widget.style.portStyle,
+              direction: direction,
+              type: type,
             ),
           );
         },
@@ -756,22 +722,41 @@ class _NodeWidgetState extends State<NodeWidget> {
 
 class _PortSymbolPainter extends CustomPainter {
   final Offset position;
-  final Color color;
+  final FlPortStyle style;
+  final PortDirection direction;
+  final PortType type;
   static const double portSize = 4;
   static const double hitBoxSize = 16;
 
   _PortSymbolPainter({
     required this.position,
-    required this.color,
+    required this.style,
+    required this.direction,
+    required this.type,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color
+      ..color = style.color[type]![direction]!
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(position, portSize, paint);
+    if (type == PortType.control) {
+      final path = Path();
+      if (direction == PortDirection.input) {
+        path.moveTo(position.dx + portSize, position.dy - portSize);
+        path.lineTo(position.dx - portSize, position.dy);
+        path.lineTo(position.dx + portSize, position.dy + portSize);
+      } else {
+        path.moveTo(position.dx - portSize, position.dy - portSize);
+        path.lineTo(position.dx + portSize, position.dy);
+        path.lineTo(position.dx - portSize, position.dy + portSize);
+      }
+      path.close();
+      canvas.drawPath(path, paint);
+    } else {
+      canvas.drawCircle(position, portSize, paint);
+    }
 
     if (kDebugMode) {
       _paintDebugHitBox(canvas);
@@ -795,7 +780,7 @@ class _PortSymbolPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PortSymbolPainter oldDelegate) {
-    return position != oldDelegate.position || color != oldDelegate.color;
+    return oldDelegate.position != position;
   }
 
   @override

@@ -571,17 +571,6 @@ class FlNodeEditorController {
     );
   }
 
-  void toggleFlipPortsAlignmentSelectedNodes(bool flip) {
-    for (final id in _selectedNodeIds) {
-      final node = _nodes[id];
-      node?.state.isPortAligmentFlipped = flip;
-    }
-
-    eventBus.emit(
-      NodeRenderModeEvent(id: const Uuid().v4(), flip, _selectedNodeIds),
-    );
-  }
-
   // Selection
   final Set<String> _selectedNodeIds = {};
   Rect _selectionArea = Rect.zero;
