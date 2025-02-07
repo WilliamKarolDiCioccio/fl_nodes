@@ -305,7 +305,12 @@ class _NodeWidgetState extends State<NodeWidget> {
         widget.controller.nodePrototypes.forEach(
           (key, value) {
             if (value.ports.any(
-              (port) => port.direction != startPort.prototype.direction,
+              (port) =>
+                  port.direction != startPort.prototype.direction &&
+                  port.type == startPort.prototype.type &&
+                  (port.dataType == startPort.prototype.dataType ||
+                      port.dataType == dynamic ||
+                      startPort.prototype.dataType == dynamic),
             )) {
               compatiblePrototypes.add(MapEntry(key, value));
             }
@@ -344,9 +349,15 @@ class _NodeWidgetState extends State<NodeWidget> {
                 addedNode.id,
                 addedNode.ports.entries
                     .firstWhere(
-                      (element) =>
-                          element.value.prototype.direction !=
-                          startPort.prototype.direction,
+                      (port) =>
+                          port.value.prototype.direction !=
+                              startPort.prototype.direction &&
+                          port.value.prototype.type ==
+                              startPort.prototype.type &&
+                          (port.value.prototype.dataType ==
+                                  startPort.prototype.dataType ||
+                              port.value.prototype.dataType == dynamic ||
+                              startPort.prototype.dataType == dynamic),
                     )
                     .value
                     .prototype
