@@ -344,19 +344,18 @@ class NodeEditorRenderBox extends RenderBox
       }
 
       // Drawing the shadow directly on the canvas is faster than using the shadow property
-      canvas.drawShadow(
-        Path()
-          ..addRect(
-            Rect.fromLTWH(
-              childParentData.offset.dx,
-              childParentData.offset.dy,
-              child.size.width,
-              child.size.height,
-            ),
-          ),
-        const ui.Color(0x31000000),
-        4.0,
-        true,
+      final Paint shadowPaint = Paint()
+        ..color = Colors.black54
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+
+      canvas.drawRect(
+        Rect.fromLTWH(
+          childParentData.offset.dx,
+          childParentData.offset.dy + 4,
+          child.size.width,
+          child.size.height,
+        ),
+        shadowPaint,
       );
 
       context.paintChild(child, childParentData.offset);
