@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
-
-import '../controllers/node_editor/core.dart';
 
 /// A link is a connection between two ports.
 final class Link {
@@ -64,7 +62,21 @@ final class Link {
   int get hashCode => id.hashCode ^ fromTo.hashCode;
 }
 
-enum PortType { input, output }
+class TempLink {
+  final PortType type;
+  final Offset from;
+  final Offset to;
+
+  TempLink({
+    required this.type,
+    required this.from,
+    required this.to,
+  });
+}
+
+enum PortDirection { input, output }
+
+enum PortType { data, control }
 
 /// A port prototype is the blueprint for a port instance.
 ///
@@ -72,31 +84,51 @@ enum PortType { input, output }
 abstract class PortPrototype {
   final String idName;
   final String displayName;
+  final IconData? icon;
   final Type dataType;
-  final PortType portType;
+  final PortDirection direction;
+  final PortType type;
 
   PortPrototype({
     required this.idName,
     required this.displayName,
+    this.icon,
     this.dataType = dynamic,
-    required this.portType,
+    required this.direction,
+    required this.type,
   });
 }
 
-class InputPortPrototype extends PortPrototype {
-  InputPortPrototype({
+class DataInputPortPrototype extends PortPrototype {
+  DataInputPortPrototype({
     required super.idName,
     required super.displayName,
+    super.icon,
     super.dataType,
-  }) : super(portType: PortType.input);
+  }) : super(direction: PortDirection.input, type: PortType.data);
 }
 
-class OutputPortPrototype extends PortPrototype {
-  OutputPortPrototype({
+class DataOutputPortPrototype extends PortPrototype {
+  DataOutputPortPrototype({
     required super.idName,
     required super.displayName,
+    super.icon,
     super.dataType,
-  }) : super(portType: PortType.output);
+  }) : super(direction: PortDirection.output, type: PortType.data);
+}
+
+class ControlInputPortPrototype extends PortPrototype {
+  ControlInputPortPrototype({
+    required super.idName,
+    required super.displayName,
+  }) : super(direction: PortDirection.input, type: PortType.control);
+}
+
+class ControlOutputPortPrototype extends PortPrototype {
+  ControlOutputPortPrototype({
+    required super.idName,
+    required super.displayName,
+  }) : super(direction: PortDirection.output, type: PortType.control);
 }
 
 /// A port is a connection point on a node.
@@ -117,7 +149,6 @@ final class PortInstance {
   Map<String, dynamic> toJson() {
     return {
       'idName': prototype.idName,
-      'displayName': prototype.displayName,
       'links': links.map((link) => link.toJson()).toList(),
     };
   }
@@ -205,7 +236,6 @@ class FieldInstance {
   Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) {
     return {
       'idName': prototype.idName,
-      'displayName': prototype.displayName,
       'data': dataHandlers[prototype.dataType.toString()]?.toJson(data),
     };
   }
@@ -244,11 +274,13 @@ final class NodePrototype {
   final Color color;
   final List<PortPrototype> ports;
   final List<FieldPrototype> fields;
-  final Map<String, dynamic> execState;
-  final Future<(Map<String, dynamic>, bool)> Function(
+  final Future<void> Function(
     Map<String, dynamic> inputPorts,
     Map<String, dynamic> fields,
-    Map<String, dynamic> execState,
+    Function(Set<(String, dynamic)>) put,
+    Function(Set<String>) forward,
+    Function(String) reset,
+    Function() complete,
   ) onExecute;
 
   NodePrototype({
@@ -258,7 +290,6 @@ final class NodePrototype {
     this.color = Colors.grey,
     this.ports = const [],
     this.fields = const [],
-    this.execState = const {},
     required this.onExecute,
   });
 }
@@ -335,7 +366,10 @@ final class NodeInstance {
     Future<(Map<String, dynamic>, bool)> Function(
       Map<String, dynamic> inputPorts,
       Map<String, dynamic> fields,
-      Map<String, dynamic> execState,
+      Function(String, dynamic) put,
+      Function(Set<String>) forward,
+      Function(String) reset,
+      Function() complete,
     )? onExecute,
     Function(NodeInstance node)? onRendered,
     Offset? offset,
@@ -354,7 +388,6 @@ final class NodeInstance {
     return {
       'id': id,
       'idName': prototype.idName,
-      'displayName': prototype.displayName,
       'ports': ports.map((k, v) => MapEntry(k, v.toJson())),
       'fields': fields.map((k, v) => MapEntry(k, v.toJson(dataHandlers))),
       'state': state.toJson(),

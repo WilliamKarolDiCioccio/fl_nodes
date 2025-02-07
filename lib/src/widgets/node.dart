@@ -171,12 +171,16 @@ class _NodeWidgetState extends State<NodeWidget> {
       viewportZoom,
     );
 
-    final nodeOffset = widget.controller.nodes[_tempLink!.item1]!.offset;
-    final portOffset = widget
-        .controller.nodes[_tempLink!.item1]!.ports[_tempLink!.item2]!.offset;
-    final absolutePortOffset = nodeOffset + portOffset;
+    final node = widget.controller.nodes[_tempLink!.item1]!;
+    final port = node.ports[_tempLink!.item2]!;
 
-    widget.controller.drawTempLink(absolutePortOffset, worldPosition!);
+    final absolutePortOffset = node.offset + port.offset;
+
+    widget.controller.drawTempLink(
+      port.prototype.type,
+      absolutePortOffset,
+      worldPosition!,
+    );
   }
 
   void _onLinkCancel() {
@@ -312,8 +316,9 @@ class _NodeWidgetState extends State<NodeWidget> {
 
         widget.controller.nodePrototypes.forEach(
           (key, value) {
-            if (value.ports
-                .any((port) => port.portType != startPort.prototype.portType)) {
+            if (value.ports.any(
+              (port) => port.direction != startPort.prototype.direction,
+            )) {
               compatiblePrototypes.add(MapEntry(key, value));
             }
           },
@@ -352,8 +357,8 @@ class _NodeWidgetState extends State<NodeWidget> {
                 addedNode.ports.entries
                     .firstWhere(
                       (element) =>
-                          element.value.prototype.portType !=
-                          startPort.prototype.portType,
+                          element.value.prototype.direction !=
+                          startPort.prototype.direction,
                     )
                     .value
                     .prototype
@@ -669,7 +674,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     }
 
     return Row(
-      mainAxisAlignment: port.prototype.portType == PortType.input
+      mainAxisAlignment: port.prototype.direction == PortDirection.input
           ? (widget.node.state.isPortAligmentFlipped
               ? MainAxisAlignment.end
               : MainAxisAlignment.start)
@@ -687,14 +692,12 @@ class _NodeWidgetState extends State<NodeWidget> {
             fontSize: 13,
           ),
         ),
-        Text(
-          port.prototype.dataType.toString(),
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
+        if (port.prototype.icon != null)
+          Icon(
+            port.prototype.icon,
+            color: Colors.white70,
+            size: 16,
           ),
-        ),
       ],
     );
   }
@@ -724,21 +727,25 @@ class _NodeWidgetState extends State<NodeWidget> {
             );
           }
 
-          final alignRight = (port.prototype.portType == PortType.input) !=
-              widget.node.state.isPortAligmentFlipped;
+          final alignRight =
+              (port.prototype.direction == PortDirection.input) !=
+                  widget.node.state.isPortAligmentFlipped;
 
           port.offset = Offset(
             alignRight ? 0 : constraints.maxWidth,
             relativeOffset.dy + portBox.size.height / 2,
           );
 
+          final type = port.prototype.type;
+          final direction = port.prototype.direction;
+
           return CustomPaint(
-            painter: _PortDotPainter(
+            painter: _PortSymbolPainter(
               position: Offset(
                 alignRight ? 0 : constraints.maxWidth,
                 relativeOffset.dy + portBox.size.height / 2,
               ),
-              color: widget.style.portStyle.color[port.prototype.portType]!,
+              color: widget.style.portStyle.color[type]![direction]!,
             ),
           );
         },
@@ -747,13 +754,13 @@ class _NodeWidgetState extends State<NodeWidget> {
   }
 }
 
-class _PortDotPainter extends CustomPainter {
+class _PortSymbolPainter extends CustomPainter {
   final Offset position;
   final Color color;
   static const double portSize = 4;
   static const double hitBoxSize = 16;
 
-  _PortDotPainter({
+  _PortSymbolPainter({
     required this.position,
     required this.color,
   });
@@ -787,7 +794,7 @@ class _PortDotPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _PortDotPainter oldDelegate) {
+  bool shouldRepaint(covariant _PortSymbolPainter oldDelegate) {
     return position != oldDelegate.position || color != oldDelegate.color;
   }
 

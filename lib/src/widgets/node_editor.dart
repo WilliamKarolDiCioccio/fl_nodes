@@ -349,12 +349,16 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
       zoom,
     );
 
-    final nodeOffset = widget.controller.nodes[_tempLink!.item1]!.offset;
-    final portOffset = widget
-        .controller.nodes[_tempLink!.item1]!.ports[_tempLink!.item2]!.offset;
-    final absolutePortOffset = nodeOffset + portOffset;
+    final node = widget.controller.nodes[_tempLink!.item1]!;
+    final port = node.ports[_tempLink!.item2]!;
 
-    widget.controller.drawTempLink(absolutePortOffset, worldPosition!);
+    final absolutePortOffset = node.offset + port.offset;
+
+    widget.controller.drawTempLink(
+      port.prototype.type,
+      absolutePortOffset,
+      worldPosition!,
+    );
   }
 
   void _onLinkCancel() {
@@ -557,8 +561,9 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
         widget.controller.nodePrototypes.forEach(
           (key, value) {
-            if (value.ports
-                .any((port) => port.portType != startPort.prototype.portType)) {
+            if (value.ports.any(
+              (port) => port.direction != startPort.prototype.direction,
+            )) {
               compatiblePrototypes.add(MapEntry(key, value));
             }
           },
@@ -598,8 +603,8 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
                 addedNode.ports.entries
                     .firstWhere(
                       (element) =>
-                          element.value.prototype.portType !=
-                          startPort.prototype.portType,
+                          element.value.prototype.direction !=
+                          startPort.prototype.direction,
                     )
                     .value
                     .prototype

@@ -79,12 +79,18 @@ class FlLinkStyle {
 }
 
 class FlPortStyle {
-  final Map<PortType, Color> color;
+  final Map<PortType, Map<PortDirection, Color>> color;
 
   const FlPortStyle({
     this.color = const {
-      PortType.input: Color(0xFF6C63FF), // Soft Purple
-      PortType.output: Color(0xFFFF6584), // Coral Pink
+      PortType.data: {
+        PortDirection.input: Color(0xFF6C63FF), // Soft Purple
+        PortDirection.output: Color(0xFFFF6584), // Coral Pink
+      },
+      PortType.control: {
+        PortDirection.input: Color(0xFF4CAF50), // Green
+        PortDirection.output: Color(0xFF2196F3), // Blue
+      },
     },
   });
 }

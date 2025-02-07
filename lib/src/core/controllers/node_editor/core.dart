@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/history.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/core/utils/snackbar.dart';
 import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
@@ -338,18 +338,19 @@ class FlNodeEditorController {
         SnackbarType.error,
       );
       return null;
-    }
-
-    if (port1.prototype.portType == port2.prototype.portType) {
+    } else if (port1.prototype.type != port2.prototype.type) {
       showNodeEditorSnackbar(
-        'Cannot connect two ports of the same type: ${port1.prototype.displayName} and ${port2.prototype.displayName}',
+        'Cannot connect ports of different types: ${port1.prototype.type} and ${port2.prototype.type}',
         SnackbarType.error,
       );
       return null;
-    }
-
-    // Check if the link already exists.
-    if (port1.links.any(
+    } else if (port1.prototype.direction == port2.prototype.direction) {
+      showNodeEditorSnackbar(
+        'Cannot connect two ports with the same direction: ${port1.prototype.displayName} and ${port2.prototype.displayName}',
+        SnackbarType.error,
+      );
+      return null;
+    } else if (port1.links.any(
           (link) =>
               link.fromTo.item1 == node2Id && link.fromTo.item2 == port2IdName,
         ) ||
@@ -362,8 +363,8 @@ class FlNodeEditorController {
 
     late Tuple4<String, String, String, String> fromTo;
 
-    // Determine the direction of the link based on the port types as we're building a directed graph.
-    if (port1.prototype.portType == PortType.output) {
+    // Determine the order to insert the node references in the link based on the port direction.
+    if (port1.prototype.direction == PortDirection.output) {
       fromTo = Tuple4(node1Id, port1IdName, node2Id, port2IdName);
     } else {
       fromTo = Tuple4(node2Id, port2IdName, node1Id, port1IdName);
@@ -376,7 +377,7 @@ class FlNodeEditorController {
       final toPort = toNode.ports[fromTo.item4]!;
 
       // Check if the ports are compatible
-      if (fromPort.prototype.portType == toPort.prototype.portType) {
+      if (fromPort.prototype.direction == toPort.prototype.direction) {
         showNodeEditorSnackbar(
           'Cannot connect two ports of the same type: ${fromPort.prototype.displayName} and ${toPort.prototype.displayName}',
           SnackbarType.error,
@@ -491,18 +492,18 @@ class FlNodeEditorController {
 
   // This is used for rendering purposes only. For computation, use the links list in the Port class.
   final Map<String, Link> _renderLinks = {};
-  Tuple2<Offset, Offset>? _renderTempLink;
+  TempLink? _renderTempLink;
 
   List<Link> get renderLinksAsList => _renderLinks.values.toList();
-  Tuple2<Offset, Offset>? get renderTempLink => _renderTempLink;
+  TempLink? get renderTempLink => _renderTempLink;
 
   /// This method is used to draw a temporary link between two points in the node editor.
   ///
   /// Usually, this method is called when the user is dragging a link from a port to another port.
   ///
   /// Emits a [DrawTempLinkEvent] event.
-  void drawTempLink(Offset from, Offset to) {
-    _renderTempLink = Tuple2(from, to);
+  void drawTempLink(PortType type, Offset from, Offset to) {
+    _renderTempLink = TempLink(type: type, from: from, to: to);
     eventBus.emit(DrawTempLinkEvent(id: const Uuid().v4(), from, to));
   }
 

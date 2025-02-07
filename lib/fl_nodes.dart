@@ -2,7 +2,13 @@ library fl_nodes;
 
 export 'package:fl_nodes/src/core/models/styles.dart';
 export 'package:fl_nodes/src/core/models/entities.dart'
-    show NodePrototype, InputPortPrototype, OutputPortPrototype, FieldPrototype;
+    show
+        NodePrototype,
+        DataInputPortPrototype,
+        DataOutputPortPrototype,
+        ControlInputPortPrototype,
+        ControlOutputPortPrototype,
+        FieldPrototype;
 export 'package:fl_nodes/src/core/models/events.dart' show FieldEventType;
 export 'package:fl_nodes/src/core/models/events.dart'
     show
