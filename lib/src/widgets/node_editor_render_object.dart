@@ -469,19 +469,36 @@ class NodeEditorRenderBox extends RenderBox
     }
   }
 
-  void _paintBezierLink(
-    Canvas canvas,
-    LinkDrawData drawData,
-  ) {
+  void _paintBezierLink(Canvas canvas, LinkDrawData drawData) {
     final path = Path()
-      ..moveTo(drawData.outPortOffset.dx, drawData.outPortOffset.dy);
-    final midX = (drawData.outPortOffset.dx + drawData.inPortOffset.dx) / 2;
+      ..moveTo(
+        drawData.outPortOffset.dx,
+        drawData.outPortOffset.dy,
+      );
+
+    const double defaultOffset = 400.0;
+
+    //  How far the bezier follows the horizontal direction before curving based on the distance between ports
+    final dx = (drawData.inPortOffset.dx - drawData.outPortOffset.dx).abs();
+    final controlOffset = dx < defaultOffset * 2 ? dx / 2 : defaultOffset;
+
+    // First control point: a few pixels to the right of the output port.
+    final cp1 = Offset(
+      drawData.outPortOffset.dx + controlOffset,
+      drawData.outPortOffset.dy,
+    );
+
+    // Second control point: a few pixels to the left of the input port.
+    final cp2 = Offset(
+      drawData.inPortOffset.dx - controlOffset,
+      drawData.inPortOffset.dy,
+    );
 
     path.cubicTo(
-      midX,
-      drawData.outPortOffset.dy,
-      midX,
-      drawData.inPortOffset.dy,
+      cp1.dx,
+      cp1.dy,
+      cp2.dx,
+      cp2.dy,
       drawData.inPortOffset.dx,
       drawData.inPortOffset.dy,
     );
@@ -495,16 +512,16 @@ class NodeEditorRenderBox extends RenderBox
       end: Alignment.centerRight,
     );
 
-    final defaultShader = gradient.createShader(
+    final shader = gradient.createShader(
       Rect.fromPoints(drawData.outPortOffset, drawData.inPortOffset),
     );
 
-    final Paint gradientPaint = Paint()
-      ..shader = defaultShader
+    final Paint paint = Paint()
+      ..shader = shader
       ..style = PaintingStyle.stroke
       ..strokeWidth = style.nodeStyle.linkStyle.lineWidth;
 
-    canvas.drawPath(path, gradientPaint);
+    canvas.drawPath(path, paint);
   }
 
   void _paintStraightLink(
