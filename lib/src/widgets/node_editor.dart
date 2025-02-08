@@ -495,8 +495,10 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
     if (trackpadInput) {
       // Trackpad: amount is in range (0, 1] for zoom out, (1, ∞) for zoom in
-      // Due to the logarithmic scale, we need to multiply by 10 to get a reasonable delta
-      delta = log(amount) * sensitivity * 10;
+      // Due to the logarithmic scale, we need to multiply by 10 to get a reasonable delta.
+      // NOTE: macOS seems to have a different behavior, so we need to account for that.
+      final deltaScale = os_detect.isMacOS ? 1 : 10;
+      delta = log(amount) * sensitivity * deltaScale;
     } else {
       // Mouse wheel or other input: positive zooms in, negative zooms out
       delta = amount * zoomSpeed * sensitivity;
