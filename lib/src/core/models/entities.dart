@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
+import 'package:fl_nodes/src/core/controllers/node_editor/runner.dart';
 
 /// A link is a connection between two ports.
 final class Link {
@@ -188,6 +189,18 @@ final class PortInstance {
   }
 }
 
+typedef OnVisualizerTap = Function(
+  dynamic data,
+  Function(dynamic data) setData,
+);
+
+typedef EditorBuilder = Widget Function(
+  BuildContext context,
+  Function() removeOverlay,
+  dynamic data,
+  Function(dynamic data, {required FieldEventType eventType}) setData,
+);
+
 /// A field prototype is the blueprint for a field instance.
 ///
 /// It is used to store variables for use in the onExecute function of a node.
@@ -199,16 +212,8 @@ class FieldPrototype {
   final Type dataType;
   final dynamic defaultData;
   final Widget Function(dynamic data) visualizerBuilder;
-  final Function(
-    dynamic data,
-    Function(dynamic data) setData,
-  )? onVisualizerTap;
-  final Widget Function(
-    BuildContext context,
-    Function() removeOverlay,
-    dynamic data,
-    Function(dynamic data, {required FieldEventType eventType}) setData,
-  )? editorBuilder;
+  final OnVisualizerTap? onVisualizerTap;
+  final EditorBuilder? editorBuilder;
 
   FieldPrototype({
     required this.idName,
@@ -277,14 +282,7 @@ final class NodePrototype {
   final Color color;
   final List<PortPrototype> ports;
   final List<FieldPrototype> fields;
-  final Future<void> Function(
-    Map<String, dynamic> inputPorts,
-    Map<String, dynamic> fields,
-    Function(Set<(String, dynamic)>) put,
-    Function(Set<String>) forward,
-    Function(String) reset,
-    Function() complete,
-  ) onExecute;
+  final OnExecute onExecute;
 
   NodePrototype({
     required this.idName,
@@ -362,14 +360,6 @@ final class NodeInstance {
     Map<String, PortInstance>? ports,
     Map<String, FieldInstance>? fields,
     NodeState? state,
-    Future<(Map<String, dynamic>, bool)> Function(
-      Map<String, dynamic> inputPorts,
-      Map<String, dynamic> fields,
-      Function(String, dynamic) put,
-      Function(Set<String>) forward,
-      Function(String) reset,
-      Function() complete,
-    )? onExecute,
     Function(NodeInstance node)? onRendered,
     Offset? offset,
   }) {

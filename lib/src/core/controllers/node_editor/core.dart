@@ -386,9 +386,9 @@ class FlNodeEditorController {
       }
 
       // Check if the input port already has a link
-      if (toPort.links.isNotEmpty) {
+      if (toPort.prototype.type == PortType.data && toPort.links.isNotEmpty) {
         showNodeEditorSnackbar(
-          'Cannot connect multiple links to an input port: ${toPort.prototype.displayName} in node ${toNode.prototype.displayName}',
+          'Cannot connect multiple links to an data input port: ${toPort.prototype.displayName} in node ${toNode.prototype.displayName}',
           SnackbarType.error,
         );
         return false;

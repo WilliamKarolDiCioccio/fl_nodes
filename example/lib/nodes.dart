@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
@@ -8,7 +10,244 @@ enum Operator { add, subtract, multiply, divide }
 
 enum Comparator { equal, notEqual, greater, greaterEqual, less, lessEqual }
 
+NodePrototype createValueNode<T>({
+  required String idName,
+  required String displayName,
+  required T defaultValue,
+  required Widget Function(T data) visualizerBuilder,
+  Function(
+    dynamic data,
+    Function(dynamic data) setData,
+  )? onVisualizerTap,
+  Widget Function(
+    BuildContext context,
+    Function() removeOverlay,
+    dynamic data,
+    Function(dynamic data, {required FieldEventType eventType}) setData,
+  )? editorBuilder,
+}) {
+  return NodePrototype(
+    idName: idName,
+    displayName: displayName,
+    description: 'Holds a constant $T value.',
+    color: Colors.orange,
+    ports: [
+      ControlOutputPortPrototype(
+        idName: 'completed',
+        displayName: 'Completed',
+      ),
+      DataOutputPortPrototype(
+        idName: 'value',
+        displayName: 'Value',
+        dataType: T,
+      ),
+    ],
+    fields: [
+      FieldPrototype(
+        idName: 'value',
+        displayName: 'Value',
+        dataType: T,
+        defaultData: defaultValue,
+        visualizerBuilder: (data) => visualizerBuilder(data as T),
+        onVisualizerTap: onVisualizerTap,
+        editorBuilder: editorBuilder,
+      ),
+    ],
+    onExecute: (ports, fields, state, f, p) async {
+      p({('value', fields['value']!)});
+
+      unawaited(f({('completed')}));
+    },
+  );
+}
+
 void registerNodes(BuildContext context, FlNodeEditorController controller) {
+  controller.registerNodePrototype(
+    createValueNode<double>(
+      idName: 'numericValue',
+      displayName: 'Numeric Value',
+      defaultValue: 0.0,
+      visualizerBuilder: (data) => Text(
+        data.toString(),
+        style: const TextStyle(color: Colors.white),
+      ),
+      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 100),
+        child: TextFormField(
+          initialValue: data.toString(),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            setData(
+              double.tryParse(value) ?? 0.0,
+              eventType: FieldEventType.change,
+            );
+          },
+          onFieldSubmitted: (value) {
+            setData(
+              double.tryParse(value) ?? 0.0,
+              eventType: FieldEventType.submit,
+            );
+            removeOverlay();
+          },
+        ),
+      ),
+    ),
+  );
+
+  controller.registerNodePrototype(
+    createValueNode<bool>(
+      idName: 'boolValue',
+      displayName: 'Boolean Value',
+      defaultValue: false,
+      visualizerBuilder: (data) => Icon(
+        data ? Icons.check : Icons.close,
+        color: Colors.white,
+        size: 18,
+      ),
+      onVisualizerTap: (data, setData) => setData(!data),
+    ),
+  );
+
+  controller.registerNodePrototype(
+    createValueNode<String>(
+      idName: 'stringValue',
+      displayName: 'String Value',
+      defaultValue: '',
+      visualizerBuilder: (data) => Text(
+        '"$data"',
+        style: const TextStyle(color: Colors.white),
+      ),
+      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200),
+        child: TextFormField(
+          initialValue: data,
+          onChanged: (value) {
+            setData(
+              value,
+              eventType: FieldEventType.change,
+            );
+          },
+          onFieldSubmitted: (value) {
+            setData(
+              value,
+              eventType: FieldEventType.submit,
+            );
+            removeOverlay();
+          },
+        ),
+      ),
+    ),
+  );
+
+  controller.registerNodePrototype(
+    createValueNode<List<int>>(
+      idName: 'numericListValue',
+      displayName: 'Numeric List Value',
+      defaultValue: [],
+      visualizerBuilder: (data) => Text(
+        data.length > 3
+            ? '[${data.take(3).join(', ')}...]'
+            : '[${data.join(', ')}]',
+        style: const TextStyle(color: Colors.white),
+      ),
+      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200),
+        child: TextFormField(
+          initialValue: data.join(', '),
+          onChanged: (value) {
+            setData(
+              value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
+              eventType: FieldEventType.change,
+            );
+          },
+          onFieldSubmitted: (value) {
+            setData(
+              value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
+              eventType: FieldEventType.submit,
+            );
+            removeOverlay();
+          },
+        ),
+      ),
+    ),
+  );
+
+  controller.registerNodePrototype(
+    createValueNode<List<bool>>(
+      idName: 'boolListValue',
+      displayName: 'Boolean List Value',
+      defaultValue: [],
+      visualizerBuilder: (data) => Text(
+        data.length > 3
+            ? '[${data.take(3).map((e) => e ? 'true' : 'false').join(', ')}...]'
+            : '[${data.map((e) => e ? 'true' : 'false').join(', ')}]',
+        style: const TextStyle(color: Colors.white),
+      ),
+      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200),
+        child: TextFormField(
+          initialValue: data.map((e) => e ? 'true' : 'false').join(', '),
+          onChanged: (value) {
+            setData(
+              value.split(',').map((e) => e.trim() == 'true').toList(),
+              eventType: FieldEventType.change,
+            );
+          },
+          onFieldSubmitted: (value) {
+            setData(
+              value.split(',').map((e) => e.trim() == 'true').toList(),
+              eventType: FieldEventType.submit,
+            );
+            removeOverlay();
+          },
+        ),
+      ),
+    ),
+  );
+
+  String formatStringList(List<String> data) {
+    if (data.isEmpty) return '[]';
+    return '[${data.length > 3 ? '${data.take(3).join(', ')}...' : data.join(', ')}]';
+  }
+
+  String serializeStringList(List<String> data) {
+    return data.map((e) => '"$e"').join(', ');
+  }
+
+  List<String> parseStringList(String input) {
+    final regex = RegExp(r'"(.*?)"');
+    return regex.allMatches(input).map((e) => e.group(1)!).toList();
+  }
+
+  controller.registerNodePrototype(
+    createValueNode<List<String>>(
+      idName: 'stringListValue',
+      displayName: 'String List Value',
+      defaultValue: [],
+      visualizerBuilder: (data) => Text(
+        formatStringList(data),
+        style: const TextStyle(color: Colors.white),
+      ),
+      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200),
+        child: TextFormField(
+          initialValue: serializeStringList(data),
+          onChanged: (value) => setData(
+            parseStringList(value),
+            eventType: FieldEventType.change,
+          ),
+          onFieldSubmitted: (value) {
+            setData(
+              parseStringList(value),
+              eventType: FieldEventType.submit,
+            );
+            removeOverlay();
+          },
+        ),
+      ),
+    ),
+  );
+
   controller.registerNodePrototype(
     NodePrototype(
       idName: 'operator',
@@ -16,17 +255,25 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: 'Applies a chosen operation to two numbers.',
       color: Colors.pink,
       ports: [
-        InputPortPrototype(
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
+        ),
+        DataInputPortPrototype(
           idName: 'a',
           displayName: 'A',
           dataType: double,
         ),
-        InputPortPrototype(
+        DataInputPortPrototype(
           idName: 'b',
           displayName: 'B',
           dataType: double,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: 'Completed',
+        ),
+        DataOutputPortPrototype(
           idName: 'result',
           displayName: 'Result',
           dataType: double,
@@ -59,21 +306,23 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
         ),
       ],
-      onExecute: (ports, fields, execState) async {
+      onExecute: (ports, fields, state, f, p) async {
         final a = ports['a']! as double;
         final b = ports['b']! as double;
         final op = fields['operation']! as Operator;
 
         switch (op) {
           case Operator.add:
-            return ({'result': a + b}, true);
+            p({('result', a + b)});
           case Operator.subtract:
-            return ({'result': a - b}, true);
+            p({('result', a - b)});
           case Operator.multiply:
-            return ({'result': a * b}, true);
+            p({('result', a * b)});
           case Operator.divide:
-            return ({'result': b == 0 ? 0 : a / b}, true);
+            p({('result', b == 0 ? 0 : a / b)});
         }
+
+        unawaited(f({('completed')}));
       },
     ),
   );
@@ -85,14 +334,20 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: 'Outputs a random number between 0 and 1.',
       color: Colors.purple,
       ports: [
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: 'Completed',
+        ),
+        DataOutputPortPrototype(
           idName: 'value',
           displayName: 'Value',
           dataType: double,
         ),
       ],
-      onExecute: (ports, fields, execState) async {
-        return ({'value': Random().nextDouble()}, true);
+      onExecute: (ports, fields, state, f, p) async {
+        p({('value', Random().nextDouble())});
+
+        unawaited(f({('completed')}));
       },
     ),
   );
@@ -104,27 +359,30 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: 'Executes a branch based on a condition.',
       color: Colors.green,
       ports: [
-        InputPortPrototype(
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
+        ),
+        DataInputPortPrototype(
           idName: 'condition',
           displayName: 'Condition',
           dataType: bool,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
           idName: 'trueBranch',
           displayName: 'True',
-          dataType: dynamic,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
           idName: 'falseBranch',
           displayName: 'False',
-          dataType: dynamic,
         ),
       ],
-      onExecute: (ports, fields, execState) async {
+      onExecute: (ports, fields, state, f, p) async {
         final condition = ports['condition']! as bool;
-        return condition
-            ? ({'trueBranch': null}, true)
-            : ({'falseBranch': null}, true);
+
+        condition
+            ? unawaited(f({('trueBranch')}))
+            : unawaited(f({('falseBranch')}));
       },
     ),
   );
@@ -136,17 +394,25 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: 'Compares two numbers based on a chosen comparator.',
       color: Colors.cyan,
       ports: [
-        InputPortPrototype(
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
+        ),
+        DataInputPortPrototype(
           idName: 'a',
           displayName: 'A',
-          dataType: double,
+          dataType: dynamic,
         ),
-        InputPortPrototype(
+        DataInputPortPrototype(
           idName: 'b',
           displayName: 'B',
-          dataType: double,
+          dataType: dynamic,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: 'Completed',
+        ),
+        DataOutputPortPrototype(
           idName: 'result',
           displayName: 'Result',
           dataType: bool,
@@ -181,111 +447,64 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
         ),
       ],
-      onExecute: (ports, fields, execState) async {
-        final a = ports['a']! as double;
-        final b = ports['b']! as double;
+      onExecute: (ports, fields, state, f, p) async {
+        final a = ports['a']! as dynamic;
+        final b = ports['b']! as dynamic;
         final comp = fields['comparator']! as Comparator;
 
         switch (comp) {
           case Comparator.equal:
-            return ({'result': a == b}, true);
+            p({('result', a == b)});
           case Comparator.notEqual:
-            return ({'result': a != b}, true);
+            p({('result', a != b)});
           case Comparator.greater:
-            return ({'result': a > b}, true);
+            p({('result', a > b)});
           case Comparator.greaterEqual:
-            return ({'result': a >= b}, true);
+            p({('result', a >= b)});
           case Comparator.less:
-            return ({'result': a < b}, true);
+            p({('result', a < b)});
           case Comparator.lessEqual:
-            return ({'result': a <= b}, true);
+            p({('result', a <= b)});
         }
+
+        unawaited(f({('completed')}));
       },
     ),
   );
 
   controller.registerNodePrototype(
     NodePrototype(
-      idName: 'value',
-      displayName: 'Value',
-      description: 'Holds a constant double value.',
-      color: Colors.orange,
+      idName: 'print',
+      displayName: 'Print',
+      description: 'Prints a value to the console.',
+      color: Colors.deepPurple,
       ports: [
-        OutputPortPrototype(
-          idName: 'value',
-          displayName: 'Value',
-          dataType: double,
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
         ),
-      ],
-      fields: [
-        FieldPrototype(
-          idName: 'value',
-          displayName: 'Value',
-          dataType: double,
-          defaultData: 0.0,
-          visualizerBuilder: (data) => Text(
-            data.toString(),
-            style: const TextStyle(color: Colors.white),
-          ),
-          editorBuilder: (context, removeOverlay, data, setData) =>
-              ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 100),
-            child: TextFormField(
-              initialValue: data.toString(),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                setData(
-                  double.tryParse(value) ?? 0.0,
-                  eventType: FieldEventType.change,
-                );
-              },
-              onFieldSubmitted: (value) {
-                setData(
-                  double.tryParse(value) ?? 0.0,
-                  eventType: FieldEventType.submit,
-                );
-                removeOverlay();
-              },
-            ),
-          ),
-        ),
-      ],
-      onExecute: (ports, fields, execState) async {
-        return ({'value': fields['value']!}, true);
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    NodePrototype(
-      idName: 'output',
-      displayName: 'Output',
-      description: 'Outputs a value.',
-      color: Colors.red,
-      ports: [
-        InputPortPrototype(
+        DataInputPortPrototype(
           idName: 'value',
           displayName: 'Value',
           dataType: dynamic,
         ),
+        ControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: 'Completed',
+        ),
       ],
-      onExecute: (ports, fields, execState) async {
-        await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Output'),
-              content: Text('Output: ${ports['value']}'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
+      onExecute: (ports, fields, state, f, p) async {
+        if (kDebugMode) {
+          print(ports['value']);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Value: ${ports['value']}'),
+          ),
         );
-        return (<String, dynamic>{}, true);
+
+        unawaited(f({('completed')}));
       },
     ),
   );
@@ -297,12 +516,20 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: 'Rounds a number to a specified number of decimals.',
       color: Colors.blue,
       ports: [
-        InputPortPrototype(
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
+        ),
+        DataInputPortPrototype(
           idName: 'value',
           displayName: 'Value',
           dataType: double,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: 'Completed',
+        ),
+        DataOutputPortPrototype(
           idName: 'rounded',
           displayName: 'Rounded',
           dataType: int,
@@ -341,75 +568,70 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
         ),
       ],
-      onExecute: (ports, fields, execState) async {
+      onExecute: (ports, fields, state, f, p) async {
         final double value = ports['value']! as double;
         final int decimals = fields['decimals']! as int;
 
-        return (
-          {'rounded': double.parse(value.toStringAsFixed(decimals))},
-          true
-        );
+        p({('rounded', double.parse(value.toStringAsFixed(decimals)))});
+
+        unawaited(f({('completed')}));
       },
     ),
   );
 
   controller.registerNodePrototype(
     NodePrototype(
-      idName: 'forLoop',
-      displayName: 'For Loop',
+      idName: 'forEachLoop',
+      displayName: 'For Each Loop',
       description: 'Executes a loop for a specified number of iterations.',
       color: Colors.teal,
       ports: [
-        InputPortPrototype(
-          idName: 'iterations',
-          displayName: 'Iterations',
-          dataType: int,
+        ControlInputPortPrototype(
+          idName: 'exec',
+          displayName: 'Exec',
         ),
-        InputPortPrototype(
-          idName: 'array',
-          displayName: 'Array',
+        DataInputPortPrototype(
+          idName: 'list',
+          displayName: 'List',
           dataType: dynamic,
         ),
-        OutputPortPrototype(
-          idName: 'arrayElem',
-          displayName: 'Array Element',
-          dataType: dynamic,
-        ),
-        OutputPortPrototype(
-          idName: 'arrayIdx',
-          displayName: 'Array Index',
-          dataType: int,
-        ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
           idName: 'loopBody',
           displayName: 'Loop Body',
-          dataType: dynamic,
         ),
-        OutputPortPrototype(
+        ControlOutputPortPrototype(
           idName: 'completed',
           displayName: 'Completed',
+        ),
+        DataOutputPortPrototype(
+          idName: 'listElem',
+          displayName: 'List Element',
           dataType: dynamic,
         ),
+        DataOutputPortPrototype(
+          idName: 'listIdx',
+          displayName: 'List Index',
+          dataType: int,
+        ),
       ],
-      execState: {'iteration': 0},
-      onExecute: (ports, fields, execState) async {
-        final int iterations = ports['iterations']! as int;
-        final List<dynamic> array = ports['array']! as List<dynamic>;
-        final int iteration = execState['iteration'] as int;
+      onExecute: (ports, fields, state, f, p) async {
+        final List<dynamic> list = ports['list']! as List<dynamic>;
 
-        if (iteration < iterations) {
-          return (
-            {
-              'arrayElem': array[iteration],
-              'arrayIdx': iteration,
-              'loopBody': null,
-              'completed': null,
-            },
-            false,
-          );
+        late int i;
+
+        if (!state.containsKey('iteration')) {
+          i = state['iteration'] = 0;
+        } else {
+          i = state['iteration'] as int;
         }
 
-        return ({'completed': null}, true);
+        if (i < list.length) {
+          p({('listElem', list[i]), ('listIdx', i)});
+          state['iteration'] = ++i;
+          await f({'loopBody'});
+        } else {
+          unawaited(f({('completed')}));
+        }
       },
     ),
   );
