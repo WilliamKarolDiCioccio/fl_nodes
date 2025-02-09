@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../constants.dart';
@@ -47,8 +46,8 @@ class FlNodeEditorClipboard {
       // We make deep copies as we only want to copy the links that are within the selection.
       final updatedPorts = nodeCopy.ports.map((portId, port) {
         final deepCopiedLinks = port.links.where((link) {
-          return selectedNodeIds.contains(link.fromTo.item1) &&
-              selectedNodeIds.contains(link.fromTo.item3);
+          return selectedNodeIds.contains(link.fromTo.$1) &&
+              selectedNodeIds.contains(link.fromTo.$3);
         }).toSet();
 
         return MapEntry(
@@ -170,11 +169,11 @@ class FlNodeEditorClipboard {
               links: port.links.map((link) {
                 return link.copyWith(
                   id: newIds[link.id],
-                  fromTo: Tuple4(
-                    newIds[link.fromTo.item1]!,
-                    link.fromTo.item2,
-                    newIds[link.fromTo.item3]!,
-                    link.fromTo.item4,
+                  fromTo: (
+                    newIds[link.fromTo.$1]!,
+                    link.fromTo.$2,
+                    newIds[link.fromTo.$3]!,
+                    link.fromTo.$4,
                   ),
                 );
               }).toSet(),

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/runner.dart';
 
+typedef FromTo = (String from, String to, String fromPort, String toPort);
+
 /// A link is a connection between two ports.
 final class Link {
   final String id;
-  final Tuple4<String, String, String, String> fromTo;
+  final FromTo fromTo;
   bool isHovered = false;
 
   Link({
@@ -20,7 +21,7 @@ final class Link {
 
   Link copyWith({
     String? id,
-    Tuple4<String, String, String, String>? fromTo,
+    FromTo? fromTo,
     List<Offset>? joints,
   }) {
     return Link(
@@ -32,17 +33,17 @@ final class Link {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'from': fromTo.item1,
-      'to': fromTo.item2,
-      'fromPort': fromTo.item3,
-      'toPort': fromTo.item4,
+      'from': fromTo.$1,
+      'to': fromTo.$2,
+      'fromPort': fromTo.$3,
+      'toPort': fromTo.$4,
     };
   }
 
   factory Link.fromJson(Map<String, dynamic> json) {
     return Link(
       id: json['id'],
-      fromTo: Tuple4(
+      fromTo: (
         json['from'],
         json['to'],
         json['fromPort'],

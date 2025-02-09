@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../constants.dart';
 
@@ -17,17 +16,17 @@ class SpatialHashGrid {
   /// The main grid structure that maps grid cell indices to a set of nodes.
   /// Each node is represented as a tuple containing an identifier (`String`)
   /// and its bounding rectangle (`Rect`).
-  final Map<Tuple2<int, int>, Set<Tuple2<String, Rect>>> grid = {};
+  final Map<(int, int), Set<(String, Rect)>> grid = {};
 
   /// Maps each node's identifier (`String`) to the set of grid cells it occupies.
-  final Map<String, Set<Tuple2<int, int>>> nodeToCells = {};
+  final Map<String, Set<(int, int)>> nodeToCells = {};
 
   /// Constructs a `SpatialHashGrid` using a predefined cell size defined in `constants.dart`.
   SpatialHashGrid() : cellSize = kSpatialHashingCellSize;
 
   /// Calculates the grid cell index (`Tuple2<int, int>`) for a given point in 2D space.
-  Tuple2<int, int> _getGridIndex(Offset point) {
-    return Tuple2(
+  (int, int) _getGridIndex(Offset point) {
+    return (
       (point.dx / cellSize).floor(),
       (point.dy / cellSize).floor(),
     );
@@ -36,15 +35,15 @@ class SpatialHashGrid {
   /// Determines all grid cells that a given rectangle (`Rect`) overlaps.
   ///
   /// Returns a set of cell indices (`Tuple2<int, int>`).
-  Set<Tuple2<int, int>> _getCoveredCells(Rect rect) {
-    final Tuple2<int, int> topLeft = _getGridIndex(rect.topLeft);
-    final Tuple2<int, int> bottomRight = _getGridIndex(rect.bottomRight);
+  Set<(int, int)> _getCoveredCells(Rect rect) {
+    final (int, int) topLeft = _getGridIndex(rect.topLeft);
+    final (int, int) bottomRight = _getGridIndex(rect.bottomRight);
 
-    final Set<Tuple2<int, int>> cells = {};
+    final Set<(int, int)> cells = {};
 
-    for (int x = topLeft.item1; x <= bottomRight.item1; x++) {
-      for (int y = topLeft.item2; y <= bottomRight.item2; y++) {
-        cells.add(Tuple2(x, y));
+    for (int x = topLeft.$1; x <= bottomRight.$1; x++) {
+      for (int y = topLeft.$2; y <= bottomRight.$2; y++) {
+        cells.add((x, y));
       }
     }
 
@@ -56,10 +55,10 @@ class SpatialHashGrid {
   /// A node is represented by a tuple (`Tuple2<String, Rect>`), where:
   /// - `node.item1` is the unique identifier of the node.
   /// - `node.item2` is the bounding rectangle of the node.
-  void insert(Tuple2<String, Rect> node) {
-    final Set<Tuple2<int, int>> cells = _getCoveredCells(node.item2);
+  void insert((String, Rect) node) {
+    final Set<(int, int)> cells = _getCoveredCells(node.$2);
 
-    for (final Tuple2<int, int> cell in cells) {
+    for (final (int, int) cell in cells) {
       if (!grid.containsKey(cell)) {
         grid[cell] = {};
       }
@@ -67,15 +66,15 @@ class SpatialHashGrid {
       grid[cell]!.add(node);
     }
 
-    nodeToCells[node.item1] = cells;
+    nodeToCells[node.$1] = cells;
   }
 
   /// Removes a node from the spatial hash grid by its identifier (`nodeId`).
   void remove(String nodeId) {
     if (nodeToCells.containsKey(nodeId)) {
-      for (final Tuple2<int, int> cell in nodeToCells[nodeId]!) {
+      for (final (int, int) cell in nodeToCells[nodeId]!) {
         if (grid.containsKey(cell)) {
-          grid[cell]!.removeWhere((node) => node.item1 == nodeId);
+          grid[cell]!.removeWhere((node) => node.$1 == nodeId);
         }
       }
 
@@ -96,13 +95,13 @@ class SpatialHashGrid {
   Set<String> queryNodeIdsInArea(Rect bounds) {
     final Set<String> nodeIds = {};
 
-    final Set<Tuple2<int, int>> cells = _getCoveredCells(bounds);
+    final Set<(int, int)> cells = _getCoveredCells(bounds);
 
-    for (final Tuple2<int, int> cell in cells) {
+    for (final (int, int) cell in cells) {
       if (grid.containsKey(cell)) {
-        for (final Tuple2<String, Rect> node in grid[cell]!) {
-          if (bounds.overlaps(node.item2)) {
-            nodeIds.add(node.item1);
+        for (final (String, Rect) node in grid[cell]!) {
+          if (bounds.overlaps(node.$2)) {
+            nodeIds.add(node.$1);
           }
         }
       }
