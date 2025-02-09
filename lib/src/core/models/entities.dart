@@ -6,7 +6,7 @@ import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/runner.dart';
 
-typedef FromTo = (String from, String to, String fromPort, String toPort);
+typedef FromTo = ({String from, String to, String fromPort, String toPort});
 
 /// A link is a connection between two ports.
 final class Link {
@@ -33,10 +33,10 @@ final class Link {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'from': fromTo.$1,
-      'to': fromTo.$2,
-      'fromPort': fromTo.$3,
-      'toPort': fromTo.$4,
+      'from': fromTo.from,
+      'to': fromTo.to,
+      'fromPort': fromTo.fromPort,
+      'toPort': fromTo.toPort,
     };
   }
 
@@ -44,10 +44,10 @@ final class Link {
     return Link(
       id: json['id'],
       fromTo: (
-        json['from'],
-        json['to'],
-        json['fromPort'],
-        json['toPort'],
+        from: json['from'],
+        to: json['to'],
+        fromPort: json['fromPort'],
+        toPort: json['toPort'],
       ),
     );
   }

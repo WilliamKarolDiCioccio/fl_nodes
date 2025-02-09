@@ -46,8 +46,8 @@ class FlNodeEditorClipboard {
       // We make deep copies as we only want to copy the links that are within the selection.
       final updatedPorts = nodeCopy.ports.map((portId, port) {
         final deepCopiedLinks = port.links.where((link) {
-          return selectedNodeIds.contains(link.fromTo.$1) &&
-              selectedNodeIds.contains(link.fromTo.$3);
+          return selectedNodeIds.contains(link.fromTo.from) &&
+              selectedNodeIds.contains(link.fromTo.fromPort);
         }).toSet();
 
         return MapEntry(
@@ -170,10 +170,10 @@ class FlNodeEditorClipboard {
                 return link.copyWith(
                   id: newIds[link.id],
                   fromTo: (
-                    newIds[link.fromTo.$1]!,
-                    link.fromTo.$2,
-                    newIds[link.fromTo.$3]!,
-                    link.fromTo.$4,
+                    from: newIds[link.fromTo.from]!,
+                    to: link.fromTo.to,
+                    fromPort: newIds[link.fromTo.fromPort]!,
+                    toPort: link.fromTo.toPort,
                   ),
                 );
               }).toSet(),

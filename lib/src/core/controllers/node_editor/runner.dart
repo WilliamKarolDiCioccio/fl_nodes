@@ -96,8 +96,8 @@ class FlNodeEditorRunner {
     for (final link in port.links) {
       final connectedNode = _nodes[
           port.prototype.direction == PortDirection.input
-              ? link.fromTo.$1
-              : link.fromTo.$3]!;
+              ? link.fromTo.from
+              : link.fromTo.fromPort]!;
       connectedNodeIds.add(connectedNode.id);
     }
 
@@ -198,8 +198,8 @@ class FlNodeEditorRunner {
         }
 
         for (final link in port.links) {
-          final connectedNode = _nodes[link.fromTo.$3]!;
-          final connectedPort = connectedNode.ports[link.fromTo.$4]!;
+          final connectedNode = _nodes[link.fromTo.fromPort]!;
+          final connectedPort = connectedNode.ports[link.fromTo.toPort]!;
 
           connectedPort.data = data;
         }

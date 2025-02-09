@@ -106,10 +106,10 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     return controller.renderLinksAsList.map((link) {
       final nodes = controller.nodes;
 
-      final outNode = nodes[link.fromTo.$1]!;
-      final inNode = nodes[link.fromTo.$3]!;
-      final outPort = outNode.ports[link.fromTo.$2]!;
-      final inPort = inNode.ports[link.fromTo.$4]!;
+      final outNode = nodes[link.fromTo.from]!;
+      final inNode = nodes[link.fromTo.fromPort]!;
+      final outPort = outNode.ports[link.fromTo.to]!;
+      final inPort = inNode.ports[link.fromTo.toPort]!;
 
       // NOTE: The port offset is relative to the node
       return LinkDrawData(
