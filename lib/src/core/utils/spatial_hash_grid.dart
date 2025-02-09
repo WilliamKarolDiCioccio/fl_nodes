@@ -14,36 +14,36 @@ class SpatialHashGrid {
   final double cellSize;
 
   /// The main grid structure that maps grid cell indices to a set of nodes.
-  /// Each node is represented as a tuple containing an identifier (`String`)
+  /// Each node is represented as a record containing an identifier (`String`)
   /// and its bounding rectangle (`Rect`).
-  final Map<(int, int), Set<(String, Rect)>> grid = {};
+  final Map<({int x, int y}), Set<({String id, Rect rect})>> grid = {};
 
-  /// Maps each node's identifier (`String`) to the set of grid cells it occupies.
-  final Map<String, Set<(int, int)>> nodeToCells = {};
+  /// Maps each node's identifier to the set of grid cells it occupies.
+  final Map<String, Set<({int x, int y})>> nodeToCells = {};
 
   /// Constructs a `SpatialHashGrid` using a predefined cell size defined in `constants.dart`.
   SpatialHashGrid() : cellSize = kSpatialHashingCellSize;
 
-  /// Calculates the grid cell index (`Tuple2<int, int>`) for a given point in 2D space.
-  (int, int) _getGridIndex(Offset point) {
+  /// Calculates the grid cell index for a given point in 2D space.
+  ({int x, int y}) _getGridIndex(Offset point) {
     return (
-      (point.dx / cellSize).floor(),
-      (point.dy / cellSize).floor(),
+      x: (point.dx / cellSize).floor(),
+      y: (point.dy / cellSize).floor(),
     );
   }
 
   /// Determines all grid cells that a given rectangle (`Rect`) overlaps.
   ///
-  /// Returns a set of cell indices (`Tuple2<int, int>`).
-  Set<(int, int)> _getCoveredCells(Rect rect) {
-    final (int, int) topLeft = _getGridIndex(rect.topLeft);
-    final (int, int) bottomRight = _getGridIndex(rect.bottomRight);
+  /// Returns a set of cell indices `({int x, int y})`.
+  Set<({int x, int y})> _getCoveredCells(Rect rect) {
+    final ({int x, int y}) topLeft = _getGridIndex(rect.topLeft);
+    final ({int x, int y}) bottomRight = _getGridIndex(rect.bottomRight);
 
-    final Set<(int, int)> cells = {};
+    final Set<({int x, int y})> cells = {};
 
-    for (int x = topLeft.$1; x <= bottomRight.$1; x++) {
-      for (int y = topLeft.$2; y <= bottomRight.$2; y++) {
-        cells.add((x, y));
+    for (int x = topLeft.x; x <= bottomRight.x; x++) {
+      for (int y = topLeft.y; y <= bottomRight.y; y++) {
+        cells.add((x: x, y: y));
       }
     }
 
@@ -52,13 +52,13 @@ class SpatialHashGrid {
 
   /// Inserts a new node into the spatial hash grid.
   ///
-  /// A node is represented by a tuple (`Tuple2<String, Rect>`), where:
-  /// - `node.item1` is the unique identifier of the node.
-  /// - `node.item2` is the bounding rectangle of the node.
-  void insert((String, Rect) node) {
-    final Set<(int, int)> cells = _getCoveredCells(node.$2);
+  /// A node is represented by a record `(String id, Rect rect)`, where:
+  /// - `node.id` is the unique identifier of the node.
+  /// - `node.rect` is the bounding rectangle of the node.
+  void insert(({String id, Rect rect}) node) {
+    final Set<({int x, int y})> cells = _getCoveredCells(node.rect);
 
-    for (final (int, int) cell in cells) {
+    for (final ({int x, int y}) cell in cells) {
       if (!grid.containsKey(cell)) {
         grid[cell] = {};
       }
@@ -66,15 +66,15 @@ class SpatialHashGrid {
       grid[cell]!.add(node);
     }
 
-    nodeToCells[node.$1] = cells;
+    nodeToCells[node.id] = cells;
   }
 
   /// Removes a node from the spatial hash grid by its identifier (`nodeId`).
   void remove(String nodeId) {
     if (nodeToCells.containsKey(nodeId)) {
-      for (final (int, int) cell in nodeToCells[nodeId]!) {
+      for (final ({int x, int y}) cell in nodeToCells[nodeId]!) {
         if (grid.containsKey(cell)) {
-          grid[cell]!.removeWhere((node) => node.$1 == nodeId);
+          grid[cell]!.removeWhere((node) => node.id == nodeId);
         }
       }
 
@@ -95,13 +95,13 @@ class SpatialHashGrid {
   Set<String> queryNodeIdsInArea(Rect bounds) {
     final Set<String> nodeIds = {};
 
-    final Set<(int, int)> cells = _getCoveredCells(bounds);
+    final Set<({int x, int y})> cells = _getCoveredCells(bounds);
 
-    for (final (int, int) cell in cells) {
+    for (final ({int x, int y}) cell in cells) {
       if (grid.containsKey(cell)) {
-        for (final (String, Rect) node in grid[cell]!) {
-          if (bounds.overlaps(node.$2)) {
-            nodeIds.add(node.$1);
+        for (final ({String id, Rect rect}) node in grid[cell]!) {
+          if (bounds.overlaps(node.rect)) {
+            nodeIds.add(node.id);
           }
         }
       }

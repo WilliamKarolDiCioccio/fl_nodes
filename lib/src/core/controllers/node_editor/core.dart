@@ -739,7 +739,7 @@ class FlNodeEditorController {
   void onRenderedCallback(NodeInstance node) {
     _spatialHashGrid.remove(node.id);
     _spatialHashGrid.insert(
-      (node.id, getNodeBoundsInWorld(node)!),
+      (id: node.id, rect: getNodeBoundsInWorld(node)!),
     );
   }
 }
