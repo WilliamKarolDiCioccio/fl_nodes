@@ -8,7 +8,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_context_menu/flutter_context_menu.dart';
-import 'package:keymap/keymap.dart';
 import 'package:os_detect/os_detect.dart' as os_detect;
 
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
@@ -157,6 +156,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
 
   // Gesture recognizers
   late final ScaleGestureRecognizer _trackpadGestureRecognizer;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
@@ -170,6 +170,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
       ..onStart = ((details) => _onDragStart)
       ..onUpdate = _onScaleUpdate
       ..onEnd = ((details) => _onDragEnd);
+    _focusNode = FocusNode();
   }
 
   @override
@@ -177,6 +178,7 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     _offsetAnimationController.dispose();
     _zoomAnimationController.dispose();
     _trackpadGestureRecognizer.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -545,6 +547,73 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     }
   }
 
+  // Keyboard modifier flags
+  bool _metaPressed = false;
+  bool _shiftPressed = false;
+
+  // Keyboard event handlers
+  void _onKeyEvent(KeyEvent event) {
+    final key = event.logicalKey;
+    if (event is KeyDownEvent) {
+      // Update modifier flags.
+      if (key == LogicalKeyboardKey.metaLeft ||
+          key == LogicalKeyboardKey.metaRight) {
+        _metaPressed = true;
+        return;
+      }
+      if (key == LogicalKeyboardKey.shiftLeft ||
+          key == LogicalKeyboardKey.shiftRight) {
+        _shiftPressed = true;
+        return;
+      }
+
+      // Process non-modifier keys.
+      switch (key) {
+        case LogicalKeyboardKey.delete:
+          for (final nodeId in widget.controller.selectedNodeIds) {
+            widget.controller.removeNode(
+              nodeId,
+              isHandled: nodeId != widget.controller.selectedNodeIds.last,
+            );
+          }
+        case LogicalKeyboardKey.backspace:
+          for (final nodeId in widget.controller.selectedNodeIds) {
+            widget.controller.removeNode(
+              nodeId,
+              isHandled: nodeId != widget.controller.selectedNodeIds.last,
+            );
+          }
+          widget.controller.clearSelection();
+        case LogicalKeyboardKey.keyC:
+          if (_metaPressed) widget.controller.clipboard.copySelection();
+        case LogicalKeyboardKey.keyV:
+          if (_metaPressed) widget.controller.clipboard.pasteSelection();
+        case LogicalKeyboardKey.keyX:
+          if (_metaPressed) widget.controller.clipboard.cutSelection();
+        case LogicalKeyboardKey.keyS:
+          if (_metaPressed) widget.controller.project.save();
+        case LogicalKeyboardKey.keyO:
+          if (_metaPressed) widget.controller.project.load();
+        case LogicalKeyboardKey.keyN:
+          if (_metaPressed && _shiftPressed) widget.controller.project.create();
+        case LogicalKeyboardKey.keyZ:
+          if (_metaPressed) widget.controller.history.undo();
+          if (_metaPressed && _shiftPressed) widget.controller.history.redo();
+      }
+    } else if (event is KeyUpEvent) {
+      if (key == LogicalKeyboardKey.metaLeft ||
+          key == LogicalKeyboardKey.metaRight) {
+        _metaPressed = false;
+        return;
+      }
+      if (key == LogicalKeyboardKey.shiftLeft ||
+          key == LogicalKeyboardKey.shiftRight) {
+        _shiftPressed = false;
+        return;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<ContextMenuEntry> createSubmenuEntries(Offset position) {
@@ -726,89 +795,15 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
               onScaleEnd: (details) => _onDragEnd(),
               child: child,
             )
-          : KeyboardWidget(
-              bindings: [
-                KeyAction(
-                  LogicalKeyboardKey.delete,
-                  "Remove selected nodes",
-                  () {
-                    for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNode(
-                        nodeId,
-                        isHandled:
-                            nodeId != widget.controller.selectedNodeIds.last,
-                      );
-                    }
-                  },
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.backspace,
-                  "Remove selected nodes",
-                  () {
-                    for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNode(
-                        nodeId,
-                        isHandled:
-                            nodeId != widget.controller.selectedNodeIds.last,
-                      );
-                    }
-                    widget.controller.clearSelection();
-                  },
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyC,
-                  "Copy selected nodes",
-                  () => widget.controller.clipboard.copySelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyV,
-                  "Paste selected nodes",
-                  () => widget.controller.clipboard.pasteSelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyX,
-                  "Cut selected nodes",
-                  () => widget.controller.clipboard.cutSelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyS,
-                  "Save project",
-                  () => widget.controller.project.save(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyO,
-                  "Open project",
-                  () => widget.controller.project.load(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyN,
-                  "Create new project",
-                  () => widget.controller.project.create(),
-                  isControlPressed: true,
-                  isShiftPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyZ,
-                  "Undo",
-                  () => widget.controller.history.undo(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyY,
-                  "Redo",
-                  () => widget.controller.history.redo(),
-                  isControlPressed: true,
-                ),
-              ],
-              child: MouseRegion(
-                cursor: _isDragging
-                    ? SystemMouseCursors.move
-                    : SystemMouseCursors.basic,
+          : MouseRegion(
+              onEnter: (_) => _focusNode.requestFocus(),
+              onExit: (_) => _focusNode.unfocus(),
+              cursor: _isDragging
+                  ? SystemMouseCursors.move
+                  : SystemMouseCursors.basic,
+              child: KeyboardListener(
+                focusNode: _focusNode,
+                onKeyEvent: _onKeyEvent,
                 child: ImprovedListener(
                   onDoubleClick: () => widget.controller.clearSelection(),
                   onPointerPressed: (event) {
