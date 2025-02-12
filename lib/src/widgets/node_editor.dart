@@ -547,36 +547,15 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
     }
   }
 
-  // Keyboard modifier flags
-  bool _metaPressed = false;
-  bool _shiftPressed = false;
-
   // Keyboard event handlers
   void _onKeyEvent(KeyEvent event) {
-    final key = event.logicalKey;
-    if (event is KeyDownEvent) {
-      // Update modifier flags.
-      if (key == LogicalKeyboardKey.metaLeft ||
-          key == LogicalKeyboardKey.metaRight) {
-        _metaPressed = true;
-        return;
-      }
-      if (key == LogicalKeyboardKey.shiftLeft ||
-          key == LogicalKeyboardKey.shiftRight) {
-        _shiftPressed = true;
-        return;
-      }
+    final LogicalKeyboardKey key = event.logicalKey;
+    final bool metaPressed = HardwareKeyboard.instance.isMetaPressed;
+    final bool shiftPressed = HardwareKeyboard.instance.isShiftPressed;
 
-      // Process non-modifier keys.
+    if (event is KeyDownEvent) {
       switch (key) {
-        case LogicalKeyboardKey.delete:
-          for (final nodeId in widget.controller.selectedNodeIds) {
-            widget.controller.removeNode(
-              nodeId,
-              isHandled: nodeId != widget.controller.selectedNodeIds.last,
-            );
-          }
-        case LogicalKeyboardKey.backspace:
+        case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
           for (final nodeId in widget.controller.selectedNodeIds) {
             widget.controller.removeNode(
               nodeId,
@@ -584,32 +563,24 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
             );
           }
           widget.controller.clearSelection();
-        case LogicalKeyboardKey.keyC:
-          if (_metaPressed) widget.controller.clipboard.copySelection();
-        case LogicalKeyboardKey.keyV:
-          if (_metaPressed) widget.controller.clipboard.pasteSelection();
-        case LogicalKeyboardKey.keyX:
-          if (_metaPressed) widget.controller.clipboard.cutSelection();
-        case LogicalKeyboardKey.keyS:
-          if (_metaPressed) widget.controller.project.save();
-        case LogicalKeyboardKey.keyO:
-          if (_metaPressed) widget.controller.project.load();
-        case LogicalKeyboardKey.keyN:
-          if (_metaPressed && _shiftPressed) widget.controller.project.create();
-        case LogicalKeyboardKey.keyZ:
-          if (_metaPressed) widget.controller.history.undo();
-          if (_metaPressed && _shiftPressed) widget.controller.history.redo();
-      }
-    } else if (event is KeyUpEvent) {
-      if (key == LogicalKeyboardKey.metaLeft ||
-          key == LogicalKeyboardKey.metaRight) {
-        _metaPressed = false;
-        return;
-      }
-      if (key == LogicalKeyboardKey.shiftLeft ||
-          key == LogicalKeyboardKey.shiftRight) {
-        _shiftPressed = false;
-        return;
+        case LogicalKeyboardKey.keyC when metaPressed:
+          widget.controller.clipboard.copySelection();
+        case LogicalKeyboardKey.keyV when metaPressed:
+          widget.controller.clipboard.pasteSelection();
+        case LogicalKeyboardKey.keyX when metaPressed:
+          widget.controller.clipboard.cutSelection();
+        case LogicalKeyboardKey.keyS when metaPressed:
+          widget.controller.project.save();
+        case LogicalKeyboardKey.keyO when metaPressed:
+          widget.controller.project.load();
+        case LogicalKeyboardKey.keyN when metaPressed && shiftPressed:
+          widget.controller.project.create();
+        case LogicalKeyboardKey.keyZ when metaPressed && !shiftPressed:
+          widget.controller.history.undo();
+        case LogicalKeyboardKey.keyZ when metaPressed && shiftPressed:
+          widget.controller.history.redo();
+        case LogicalKeyboardKey.keyY when metaPressed:
+          widget.controller.history.redo();
       }
     }
   }
@@ -796,12 +767,11 @@ class _NodeEditorDataLayerState extends State<_NodeEditorDataLayer>
               child: child,
             )
           : MouseRegion(
-              onEnter: (_) => _focusNode.requestFocus(),
-              onExit: (_) => _focusNode.unfocus(),
               cursor: _isDragging
                   ? SystemMouseCursors.move
                   : SystemMouseCursors.basic,
               child: KeyboardListener(
+                autofocus: true,
                 focusNode: _focusNode,
                 onKeyEvent: _onKeyEvent,
                 child: ImprovedListener(

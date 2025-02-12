@@ -327,7 +327,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                               Text(' - (Ctrl/Cmd) + X: Cut Node'),
                               Text(' - Delete | Backspace: Remove Nodes'),
                               Text(' - (Ctrl/Cmd) + Z: Undo'),
-                              Text(' - (Ctrl/Cmd) + Shift + Z: Redo'),
+                              Text(' - (Ctrl/Cmd) + Y: Redo'),
                             ],
                           ),
                         ),
