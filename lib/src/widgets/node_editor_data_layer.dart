@@ -87,6 +87,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
   // Interaction kinematics
   Offset _lastPositionDelta = Offset.zero;
+  Offset _lastFocalPoint = Offset.zero;
   Offset _kineticEnergy = Offset.zero;
   Timer? _kineticTimer;
   Offset _selectionStart = Offset.zero;
@@ -663,10 +664,102 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     Widget controlsWrapper(Widget child) {
       return os_detect.isAndroid || os_detect.isIOS
           ? GestureDetector(
+              // Clear selection on double tap
               onDoubleTap: () => widget.controller.clearSelection(),
-              onScaleStart: (details) => _onDragStart(),
-              onScaleUpdate: (details) => _onScaleUpdate(details),
-              onScaleEnd: (details) => _onDragEnd(),
+              // Show context menu on long press
+              onLongPressStart: (LongPressStartDetails details) {
+                final position = details.globalPosition;
+                final locator = _isNearPort(position);
+                if (locator != null &&
+                    !widget
+                        .controller.nodes[locator.nodeId]!.state.isCollapsed) {
+                  // Port context menu
+                  createAndShowContextMenu(
+                    context,
+                    entries: portContextMenuEntries(position, locator: locator),
+                    position: position,
+                  );
+                } else if (!isContextMenuVisible) {
+                  // Editor context menu
+                  createAndShowContextMenu(
+                    context,
+                    entries: editorContextMenuEntries(position),
+                    position: position,
+                  );
+                }
+              },
+              // Use onScale* to handle both single finger and multi-touch gestures
+              onScaleStart: (ScaleStartDetails details) {
+                _lastFocalPoint = details.focalPoint;
+                // For a one-finger touch, decide between linking or selection
+                final locator = _isNearPort(details.focalPoint);
+                if (locator != null && _tempLink == null) {
+                  _isLinking = true;
+                  _onLinkStart(locator);
+                } else {
+                  _isSelecting = true;
+                  _onSelectStart(details.focalPoint);
+                }
+              },
+              onScaleUpdate: (ScaleUpdateDetails details) {
+                _lastFocalPoint = details.focalPoint;
+
+                // If the user uses more than one finger (or the scale changes),
+                // treat the gesture as a pan/zoom.
+                if (details.scale != 1.0) {
+                  // If we weren’t already panning, cancel linking/selection.
+                  if (!_isDragging) {
+                    if (_isLinking) {
+                      _onLinkCancel();
+                      _isLinking = false;
+                    }
+                    if (_isSelecting) {
+                      _onSelectEnd();
+                      _isSelecting = false;
+                    }
+                    _isDragging = true;
+                    _onDragStart();
+                  }
+                  if (widget.controller.config.enablePan) {
+                    _onDragUpdate(details.focalPointDelta);
+                  }
+                  if (widget.controller.config.enableZoom) {
+                    // Pass the current scale factor and focal point for zooming.
+                    _setZoomFromRawInput(details.scale, details.focalPoint);
+                  }
+                } else {
+                  // Single finger movement: update linking or selection.
+                  if (_isLinking) {
+                    _onLinkUpdate(details.focalPoint);
+                  } else if (_isSelecting) {
+                    _onSelectUpdate(details.focalPoint);
+                  }
+                }
+              },
+              onScaleEnd: (ScaleEndDetails details) {
+                if (_isDragging) {
+                  _onDragEnd();
+                  _isDragging = false;
+                } else if (_isLinking) {
+                  // Check if the finger ended near a valid port.
+                  final locator = _isNearPort(_lastFocalPoint);
+                  if (locator != null) {
+                    _onLinkEnd(locator);
+                  } else if (!isContextMenuVisible) {
+                    // If no port is nearby, show a creation submenu.
+                    createAndShowContextMenu(
+                      context,
+                      entries: createSubmenuEntries(_lastFocalPoint),
+                      position: _lastFocalPoint,
+                      onDismiss: (value) => _onLinkCancel(),
+                    );
+                  }
+                  _isLinking = false;
+                } else if (_isSelecting) {
+                  _onSelectEnd();
+                  _isSelecting = false;
+                }
+              },
               child: child,
             )
           : KeyboardWidget(
