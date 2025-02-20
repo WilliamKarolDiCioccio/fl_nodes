@@ -368,7 +368,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     final Offset targetOffset = offset + offsetFactor;
 
-    _setOffset(targetOffset);
+    _setOffset(targetOffset, animate: !os_detect.isAndroid);
   }
 
   void _setOffset(Offset targetOffset, {bool animate = false}) {
@@ -445,6 +445,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         bias = 10;
       } else if (os_detect.isLinux) {
         bias = 5;
+      } else if (os_detect.isAndroid) {
+        bias = 0.75;
       } else {
         bias = 1;
       }
@@ -679,23 +681,19 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     Widget controlsWrapper(Widget child) {
       return os_detect.isAndroid || os_detect.isIOS
           ? GestureDetector(
-              // Clear selection on double tap
-              onDoubleTap: () => widget.controller.clearSelection(),
-              // Show context menu on long press
+              onTap: () => widget.controller.clearSelection(),
               onLongPressStart: (LongPressStartDetails details) {
                 final position = details.globalPosition;
                 final locator = _isNearPort(position);
                 if (locator != null &&
                     !widget
                         .controller.nodes[locator.nodeId]!.state.isCollapsed) {
-                  // Port context menu
                   createAndShowContextMenu(
                     context,
                     entries: portContextMenuEntries(position, locator: locator),
                     position: position,
                   );
                 } else if (!isContextMenuVisible) {
-                  // Editor context menu
                   createAndShowContextMenu(
                     context,
                     entries: editorContextMenuEntries(position),
@@ -703,11 +701,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   );
                 }
               },
-              // Use onScale* to handle both single finger and multi-touch gestures
               onScaleStart: (ScaleStartDetails details) {
                 _lastFocalPoint = details.focalPoint;
-                // For a one-finger touch, decide between linking or selection
+
                 final locator = _isNearPort(details.focalPoint);
+
                 if (locator != null && _tempLink == null) {
                   _isLinking = true;
                   _onLinkStart(locator);
@@ -718,34 +716,33 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
               },
               onScaleUpdate: (ScaleUpdateDetails details) {
                 _lastFocalPoint = details.focalPoint;
-                // If the user uses more than one finger (or the scale changes),
-                // treat the gesture as a pan/zoom.
+
                 if (details.scale != 1.0) {
-                  // If we weren’t already panning, cancel linking/selection.
                   if (!_isDragging) {
                     if (_isLinking) {
                       _onLinkCancel();
                       _isLinking = false;
-                    }
-                    if (_isSelecting) {
+                    } else if (_isSelecting) {
                       _onSelectEnd();
                       _isSelecting = false;
+                    } else {
+                      _isDragging = true;
+                      _onDragStart();
                     }
-                    _isDragging = true;
-                    _onDragStart();
                   }
-                  if (widget.controller.config.enablePan) {
+
+                  if (widget.controller.config.enablePan && _isDragging) {
                     _onDragUpdate(details.focalPointDelta);
                   }
-                  if (widget.controller.config.enableZoom) {
-                    // Pass the current scale factor and focal point for zooming.
+                  if (widget.controller.config.enableZoom &&
+                          details.scale > 1.25 ||
+                      details.scale < 0.75) {
                     _setZoomFromRawInput(
                       details.scale < 1 ? details.scale : -details.scale,
                       details.focalPoint,
                     );
                   }
                 } else {
-                  // Single finger movement: update linking or selection.
                   if (_isLinking) {
                     _onLinkUpdate(details.focalPoint);
                   } else if (_isSelecting) {
@@ -758,12 +755,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   _onDragEnd();
                   _isDragging = false;
                 } else if (_isLinking) {
-                  // Check if the finger ended near a valid port.
                   final locator = _isNearPort(_lastFocalPoint);
+
                   if (locator != null) {
                     _onLinkEnd(locator);
                   } else if (!isContextMenuVisible) {
-                    // If no port is nearby, show a creation submenu.
                     createAndShowContextMenu(
                       context,
                       entries: createSubmenuEntries(_lastFocalPoint),
@@ -771,6 +767,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                       onDismiss: (value) => _onLinkCancel(),
                     );
                   }
+
                   _isLinking = false;
                 } else if (_isSelecting) {
                   _onSelectEnd();
