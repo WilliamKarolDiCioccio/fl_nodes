@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:js' as js;
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -187,7 +188,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       _setZoomFromRawInput(
         details.scale,
         details.focalPoint,
-        trackpadInput: true,
+        isTrackpadInput: true,
       );
     } else if (widget.controller.config.panSensitivity > 0 &&
         details.focalPointDelta != const Offset(10, 10)) {
@@ -420,7 +421,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   void _setZoomFromRawInput(
     double amount,
     Offset focalPoint, {
-    bool trackpadInput = false,
+    bool isTrackpadInput = false,
   }) {
     const double zoomSpeed = 0.1; // Adjust this to fine-tune zoom sensitivity
 
@@ -431,19 +432,31 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     late double delta;
 
-    if (trackpadInput) {
+    if (isTrackpadInput) {
       // Trackpad: amount is in range (0, 1] for zoom out, (1, ∞) for zoom in
       // Due to the logarithmic scale, we need to multiply by 10 to get a reasonable delta.
       // NOTE: macOS seems to have a different behavior, so we need to account for that.
-      final deltaScale = os_detect.isMacOS ? 1 : 10;
-      delta = log(amount) * sensitivity * deltaScale;
+
+      late final double bias;
+
+      if (os_detect.isMacOS) {
+        bias = 1;
+      } else if (os_detect.isWindows) {
+        bias = 10;
+      } else if (os_detect.isLinux) {
+        bias = 5;
+      } else {
+        bias = 1;
+      }
+
+      delta = log(amount) * sensitivity * bias;
     } else {
       // Mouse wheel or other input: positive zooms in, negative zooms out
       delta = amount * zoomSpeed * sensitivity;
     }
 
     final double targetLogZoom =
-        trackpadInput ? logZoom + delta : logZoom - delta;
+        isTrackpadInput ? logZoom + delta : logZoom - delta;
 
     final double targetZoom =
         exp(targetLogZoom); // Convert back to linear space
@@ -826,14 +839,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                     if (event is PointerScrollEvent &&
                         widget.controller.config.enablePan &&
                         event.scrollDelta != const Offset(10, 10)) {
-                      if (kIsWeb) {
-                        _onDragUpdate(-event.scrollDelta);
-                      } else {
-                        _setZoomFromRawInput(
-                          event.scrollDelta.dy,
-                          event.position,
-                        );
-                      }
+                      _setZoomFromRawInput(
+                        event.scrollDelta.dy,
+                        event.position,
+                      );
                     }
                     if (event is PointerScaleEvent &&
                         widget.controller.config.enableZoom) {
@@ -841,7 +850,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                         _setZoomFromRawInput(
                           event.scale,
                           event.position,
-                          trackpadInput: true,
+                          isTrackpadInput: true,
                         );
                       }
                     }
