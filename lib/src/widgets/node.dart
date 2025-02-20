@@ -49,18 +49,18 @@ class NodeWidget extends StatefulWidget {
 }
 
 class _NodeWidgetState extends State<NodeWidget> {
-  // Interaction state for linking ports.
-  bool _isLinking = false;
-
-  // Timer for auto-scrolling when dragging near the edge.
-  Timer? _edgeTimer;
-
-  // Temporary link locator used during linking.
-  _TempLink? _tempLink;
-
+  // Wrapper state
   double get viewportZoom => widget.controller.viewportZoom;
   Offset get viewportOffset => widget.controller.viewportOffset;
   FlNodeStyle get style => widget.node.prototype.style;
+
+  // Interaction state
+  bool _isLinking = false;
+
+  // Interaction kinematics
+  Offset? _lastPanPosition;
+  Timer? _edgeTimer;
+  _TempLink? _tempLink;
 
   @override
   void initState() {
@@ -346,7 +346,98 @@ class _NodeWidgetState extends State<NodeWidget> {
 
   Widget controlsWrapper(Widget child) {
     return os_detect.isAndroid || os_detect.isIOS
-        ? child
+        ? GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            // A quick tap simply selects the node if not already selected.
+            onTap: () {
+              if (!widget.controller.selectedNodeIds.contains(widget.node.id)) {
+                widget.controller.selectNodesById({widget.node.id});
+              }
+            },
+            // A long press opens the context menu.
+            onLongPressStart: (details) {
+              final position = details.globalPosition;
+              final locator = _isNearPort(position);
+
+              // Ensure the node is selected before showing context menus.
+              if (!widget.node.state.isSelected) {
+                widget.controller.clearSelection();
+                widget.controller.selectNodesById({widget.node.id});
+              }
+
+              if (locator != null && !widget.node.state.isCollapsed) {
+                // Port-specific context menu.
+                createAndShowContextMenu(
+                  context,
+                  entries: _portContextMenuEntries(position, locator: locator),
+                  position: position,
+                );
+              } else if (!isContextMenuVisible) {
+                // Node context menu.
+                final entries = widget.contextMenuBuilder != null
+                    ? widget.contextMenuBuilder!(context, widget.node)
+                    : _defaultNodeContextMenuEntries();
+                createAndShowContextMenu(
+                  context,
+                  entries: entries,
+                  position: position,
+                );
+              }
+            },
+            // Save the current pointer position for later use.
+            onPanDown: (details) {
+              _lastPanPosition = details.globalPosition;
+            },
+            // When the drag starts, decide whether to initiate linking or selection.
+            onPanStart: (details) {
+              final position = details.globalPosition;
+              _isLinking = false;
+              _tempLink = null;
+
+              final locator = _isNearPort(position);
+              if (locator != null) {
+                // Start linking if the gesture begins near a port.
+                _isLinking = true;
+                _onLinkStart(locator);
+              } else {
+                // If not linking and the node isn’t selected, select it.
+                if (!widget.controller.selectedNodeIds
+                    .contains(widget.node.id)) {
+                  widget.controller.selectNodesById({widget.node.id});
+                }
+              }
+            },
+            // Update linking or drag-selection as the pointer moves.
+            onPanUpdate: (details) {
+              _lastPanPosition = details.globalPosition;
+              if (_isLinking) {
+                _onLinkUpdate(details.globalPosition);
+              } else {
+                _startEdgeTimer(details.globalPosition);
+                widget.controller.dragSelection(details.delta);
+              }
+            },
+            // When the drag ends, complete the linking or cancel/reset the selection.
+            onPanEnd: (details) {
+              if (_isLinking) {
+                final locator = _isNearPort(_lastPanPosition!);
+                if (locator != null) {
+                  _onLinkEnd(locator);
+                } else {
+                  createAndShowContextMenu(
+                    context,
+                    entries: _createSubmenuEntries(_lastPanPosition!),
+                    position: _lastPanPosition!,
+                    onDismiss: (value) => _onLinkCancel(),
+                  );
+                }
+                _isLinking = false;
+              } else {
+                _resetEdgeTimer();
+              }
+            },
+            child: child,
+          )
         : ImprovedListener(
             behavior: HitTestBehavior.translucent,
             onPointerPressed: (event) async {

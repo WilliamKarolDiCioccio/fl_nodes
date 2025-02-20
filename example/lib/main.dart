@@ -300,37 +300,68 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                     FlOverlayData(
                       bottom: 0,
                       left: 0,
-                      child: const Opacity(
+                      child: Opacity(
                         opacity: 0.5,
                         child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Mouse Commands:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(' - Left Click: Select Node'),
-                              Text(' - Right Click: Open Context Menu'),
-                              Text(' - Scroll: Zoom In/Out'),
-                              Text(' - Middle Click: Pan'),
-                              SizedBox(height: 8),
-                              Text(
-                                'Keyboard Commands:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(' - Ctrl + S: Save Project'),
-                              Text(' - Ctrl + O: Open Project'),
-                              Text(' - Ctrl + N: New Project'),
-                              Text(' - Ctrl + C: Copy Node'),
-                              Text(' - Ctrl + V: Paste Node'),
-                              Text(' - Ctrl + X: Cut Node'),
-                              Text(' - Delete | Backspace: Remove Node'),
-                              Text(' - Ctrl + Z: Undo'),
-                              Text(' - Ctrl + Y: Redo'),
-                            ],
-                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: os_detect.isAndroid || os_detect.isIOS
+                              ? const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Touch Commands:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(' - Tap: Select Node'),
+                                    Text(' - Double Tap: Clear Selection'),
+                                    Text(' - Long Press: Open Context Menu'),
+                                    Text(
+                                      ' - Drag: Start Linking / Select Nodes',
+                                    ),
+                                    Text(' - Pinch: Zoom In/Out'),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Additional Gestures:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(' - Two-Finger Drag: Pan'),
+                                  ],
+                                )
+                              : const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Mouse Commands:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(' - Left Click: Select Node'),
+                                    Text(' - Right Click: Open Context Menu'),
+                                    Text(' - Scroll: Zoom In/Out'),
+                                    Text(' - Middle Click: Pan'),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Keyboard Commands:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(' - Ctrl + S: Save Project'),
+                                    Text(' - Ctrl + O: Open Project'),
+                                    Text(' - Ctrl + N: New Project'),
+                                    Text(' - Ctrl + C: Copy Node'),
+                                    Text(' - Ctrl + V: Paste Node'),
+                                    Text(' - Ctrl + X: Cut Node'),
+                                    Text(' - Delete | Backspace: Remove Node'),
+                                    Text(' - Ctrl + Z: Undo'),
+                                    Text(' - Ctrl + Y: Redo'),
+                                  ],
+                                ),
                         ),
                       ),
                     ),
