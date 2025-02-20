@@ -449,7 +449,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     final double targetZoom =
         exp(targetLogZoom); // Convert back to linear space
 
-    _setZoom(targetZoom, animate: !os_detect.isMacOS && !os_detect.isIOS);
+    _setZoom(
+      targetZoom,
+      animate: !os_detect.isMacOS && !os_detect.isIOS && !os_detect.isAndroid,
+    );
   }
 
   void _setZoom(double targetZoom, {bool animate = false}) {
@@ -703,7 +706,6 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
               },
               onScaleUpdate: (ScaleUpdateDetails details) {
                 _lastFocalPoint = details.focalPoint;
-
                 // If the user uses more than one finger (or the scale changes),
                 // treat the gesture as a pan/zoom.
                 if (details.scale != 1.0) {
@@ -725,7 +727,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   }
                   if (widget.controller.config.enableZoom) {
                     // Pass the current scale factor and focal point for zooming.
-                    _setZoomFromRawInput(details.scale, details.focalPoint);
+                    _setZoomFromRawInput(
+                      details.scale < 1 ? details.scale : -details.scale,
+                      details.focalPoint,
+                    );
                   }
                 } else {
                   // Single finger movement: update linking or selection.
