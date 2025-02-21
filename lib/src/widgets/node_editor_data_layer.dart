@@ -368,7 +368,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     final Offset targetOffset = offset + offsetFactor;
 
-    _setOffset(targetOffset, animate: !os_detect.isAndroid);
+    // Never animate when setting offset from raw input
+    _setOffset(targetOffset);
   }
 
   void _setOffset(Offset targetOffset, {bool animate = false}) {
