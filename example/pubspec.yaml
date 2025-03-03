@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   fl_nodes:
     path: ../
+    version: 0.2.0+1
   gap: ^3.0.1
   provider: ^6.1.2
   uuid: ^4.5.1
