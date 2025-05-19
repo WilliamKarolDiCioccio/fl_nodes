@@ -77,7 +77,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     widget.node.builtHeaderStyle =
         widget.node.prototype.headerStyleBuilder(widget.node.state);
 
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       widget.node.onRendered(widget.node);
       _updatePortsPosition();
@@ -103,11 +103,13 @@ class _NodeWidgetState extends State<NodeWidget> {
       widget.node.builtHeaderStyle =
           widget.node.prototype.headerStyleBuilder(widget.node.state);
 
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        widget.node.onRendered(widget.node);
-        _updatePortsPosition();
-      });
+      if (widget.node.state.isCollapsed != oldWidget.node.state.isCollapsed) {
+        SchedulerBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+          widget.node.onRendered(widget.node);
+          _updatePortsPosition();
+        });
+      }
     }
   }
 
@@ -126,7 +128,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     } else if (event is CollapseEvent) {
       if (event.nodeIds.contains(widget.node.id)) {
         setState(() {
-          SchedulerBinding.instance.addPostFrameCallback((_) {
+          SchedulerBinding.instance.addPostFrameCallback((_) async {
             if (!mounted) return;
             widget.node.onRendered(widget.node);
             _updatePortsPosition();
@@ -714,10 +716,19 @@ class _NodeWidgetState extends State<NodeWidget> {
             key: widget.node.key,
             clipBehavior: Clip.none,
             children: [
-              Container(decoration: widget.node.builtStyle.decoration),
-              ...widget.node.ports.entries.map(
-                (entry) => _buildPortIndicator(entry.value),
+              Container(
+                decoration: widget.controller.lodLevel >= 3
+                    ? widget.node.builtStyle.decoration
+                    : widget.node.builtStyle.decoration.copyWith(
+                        color: widget.node.builtStyle.decoration.color
+                            ?.withAlpha(255),
+                        borderRadius: BorderRadius.zero,
+                      ),
               ),
+              if (widget.controller.lodLevel == 4)
+                ...widget.node.ports.entries.map(
+                  (entry) => _buildPortIndicator(entry.value),
+                ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -732,6 +743,7 @@ class _NodeWidgetState extends State<NodeWidget> {
                           ),
                         )
                       : _NodeHeaderWidget(
+                          lodLevel: widget.controller.lodLevel,
                           nodeDisplayName: widget.node.prototype.displayName,
                           style: widget.node.builtHeaderStyle,
                           onToggleCollapse: () =>
@@ -822,11 +834,13 @@ class _NodeWidgetState extends State<NodeWidget> {
 }
 
 class _NodeHeaderWidget extends StatelessWidget {
+  final int lodLevel;
   final FlNodeHeaderStyle style;
   final String nodeDisplayName;
   final VoidCallback onToggleCollapse;
 
   const _NodeHeaderWidget({
+    required this.lodLevel,
     required this.style,
     required this.nodeDisplayName,
     required this.onToggleCollapse,
@@ -836,15 +850,21 @@ class _NodeHeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: style.padding,
-      decoration: style.decoration,
+      decoration: lodLevel <= 2
+          ? style.decoration.copyWith(
+              color: style.decoration.color?.withAlpha(255),
+              borderRadius: BorderRadius.zero,
+            )
+          : style.decoration,
       child: Row(
         children: [
-          InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: onToggleCollapse,
-            child: Icon(style.icon, color: Colors.white, size: 20),
-          ),
+          if (lodLevel >= 3)
+            InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: onToggleCollapse,
+              child: Icon(style.icon, color: Colors.white, size: 20),
+            ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

@@ -95,6 +95,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
       gridShader: gridShader,
       offset: controller.viewportOffset,
       zoom: controller.viewportZoom,
+      lodLevel: controller.lodLevel,
       tmpLinkDrawData: _getTmpLinkDrawData(),
       selectionArea: controller.selectionArea,
       nodesData: _getNodeDrawData(),
@@ -110,6 +111,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
       ..style = style
       ..offset = controller.viewportOffset
       ..zoom = controller.viewportZoom
+      ..lodLevel = controller.lodLevel
       ..tmpLinkDrawData = _getTmpLinkDrawData()
       ..selectionArea = controller.selectionArea
       ..updateNodes(_getNodeDrawData());
@@ -150,6 +152,7 @@ class NodeEditorRenderBox extends RenderBox
     required FragmentShader gridShader,
     required Offset offset,
     required double zoom,
+    required int lodLevel,
     required LinkDrawData? tmpLinkDrawData,
     required Rect selectionArea,
     required List<NodeDiffCheckData> nodesData,
@@ -158,6 +161,7 @@ class NodeEditorRenderBox extends RenderBox
         _gridShader = gridShader,
         _offset = offset,
         _zoom = zoom,
+        _lodLevel = lodLevel,
         _tmpLinkDrawData = tmpLinkDrawData,
         _selectionArea = selectionArea {
     _loadGridShader();
@@ -209,6 +213,14 @@ class NodeEditorRenderBox extends RenderBox
     _zoom = value;
     _transformMatrixDirty = true;
     markNeedsPaint();
+  }
+
+  int _lodLevel;
+  int get lodLevel => _lodLevel;
+  set lodLevel(int value) {
+    if (_lodLevel == value) return;
+    _lodLevel = value;
+    markNeedsLayout();
   }
 
   Matrix4? _transformMatrix;
@@ -448,7 +460,7 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     // Batch paint shadows for unselected nodes
-    if (unselectedShadowPath.computeMetrics().isNotEmpty) {
+    if (unselectedShadowPath.computeMetrics().isNotEmpty && lodLevel == 4) {
       canvas.drawShadow(
         unselectedShadowPath,
         const ui.Color(0xC8000000),
@@ -464,7 +476,7 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     // Batch paint shadows for selected nodes
-    if (selectedShadowPath.computeMetrics().isNotEmpty) {
+    if (selectedShadowPath.computeMetrics().isNotEmpty && lodLevel == 4) {
       canvas.drawShadow(
         selectedShadowPath,
         const ui.Color(0xC8000000),
@@ -564,6 +576,8 @@ class NodeEditorRenderBox extends RenderBox
     );
   }
 
+  final Map<FlLinkStyle, (Path, Paint)> batchByStyle = {};
+
   void _paintLinks(Canvas canvas) {
     final Set<LinkDrawData> linkDrawData = {};
 
@@ -588,8 +602,6 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     // We don't draw the temporary link here because it should be on top of the nodes
-
-    final Map<FlLinkStyle, (Path, Paint)> batchByStyle = {};
 
     for (final drawData in linkDrawData) {
       if (drawData.linkStyle.useGradient) {
@@ -643,6 +655,7 @@ class NodeEditorRenderBox extends RenderBox
     for (final entry in batchByStyle.entries) {
       final (path, paint) = entry.value;
       canvas.drawPath(path, paint);
+      path.reset();
     }
   }
 

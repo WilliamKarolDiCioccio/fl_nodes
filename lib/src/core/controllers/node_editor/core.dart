@@ -122,6 +122,7 @@ class FlNodeEditorController {
 
   set viewportOffset(Offset offset) {
     _viewportOffset = offset;
+
     eventBus.emit(
       ViewportOffsetEvent(
         id: const Uuid().v4(),
@@ -134,6 +135,7 @@ class FlNodeEditorController {
 
   set viewportZoom(double zoom) {
     _viewportZoom = zoom;
+
     eventBus.emit(
       ViewportZoomEvent(
         id: const Uuid().v4(),
@@ -142,6 +144,25 @@ class FlNodeEditorController {
         isHandled: true,
       ),
     );
+
+    _lodLevel = _computeLODLevel(_viewportZoom);
+  }
+
+  int _lodLevel = 0;
+  int get lodLevel => _lodLevel;
+
+  int _computeLODLevel(double zoom) {
+    if (zoom > 0.5) {
+      return 4;
+    } else if (zoom > 0.25) {
+      return 3;
+    } else if (zoom > 0.125) {
+      return 2;
+    } else if (zoom > 0.0625) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 
   /// This method is used to set the offset of the viewport.
