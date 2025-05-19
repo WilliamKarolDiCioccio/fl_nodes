@@ -220,7 +220,7 @@ class NodeEditorRenderBox extends RenderBox
   set lodLevel(int value) {
     if (_lodLevel == value) return;
     _lodLevel = value;
-    markNeedsLayout();
+    markNeedsPaint();
   }
 
   Matrix4? _transformMatrix;

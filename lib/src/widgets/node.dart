@@ -717,18 +717,20 @@ class _NodeWidgetState extends State<NodeWidget> {
             clipBehavior: Clip.none,
             children: [
               Container(
-                decoration: widget.controller.lodLevel >= 3
-                    ? widget.node.builtStyle.decoration
-                    : widget.node.builtStyle.decoration.copyWith(
-                        color: widget.node.builtStyle.decoration.color
-                            ?.withAlpha(255),
+                decoration: widget.controller.lodLevel <= 2
+                    ? widget.node.builtStyle.decoration.copyWith(
+                        color: Color.alphaBlend(
+                          widget.node.builtStyle.decoration.color!
+                              .withAlpha(255),
+                          widget.controller.style.decoration.color!,
+                        ),
                         borderRadius: BorderRadius.zero,
-                      ),
+                      )
+                    : widget.node.builtStyle.decoration,
               ),
-              if (widget.controller.lodLevel == 4)
-                ...widget.node.ports.entries.map(
-                  (entry) => _buildPortIndicator(entry.value),
-                ),
+              ...widget.node.ports.entries.map(
+                (entry) => _buildPortIndicator(entry.value),
+              ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -858,13 +860,12 @@ class _NodeHeaderWidget extends StatelessWidget {
           : style.decoration,
       child: Row(
         children: [
-          if (lodLevel >= 3)
-            InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: onToggleCollapse,
-              child: Icon(style.icon, color: Colors.white, size: 20),
-            ),
+          InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: onToggleCollapse,
+            child: Icon(style.icon, color: Colors.white, size: 20),
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
