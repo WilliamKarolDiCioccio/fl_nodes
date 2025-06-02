@@ -38,5 +38,5 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ">=4.0.0 <6.0.0"
+  flutter_lints: ">=4.0.0 <7.0.0"
   test_coverage_badge: ^0.3.2
