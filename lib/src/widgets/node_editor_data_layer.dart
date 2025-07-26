@@ -521,12 +521,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         widget.controller.nodePrototypes.forEach(
           (key, value) {
             if (value.ports.any(
-              (port) =>
-                  port.direction != startPort.prototype.direction &&
-                  port.type == startPort.prototype.type &&
-                  (port.dataType == startPort.prototype.dataType ||
-                      port.dataType == dynamic ||
-                      startPort.prototype.dataType == dynamic),
+              startPort.prototype.compatibleWith,
             )) {
               compatiblePrototypes.add(MapEntry(key, value));
             }
@@ -564,20 +559,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 _tempLink!.nodeId,
                 _tempLink!.portId,
                 addedNode.id,
-                addedNode.ports.entries
+                addedNode.ports.values
+                    .map((port) => port.prototype)
                     .firstWhere(
-                      (port) =>
-                          port.value.prototype.direction !=
-                              startPort.prototype.direction &&
-                          port.value.prototype.type ==
-                              startPort.prototype.type &&
-                          (port.value.prototype.dataType ==
-                                  startPort.prototype.dataType ||
-                              port.value.prototype.dataType == dynamic ||
-                              startPort.prototype.dataType == dynamic),
+                      startPort.prototype.compatibleWith,
                     )
-                    .value
-                    .prototype
                     .idName,
               );
 

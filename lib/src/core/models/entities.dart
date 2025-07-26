@@ -125,6 +125,11 @@ abstract class PortPrototype {
     required this.direction,
     required this.type,
   });
+
+  bool compatibleWith(PortPrototype other) =>
+      direction != other.direction &&
+      type == other.type &&
+      dataType == other.dataType;
 }
 
 class DataInputPortPrototype extends PortPrototype {
