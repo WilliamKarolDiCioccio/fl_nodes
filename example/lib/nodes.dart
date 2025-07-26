@@ -93,10 +93,9 @@ NodePrototype createValueNode<T>({
         displayName: 'Completed',
         styleBuilder: controlOutputPortStyle,
       ),
-      DataOutputPortPrototype(
+      DataOutputPortPrototype<T>(
         idName: 'value',
         displayName: 'Value',
-        dataType: T,
         styleBuilder: outputDataPortStyle,
       ),
     ],
@@ -331,16 +330,14 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Exec',
           styleBuilder: controlInputPortStyle,
         ),
-        DataInputPortPrototype(
+        DataInputPortPrototype<double>(
           idName: 'a',
           displayName: 'A',
-          dataType: double,
           styleBuilder: inputDataPortStyle,
         ),
-        DataInputPortPrototype(
+        DataInputPortPrototype<double>(
           idName: 'b',
           displayName: 'B',
-          dataType: double,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -348,10 +345,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Completed',
           styleBuilder: controlOutputPortStyle,
         ),
-        DataOutputPortPrototype(
+        DataOutputPortPrototype<double>(
           idName: 'result',
           displayName: 'Result',
-          dataType: double,
           styleBuilder: outputDataPortStyle,
         ),
       ],
@@ -428,10 +424,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Completed',
           styleBuilder: controlOutputPortStyle,
         ),
-        DataOutputPortPrototype(
+        DataOutputPortPrototype<double>(
           idName: 'value',
           displayName: 'Value',
-          dataType: double,
           styleBuilder: outputDataPortStyle,
         ),
       ],
@@ -468,10 +463,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Exec',
           styleBuilder: controlInputPortStyle,
         ),
-        DataInputPortPrototype(
+        DataInputPortPrototype<bool>(
           idName: 'condition',
           displayName: 'Condition',
-          dataType: bool,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -523,13 +517,11 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         DataInputPortPrototype(
           idName: 'a',
           displayName: 'A',
-          dataType: dynamic,
           styleBuilder: inputDataPortStyle,
         ),
         DataInputPortPrototype(
           idName: 'b',
           displayName: 'B',
-          dataType: dynamic,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -537,10 +529,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Completed',
           styleBuilder: controlOutputPortStyle,
         ),
-        DataOutputPortPrototype(
+        DataOutputPortPrototype<bool>(
           idName: 'result',
           displayName: 'Result',
-          dataType: bool,
           styleBuilder: outputDataPortStyle,
         ),
       ],
@@ -626,7 +617,6 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         DataInputPortPrototype(
           idName: 'value',
           displayName: 'Value',
-          dataType: dynamic,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -676,10 +666,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Exec',
           styleBuilder: controlInputPortStyle,
         ),
-        DataInputPortPrototype(
+        DataInputPortPrototype<double>(
           idName: 'value',
           displayName: 'Value',
-          dataType: double,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -687,10 +676,9 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: 'Completed',
           styleBuilder: controlOutputPortStyle,
         ),
-        DataOutputPortPrototype(
+        DataOutputPortPrototype<int>(
           idName: 'rounded',
           displayName: 'Rounded',
-          dataType: int,
           styleBuilder: outputDataPortStyle,
         ),
       ],
@@ -766,7 +754,6 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         DataInputPortPrototype(
           idName: 'list',
           displayName: 'List',
-          dataType: dynamic,
           styleBuilder: inputDataPortStyle,
         ),
         ControlOutputPortPrototype(
@@ -782,13 +769,11 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         DataOutputPortPrototype(
           idName: 'listElem',
           displayName: 'List Element',
-          dataType: dynamic,
           styleBuilder: outputDataPortStyle,
         ),
-        DataOutputPortPrototype(
+        DataOutputPortPrototype<int>(
           idName: 'listIdx',
           displayName: 'List Index',
-          dataType: int,
           styleBuilder: outputDataPortStyle,
         ),
       ],
