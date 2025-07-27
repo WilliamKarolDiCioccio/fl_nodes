@@ -4,6 +4,7 @@ export 'package:fl_nodes/src/core/models/styles.dart';
 export 'package:fl_nodes/src/core/models/entities.dart'
     show
         Link,
+        PortPrototype,
         NodePrototype,
         DataInputPortPrototype,
         DataOutputPortPrototype,
@@ -12,7 +13,9 @@ export 'package:fl_nodes/src/core/models/entities.dart'
         FieldPrototype,
         PortInstance,
         FieldInstance,
+        LinkState,
         PortState,
+        NodeState,
         NodeInstance;
 export 'package:fl_nodes/src/core/models/events.dart' show FieldEventType;
 export 'package:fl_nodes/src/core/models/events.dart'
