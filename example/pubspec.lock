@@ -263,14 +263,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
-  os_detect:
-    dependency: "direct main"
-    description:
-      name: os_detect
-      sha256: "7d87c0dd98c6faf110d5aa498e9a6df02ffce4bb78cc9cfc8ad02929be9bb71f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.3"
   path:
     dependency: transitive
     description:
