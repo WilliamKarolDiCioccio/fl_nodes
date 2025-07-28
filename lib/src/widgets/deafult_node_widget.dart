@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_context_menu/flutter_context_menu.dart';
-import 'package:os_detect/os_detect.dart' as os_detect;
 
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
@@ -397,7 +397,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   Widget controlsWrapper(Widget child) {
-    return os_detect.isAndroid || os_detect.isIOS
+    return defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS
         ? GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {

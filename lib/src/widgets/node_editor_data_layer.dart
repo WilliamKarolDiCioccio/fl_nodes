@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:keymap/keymap.dart';
-import 'package:os_detect/os_detect.dart' as os_detect;
 
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
@@ -439,19 +438,13 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       // Due to the logarithmic scale, we need to multiply by 10 to get a reasonable delta.
       // NOTE: macOS seems to have a different behavior, so we need to account for that.
 
-      late final double bias;
-
-      if (os_detect.isMacOS) {
-        bias = 1;
-      } else if (os_detect.isWindows) {
-        bias = 10;
-      } else if (os_detect.isLinux) {
-        bias = 5;
-      } else if (os_detect.isAndroid) {
-        bias = 0.75;
-      } else {
-        bias = 1;
-      }
+      final double bias = switch (defaultTargetPlatform) {
+        TargetPlatform.macOS => 1,
+        TargetPlatform.windows => 10,
+        TargetPlatform.linux => 5,
+        TargetPlatform.android || TargetPlatform.iOS => 0.75,
+        _ => 1
+      };
 
       delta = log(amount) * sensitivity * bias;
     } else {
@@ -467,7 +460,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     _setZoom(
       targetZoom,
-      animate: !os_detect.isMacOS && !os_detect.isIOS && !os_detect.isAndroid,
+      animate:
+          defaultTargetPlatform != TargetPlatform.macOS &&
+          defaultTargetPlatform != TargetPlatform.iOS &&
+          defaultTargetPlatform != TargetPlatform.android,
     );
   }
 
@@ -685,7 +681,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     }
 
     Widget controlsWrapper(Widget child) {
-      return os_detect.isAndroid || os_detect.isIOS
+      return defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS
           ? GestureDetector(
               onTap: () => widget.controller.clearSelection(),
               onLongPressStart: (LongPressStartDetails details) {

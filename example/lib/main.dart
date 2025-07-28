@@ -9,7 +9,6 @@ import 'package:example/data_handlers.dart';
 import 'package:example/nodes.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:os_detect/os_detect.dart' as os_detect;
 
 import 'package:fl_nodes/fl_nodes.dart';
 
@@ -184,7 +183,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
         ),
       );
 
-      if (os_detect.isBrowser) {
+      if (kIsWeb) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -195,7 +194,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
         );
       }
 
-      if (os_detect.isAndroid || os_detect.isIOS) {
+      if (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -299,7 +299,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                         opacity: 0.5,
                         child: Padding(
                           padding: const EdgeInsets.all(8),
-                          child: os_detect.isAndroid || os_detect.isIOS
+                          child: defaultTargetPlatform == TargetPlatform.android ||
+                                     defaultTargetPlatform == TargetPlatform.iOS
                               ? const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
