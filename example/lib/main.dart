@@ -54,19 +54,15 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
     _nodeEditorController = FlNodeEditorController(
       projectSaver: (jsonData) async {
-        if (kIsWeb) return false;
-
         final String? outputPath = await FilePicker.platform.saveFile(
           dialogTitle: 'Save Project',
           fileName: 'node_project.json',
           type: FileType.custom,
           allowedExtensions: ['json'],
+          bytes: utf8.encode(jsonEncode(jsonData)),
         );
 
-        if (outputPath != null) {
-          final File file = File(outputPath);
-          await file.writeAsString(jsonEncode(jsonData));
-
+        if (outputPath != null || kIsWeb) {
           return true;
         } else {
           return false;
@@ -182,17 +178,6 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
           backgroundColor: Colors.blue,
         ),
       );
-
-      if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Currently our example code depends on https://pub.dev/packages/file_picker so you won't be able to save files on the web",
-            ),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
 
       if (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS) {
