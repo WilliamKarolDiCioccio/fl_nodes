@@ -97,7 +97,7 @@ class FlLinkStyle {
     required this.curveType,
   }) : assert(
           color != null || gradient != null,
-          'Gradient must be provided if useGradient is true',
+          'Either a color or a gradient must be provided',
         );
 
   FlLinkStyle copyWith({
