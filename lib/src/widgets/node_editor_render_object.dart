@@ -562,7 +562,7 @@ class NodeEditorRenderBox extends RenderBox
       // We don't draw the temporary link here because it should be on top of the nodes
 
       for (final data in linkData) {
-        if (data.linkStyle.useGradient) {
+        if (data.linkStyle.gradient != null) {
           late Path path;
 
           switch (data.linkStyle.curveType) {
@@ -816,7 +816,7 @@ class NodeEditorRenderBox extends RenderBox
 
     final Paint paint = Paint();
 
-    if (_tmpLinkData!.linkStyle.useGradient) {
+    if (_tmpLinkData!.linkStyle.gradient != null) {
       final shader = _tmpLinkData!.linkStyle.gradient!.createShader(
         Rect.fromPoints(
           _tmpLinkData!.outPortOffset,

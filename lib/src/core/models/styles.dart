@@ -84,7 +84,6 @@ enum FlLinkCurveType {
 
 class FlLinkStyle {
   final Color? color;
-  final bool useGradient;
   final LinearGradient? gradient;
   final double lineWidth;
   final FlLineDrawMode drawMode;
@@ -92,18 +91,13 @@ class FlLinkStyle {
 
   const FlLinkStyle({
     this.color,
-    this.useGradient = false,
     this.gradient,
     required this.lineWidth,
     required this.drawMode,
     required this.curveType,
-  })  : assert(
-          useGradient == false || gradient != null,
+  }) : assert(
+          color != null || gradient != null,
           'Gradient must be provided if useGradient is true',
-        ),
-        assert(
-          useGradient || color != null,
-          'Color must be provided if no gradient is provided.',
         );
 
   FlLinkStyle copyWith({
