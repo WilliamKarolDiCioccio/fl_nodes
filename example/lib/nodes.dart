@@ -14,17 +14,11 @@ FlPortStyle outputDataPortStyle(state) => FlPortStyle(
       color: state.isHovered ? Colors.limeAccent : Colors.deepOrange,
       shape: FlPortShape.circle,
       linkStyleBuilder: (state) => FlLinkStyle(
-        useGradient: false,
         color: state.isSelected
             ? Colors.orangeAccent
             : state.isHovered
                 ? Colors.limeAccent
                 : Colors.deepOrange,
-        gradient: const LinearGradient(
-          colors: [Colors.deepOrange, Colors.purple],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
         lineWidth: state.isSelected
             ? 3.5
             : state.isHovered
@@ -41,17 +35,11 @@ FlPortStyle controlOutputPortStyle(state) => FlPortStyle(
       color: state.isHovered ? Colors.limeAccent : Colors.green,
       shape: FlPortShape.triangle,
       linkStyleBuilder: (state) => FlLinkStyle(
-        useGradient: false,
         color: state.isSelected
             ? Colors.lightGreen
             : state.isHovered
                 ? Colors.limeAccent
                 : Colors.green,
-        gradient: const LinearGradient(
-          colors: [Colors.lightGreenAccent, Colors.green],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
         lineWidth: state.isSelected
             ? 3.5
             : state.isHovered
