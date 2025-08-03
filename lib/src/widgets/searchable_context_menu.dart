@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/models/entities.dart';
-import 'context_menu.dart';
+import 'context_menu.dart' show isContextMenuVisible;
 
 class SearchableNodeMenu extends StatefulWidget {
   final List<MapEntry<String, NodePrototype>> nodePrototypes;
   final Offset position;
   final Function(String nodeKey) onNodeSelected;
   final VoidCallback? onDismiss;
+  final VoidCallback onClose; // Add this to handle closing
 
   const SearchableNodeMenu({
     super.key,
     required this.nodePrototypes,
     required this.position,
     required this.onNodeSelected,
+    required this.onClose, // Add this
     this.onDismiss,
   });
 
@@ -68,37 +70,44 @@ class _SearchableNodeMenuState extends State<SearchableNodeMenu> {
     if (index >= 0 && index < _filteredNodes.length) {
       final selectedEntry = _filteredNodes[index];
       widget.onNodeSelected(selectedEntry.key);
-      Navigator.of(context).pop();
-    }
-  }
-
-  void _handleKeyboard(KeyEvent event) {
-    if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-        setState(() {
-          _selectedIndex = (_selectedIndex + 1) % _filteredNodes.length;
-        });
-      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-        setState(() {
-          _selectedIndex = _selectedIndex > 0
-              ? _selectedIndex - 1
-              : _filteredNodes.length - 1;
-        });
-      } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-        if (_selectedIndex >= 0) {
-          _selectNode(_selectedIndex);
-        }
-      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-        Navigator.of(context).pop();
-      }
+      widget.onClose(); // Use onClose instead of Navigator.pop
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: FocusNode(),
-      onKeyEvent: _handleKeyboard,
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+            setState(() {
+              if (_filteredNodes.isNotEmpty) {
+                _selectedIndex = (_selectedIndex + 1) % _filteredNodes.length;
+              }
+            });
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+            setState(() {
+              if (_filteredNodes.isNotEmpty) {
+                _selectedIndex = _selectedIndex > 0
+                    ? _selectedIndex - 1
+                    : _filteredNodes.length - 1;
+              }
+            });
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+            if (_selectedIndex >= 0) {
+              _selectNode(_selectedIndex);
+              return KeyEventResult.handled;
+            }
+          } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+            widget.onClose(); // Use onClose instead of Navigator.pop
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
       child: Material(
         elevation: 8,
         borderRadius: BorderRadius.circular(8),
@@ -276,12 +285,23 @@ Future<void> showSearchableNodeMenu(
   VoidCallback? onDismiss,
 }) async {
   // Ensure we're not showing multiple context menus
-  if (isContextMenuVisible) return;
+  if (isContextMenuVisible) {
+    return;
+  }
 
   isContextMenuVisible = true;
 
   final overlay = Overlay.of(context);
   late OverlayEntry overlayEntry;
+  bool isRemoved = false; // Track if overlay has been removed
+
+  void safeRemove() {
+    if (!isRemoved && overlayEntry.mounted) {
+      isRemoved = true;
+      overlayEntry.remove();
+      isContextMenuVisible = false;
+    }
+  }
 
   overlayEntry = OverlayEntry(
     builder: (context) => Stack(
@@ -290,8 +310,7 @@ Future<void> showSearchableNodeMenu(
         Positioned.fill(
           child: GestureDetector(
             onTap: () {
-              overlayEntry.remove();
-              isContextMenuVisible = false;
+              safeRemove();
               onDismiss?.call();
             },
             child: Container(color: Colors.transparent),
@@ -304,14 +323,16 @@ Future<void> showSearchableNodeMenu(
           child: SearchableNodeMenu(
             nodePrototypes: nodePrototypes,
             position: position,
+            onClose: () {
+              safeRemove();
+              onDismiss?.call();
+            },
             onNodeSelected: (nodeKey) {
-              overlayEntry.remove();
-              isContextMenuVisible = false;
+              safeRemove();
               onNodeSelected(nodeKey);
             },
             onDismiss: () {
-              overlayEntry.remove();
-              isContextMenuVisible = false;
+              safeRemove();
               onDismiss?.call();
             },
           ),
@@ -324,7 +345,8 @@ Future<void> showSearchableNodeMenu(
 
   // Clean up when the overlay is removed
   overlayEntry.addListener(() {
-    if (!overlayEntry.mounted) {
+    if (!overlayEntry.mounted && !isRemoved) {
+      isRemoved = true;
       isContextMenuVisible = false;
     }
   });

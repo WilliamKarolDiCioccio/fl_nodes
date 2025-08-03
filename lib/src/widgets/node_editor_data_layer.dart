@@ -510,6 +510,9 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   }
 
   void _showSearchableNodeCreationMenu(BuildContext context, Offset position) {
+    // Reset the context menu visibility state to allow our searchable menu to show
+    isContextMenuVisible = false;
+
     final fromLink = _tempLink != null;
     final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
 
