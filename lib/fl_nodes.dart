@@ -32,3 +32,4 @@ export 'package:fl_nodes/src/core/models/events.dart'
         NodeFieldEvent;
 export 'package:fl_nodes/src/core/controllers/node_editor/core.dart';
 export 'package:fl_nodes/src/widgets/node_editor.dart';
+export 'package:fl_nodes/src/widgets/searchable_context_menu.dart';

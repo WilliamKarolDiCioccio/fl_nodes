@@ -275,18 +275,22 @@ class NodeEditorRenderBox extends RenderBox
     final lineColor = gridStyle.lineColor;
 
     gridShader.setFloat(4, gridStyle.lineWidth);
-    gridShader.setFloat(5, lineColor.r * lineColor.a);
-    gridShader.setFloat(6, lineColor.g * lineColor.a);
-    gridShader.setFloat(7, lineColor.b * lineColor.a);
-    gridShader.setFloat(8, lineColor.a);
+    gridShader.setFloat(
+        5, lineColor.red * lineColor.alpha / 65025.0); // 255*255
+    gridShader.setFloat(6, lineColor.green * lineColor.alpha / 65025.0);
+    gridShader.setFloat(7, lineColor.blue * lineColor.alpha / 65025.0);
+    gridShader.setFloat(8, lineColor.alpha / 255.0);
 
     final intersectionColor = gridStyle.intersectionColor;
 
     gridShader.setFloat(9, gridStyle.intersectionRadius);
-    gridShader.setFloat(10, intersectionColor.r * intersectionColor.a);
-    gridShader.setFloat(11, intersectionColor.g * intersectionColor.a);
-    gridShader.setFloat(12, intersectionColor.b * intersectionColor.a);
-    gridShader.setFloat(13, intersectionColor.a);
+    gridShader.setFloat(
+        10, intersectionColor.red * intersectionColor.alpha / 65025.0);
+    gridShader.setFloat(
+        11, intersectionColor.green * intersectionColor.alpha / 65025.0);
+    gridShader.setFloat(
+        12, intersectionColor.blue * intersectionColor.alpha / 65025.0);
+    gridShader.setFloat(13, intersectionColor.alpha / 255.0);
   }
 
   Set<String> visibleNodes = {};

@@ -14,10 +14,10 @@ extension JSONColor on Color {
   }
 
   String toJson(Color color) {
-    final r = color.r / 255.0;
-    final g = color.g / 255.0;
-    final b = color.b / 255.0;
-    final a = color.a / 255.0;
+    final r = color.red / 255.0;
+    final g = color.green / 255.0;
+    final b = color.blue / 255.0;
+    final a = color.alpha / 255.0;
     return '$r,$g,$b,$a';
   }
 }

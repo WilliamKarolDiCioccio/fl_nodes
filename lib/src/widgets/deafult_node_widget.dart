@@ -11,6 +11,8 @@ import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
+import 'package:fl_nodes/src/widgets/searchable_context_menu.dart'
+    show showSearchableNodeMenu;
 
 import '../constants.dart';
 import '../core/controllers/node_editor/core.dart';
@@ -464,12 +466,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  createAndShowContextMenu(
-                    context,
-                    entries: _createSubmenuEntries(_lastPanPosition!),
-                    position: _lastPanPosition!,
-                    onDismiss: (value) => _onTmpLinkCancel(),
-                  );
+                  _showSearchableNodeCreationMenu(context, _lastPanPosition!);
                 }
                 _isLinking = false;
               } else {
@@ -534,12 +531,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  createAndShowContextMenu(
-                    context,
-                    entries: _createSubmenuEntries(event.position),
-                    position: event.position,
-                    onDismiss: (value) => _onTmpLinkCancel(),
-                  );
+                  _showSearchableNodeCreationMenu(context, event.position);
                 }
               } else {
                 _resetEdgeTimer();
@@ -695,6 +687,78 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
         },
       );
     }).toList();
+  }
+
+  void _showSearchableNodeCreationMenu(BuildContext context, Offset position) {
+    final fromLink = _tempLink != null;
+    final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
+
+    if (fromLink) {
+      final startPort =
+          widget.controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+      widget.controller.nodePrototypes.forEach((key, value) {
+        if (value.ports.any(
+          (port) =>
+              port.direction != startPort.prototype.direction &&
+              port.type == startPort.prototype.type &&
+              (port.dataType == startPort.prototype.dataType ||
+                  port.dataType == dynamic ||
+                  startPort.prototype.dataType == dynamic),
+        )) {
+          compatiblePrototypes.add(MapEntry(key, value));
+        }
+      });
+    } else {
+      widget.controller.nodePrototypes.forEach(
+        (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
+      );
+    }
+
+    final worldPosition = screenToWorld(position, viewportOffset, viewportZoom);
+
+    showSearchableNodeMenu(
+      context,
+      nodePrototypes: compatiblePrototypes,
+      position: position,
+      onNodeSelected: (nodeKey) {
+        widget.controller.addNode(
+          nodeKey,
+          offset: worldPosition ?? Offset.zero,
+        );
+        if (fromLink) {
+          final addedNode = widget.controller.nodes.values.last;
+          final startPort = widget
+              .controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+          widget.controller.addLink(
+            _tempLink!.nodeId,
+            _tempLink!.portId,
+            addedNode.id,
+            addedNode.ports.entries
+                .firstWhere(
+                  (port) =>
+                      port.value.prototype.direction !=
+                          startPort.prototype.direction &&
+                      port.value.prototype.type == startPort.prototype.type &&
+                      (port.value.prototype.dataType ==
+                              startPort.prototype.dataType ||
+                          port.value.prototype.dataType == dynamic ||
+                          startPort.prototype.dataType == dynamic),
+                )
+                .value
+                .prototype
+                .idName,
+          );
+          _isLinking = false;
+          _tempLink = null;
+          setState(() {});
+        }
+      },
+      onDismiss: () {
+        if (fromLink) {
+          _onTmpLinkCancel();
+        }
+      },
+    );
   }
 
   @override

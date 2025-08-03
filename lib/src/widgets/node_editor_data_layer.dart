@@ -13,6 +13,8 @@ import 'package:keymap/keymap.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
+import 'package:fl_nodes/src/widgets/searchable_context_menu.dart'
+    show showSearchableNodeMenu;
 import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
 
 import '../constants.dart';
@@ -460,8 +462,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     _setZoom(
       targetZoom,
-      animate:
-          defaultTargetPlatform != TargetPlatform.macOS &&
+      animate: defaultTargetPlatform != TargetPlatform.macOS &&
           defaultTargetPlatform != TargetPlatform.iOS &&
           defaultTargetPlatform != TargetPlatform.android,
     );
@@ -506,6 +507,89 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         );
       });
     }
+  }
+
+  void _showSearchableNodeCreationMenu(BuildContext context, Offset position) {
+    final fromLink = _tempLink != null;
+    final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
+
+    if (fromLink) {
+      final startPort =
+          widget.controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+
+      widget.controller.nodePrototypes.forEach(
+        (key, value) {
+          if (value.ports.any(
+            (port) =>
+                port.direction != startPort.prototype.direction &&
+                port.type == startPort.prototype.type &&
+                (port.dataType == startPort.prototype.dataType ||
+                    port.dataType == dynamic ||
+                    startPort.prototype.dataType == dynamic),
+          )) {
+            compatiblePrototypes.add(MapEntry(key, value));
+          }
+        },
+      );
+    } else {
+      widget.controller.nodePrototypes.forEach(
+        (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
+      );
+    }
+
+    final worldPosition = screenToWorld(
+      position,
+      offset,
+      zoom,
+    );
+
+    showSearchableNodeMenu(
+      context,
+      nodePrototypes: compatiblePrototypes,
+      position: position,
+      onNodeSelected: (nodeKey) {
+        widget.controller.addNode(
+          nodeKey,
+          offset: worldPosition ?? Offset.zero,
+        );
+
+        if (fromLink) {
+          final addedNode = widget.controller.nodes.values.last;
+          final startPort = widget
+              .controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+
+          widget.controller.addLink(
+            _tempLink!.nodeId,
+            _tempLink!.portId,
+            addedNode.id,
+            addedNode.ports.entries
+                .firstWhere(
+                  (port) =>
+                      port.value.prototype.direction !=
+                          startPort.prototype.direction &&
+                      port.value.prototype.type == startPort.prototype.type &&
+                      (port.value.prototype.dataType ==
+                              startPort.prototype.dataType ||
+                          port.value.prototype.dataType == dynamic ||
+                          startPort.prototype.dataType == dynamic),
+                )
+                .value
+                .prototype
+                .idName,
+          );
+
+          _isLinking = false;
+          _tempLink = null;
+
+          setState(() {});
+        }
+      },
+      onDismiss: () {
+        if (fromLink) {
+          _onLinkCancel();
+        }
+      },
+    );
   }
 
   @override
@@ -615,10 +699,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
           onSelected: () => widget.controller.setViewportZoom(1.0),
         ),
         const MenuDivider(),
-        MenuItem.submenu(
+        MenuItem(
           label: 'Create',
           icon: Icons.add,
-          items: createSubmenuEntries(position),
+          onSelected: () => _showSearchableNodeCreationMenu(context, position),
         ),
         MenuItem(
           label: 'Paste',
@@ -763,12 +847,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   if (locator != null) {
                     _onLinkEnd(locator);
                   } else if (!isContextMenuVisible) {
-                    createAndShowContextMenu(
-                      context,
-                      entries: createSubmenuEntries(_lastFocalPoint),
-                      position: _lastFocalPoint,
-                      onDismiss: (value) => _onLinkCancel(),
-                    );
+                    _showSearchableNodeCreationMenu(context, _lastFocalPoint);
                   }
 
                   _isLinking = false;
@@ -932,12 +1011,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                         _onLinkEnd(locator);
                       } else if (!isContextMenuVisible) {
                         // Show the create submenu if no port is near the cursor
-                        createAndShowContextMenu(
-                          context,
-                          entries: createSubmenuEntries(event.position),
-                          position: event.position,
-                          onDismiss: (value) => _onLinkCancel(),
-                        );
+                        _showSearchableNodeCreationMenu(
+                            context, event.position);
                       }
                     } else if (_isSelecting) {
                       _onSelectEnd();

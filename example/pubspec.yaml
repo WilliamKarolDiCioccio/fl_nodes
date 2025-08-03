@@ -4,7 +4,7 @@ publish_to: "none"
 version: 1.0.0
 
 environment:
-  sdk: ^3.5.3
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,13 +13,13 @@ dependencies:
     path: ../
   gap: ^3.0.1
   uuid: ^4.5.1
-  file_picker: ^10.2.0
+  file_picker: ^8.3.2
   http: ^1.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: ^4.0.0
   benchmark_harness: ^2.3.1
 
 flutter:

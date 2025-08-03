@@ -221,7 +221,6 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(8),
                         child: Row(
-                          spacing: 8,
                           children: [
                             IconButton.filled(
                               tooltip: 'Toggle Hierarchy Panel',
@@ -239,6 +238,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                            const SizedBox(width: 8),
                             SearchWidget(controller: _nodeEditorController),
                             const Spacer(),
                             IconButton.filled(
@@ -284,8 +284,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                         opacity: 0.5,
                         child: Padding(
                           padding: const EdgeInsets.all(8),
-                          child: defaultTargetPlatform == TargetPlatform.android ||
-                                     defaultTargetPlatform == TargetPlatform.iOS
+                          child: defaultTargetPlatform ==
+                                      TargetPlatform.android ||
+                                  defaultTargetPlatform == TargetPlatform.iOS
                               ? const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

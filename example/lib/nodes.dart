@@ -389,7 +389,6 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
               setData(newSelection.first, eventType: FieldEventType.submit);
               removeOverlay();
             },
-            direction: Axis.horizontal,
           ),
         ),
       ],
@@ -580,7 +579,6 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
               setData(newSelection.first, eventType: FieldEventType.submit);
               removeOverlay();
             },
-            direction: Axis.horizontal,
           ),
         ),
       ],
