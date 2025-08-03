@@ -18,6 +18,7 @@ class FlNodeEditorConfig {
   final bool enableSnapToGrid;
   final double snapToGridSize;
   final bool enableAutoPlacement;
+  final bool enableZoomToCursor;
 
   const FlNodeEditorConfig({
     this.enableZoom = true,
@@ -34,6 +35,7 @@ class FlNodeEditorConfig {
     this.enableSnapToGrid = true,
     this.snapToGridSize = 64.0,
     this.enableAutoPlacement = false,
+    this.enableZoomToCursor = true,
   });
 
   FlNodeEditorConfig copyWith({
@@ -51,6 +53,7 @@ class FlNodeEditorConfig {
     bool? enableSnapToGrid,
     double? snapToGridSize,
     bool? enableAutoPlacement,
+    bool? enableZoomToCursor,
   }) {
     return FlNodeEditorConfig(
       enableZoom: enableZoom ?? this.enableZoom,
@@ -68,6 +71,7 @@ class FlNodeEditorConfig {
       enableSnapToGrid: enableSnapToGrid ?? this.enableSnapToGrid,
       snapToGridSize: snapToGridSize ?? this.snapToGridSize,
       enableAutoPlacement: enableAutoPlacement ?? this.enableAutoPlacement,
+      enableZoomToCursor: enableZoomToCursor ?? this.enableZoomToCursor,
     );
   }
 }

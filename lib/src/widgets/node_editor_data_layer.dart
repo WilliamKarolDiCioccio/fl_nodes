@@ -462,13 +462,15 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     _setZoom(
       targetZoom,
+      focalPoint:
+          widget.controller.config.enableZoomToCursor ? focalPoint : null,
       animate: defaultTargetPlatform != TargetPlatform.macOS &&
           defaultTargetPlatform != TargetPlatform.iOS &&
           defaultTargetPlatform != TargetPlatform.android,
     );
   }
 
-  void _setZoom(double targetZoom, {bool animate = false}) {
+  void _setZoom(double targetZoom, {bool animate = false, Offset? focalPoint}) {
     if (zoom == targetZoom) return;
 
     final beginZoom = zoom;
@@ -477,6 +479,27 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       widget.controller.config.minZoom,
       widget.controller.config.maxZoom,
     );
+
+    // Calculate the offset adjustment for zoom to cursor
+    Offset offsetAdjustment = Offset.zero;
+    if (focalPoint != null) {
+      // Calculate the world coordinates of the focal point before zoom
+      final worldFocalPointBefore =
+          screenToWorld(focalPoint, offset, beginZoom);
+
+      if (worldFocalPointBefore != null) {
+        // Calculate where the focal point will be in screen coordinates after zoom
+        final screenFocalPointAfter =
+            worldToScreen(worldFocalPointBefore, offset, endZoom);
+
+        if (screenFocalPointAfter != null) {
+          // The difference between desired and actual screen position
+          final screenDelta = focalPoint - screenFocalPointAfter;
+          // Convert screen delta to world delta and apply as offset adjustment
+          offsetAdjustment = screenDelta / endZoom;
+        }
+      }
+    }
 
     if (animate) {
       _zoomAnimationController.reset();
@@ -496,6 +519,14 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
             widget.controller.updateViewportZoomFromUI(
               _zoomAnimation.value,
             );
+            // Apply offset adjustment during animation if focal point provided
+            if (focalPoint != null && offsetAdjustment != Offset.zero) {
+              final progress = _zoomAnimationController.value;
+              final currentOffsetAdjustment = offsetAdjustment * progress;
+              widget.controller.updateViewportOffsetFromUI(
+                offset + currentOffsetAdjustment,
+              );
+            }
           });
         });
 
@@ -505,6 +536,12 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         widget.controller.updateViewportZoomFromUI(
           endZoom,
         );
+        // Apply offset adjustment immediately if focal point provided
+        if (focalPoint != null && offsetAdjustment != Offset.zero) {
+          widget.controller.updateViewportOffsetFromUI(
+            offset + offsetAdjustment,
+          );
+        }
       });
     }
   }

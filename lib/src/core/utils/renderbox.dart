@@ -95,3 +95,35 @@ Offset? screenToWorld(
 
   return Offset(canvasX, canvasY);
 }
+
+/// Converts a world (canvas) position to a screen position.
+Offset? worldToScreen(
+  Offset worldPosition,
+  Offset offset,
+  double zoom,
+) {
+  // Get the bounds of the editor widget on the screen
+  final nodeEditorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
+  if (nodeEditorBounds == null) return null;
+  final size = nodeEditorBounds.size;
+
+  // Calculate the viewport rectangle in canvas space
+  final viewport = Rect.fromLTWH(
+    -size.width / 2 / zoom - offset.dx,
+    -size.height / 2 / zoom - offset.dy,
+    size.width / zoom,
+    size.height / zoom,
+  );
+
+  // Calculate the screen position corresponding to the world position
+  final screenX =
+      (worldPosition.dx - viewport.left) / viewport.width * size.width;
+  final screenY =
+      (worldPosition.dy - viewport.top) / viewport.height * size.height;
+
+  // Adjust the screen position relative to the editor bounds
+  final adjustedScreenPosition =
+      Offset(screenX, screenY) + nodeEditorBounds.topLeft;
+
+  return adjustedScreenPosition;
+}
