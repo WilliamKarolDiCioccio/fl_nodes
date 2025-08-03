@@ -171,13 +171,13 @@ class FlNodeEditorController {
   /// Rendering accellerators are data stored in the controller to speed up rendering.
   ////////////////////////////////////////////////////////////////////////////////
 
-  int lodLevel = 0;
+  late int lodLevel = _computeLODLevel(viewportZoom);
   bool nodesDataDirty = false;
   bool linksDataDirty = false;
 
   /// This method is used to compute the level of detail (LOD) based on the zoom level and
   /// it's called automatically by the controller when the zoom level is changed.
-  int _computeLODLevel(double zoom) {
+  static int _computeLODLevel(double zoom) {
     if (zoom > 0.5) {
       return 4;
     } else if (zoom > 0.25) {
