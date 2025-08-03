@@ -6,8 +6,6 @@ precision highp float;
 
 uniform float uGridSpacingX;
 uniform float uGridSpacingY;
-uniform float uStartX;
-uniform float uStartY;
 uniform float uLineWidth;
 uniform vec4 uLineColor;
 uniform float uIntersectionRadius;
@@ -52,14 +50,18 @@ void main() {
         return;
     }
 
+    // Calculate start positions within the shader
+    float startX = floor(viewportLeft / uGridSpacingX) * uGridSpacingX;
+    float startY = floor(viewportTop / uGridSpacingY) * uGridSpacingY;
+
     float verticalAlpha = 0.0;
     float horizontalAlpha = 0.0;
     float intersectionAlpha = 0.0;
 
     // Calculate vertical line alpha
     if (uGridSpacingX > 0.0) {
-        float xSteps = round((x - uStartX) / uGridSpacingX);
-        float lineX = uStartX + xSteps * uGridSpacingX;
+        float xSteps = round((x - startX) / uGridSpacingX);
+        float lineX = startX + xSteps * uGridSpacingX;
         if (lineX >= viewportLeft && lineX <= viewportRight) {
             float dx = abs(x - lineX);
             verticalAlpha = getLineAlpha(dx, uLineWidth);
@@ -68,8 +70,8 @@ void main() {
 
     // Calculate horizontal line alpha
     if (uGridSpacingY > 0.0) {
-        float ySteps = round((y - uStartY) / uGridSpacingY);
-        float lineY = uStartY + ySteps * uGridSpacingY;
+        float ySteps = round((y - startY) / uGridSpacingY);
+        float lineY = startY + ySteps * uGridSpacingY;
         if (lineY >= viewportTop && lineY <= viewportBottom) {
             float dy = abs(y - lineY);
             horizontalAlpha = getLineAlpha(dy, uLineWidth);
@@ -78,11 +80,11 @@ void main() {
 
     // Calculate intersection alpha
     if (uIntersectionRadius > 0.0 && uGridSpacingX > 0.0 && uGridSpacingY > 0.0) {
-        float xSteps = round((x - uStartX) / uGridSpacingX);
-        float ySteps = round((y - uStartY) / uGridSpacingY);
+        float xSteps = round((x - startX) / uGridSpacingX);
+        float ySteps = round((y - startY) / uGridSpacingY);
         vec2 intersection = vec2(
-            uStartX + xSteps * uGridSpacingX,
-            uStartY + ySteps * uGridSpacingY
+            startX + xSteps * uGridSpacingX,
+            startY + ySteps * uGridSpacingY
         );
         
         if (intersection.x >= viewportLeft && intersection.x <= viewportRight &&
