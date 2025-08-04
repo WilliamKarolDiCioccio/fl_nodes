@@ -10,21 +10,15 @@ enum Operator { add, subtract, multiply, divide }
 
 enum Comparator { equal, notEqual, greater, greaterEqual, less, lessEqual }
 
-FlPortStyle outputDataPortStyle(state) => FlPortStyle(
+FlPortStyle outputDataPortStyle(PortState state) => FlPortStyle(
       color: state.isHovered ? Colors.limeAccent : Colors.deepOrange,
       shape: FlPortShape.circle,
       linkStyleBuilder: (state) => FlLinkStyle(
-        useGradient: false,
         color: state.isSelected
             ? Colors.orangeAccent
             : state.isHovered
                 ? Colors.limeAccent
                 : Colors.deepOrange,
-        gradient: const LinearGradient(
-          colors: [Colors.deepOrange, Colors.purple],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
         lineWidth: state.isSelected
             ? 3.5
             : state.isHovered
@@ -35,20 +29,14 @@ FlPortStyle outputDataPortStyle(state) => FlPortStyle(
       ),
     );
 
-FlPortStyle inputDataPortStyle(state) => outputDataPortStyle(state);
+FlPortStyle inputDataPortStyle(PortState state) => outputDataPortStyle(state);
 
-FlPortStyle controlOutputPortStyle(state) => FlPortStyle(
+FlPortStyle controlOutputPortStyle(PortState state) => FlPortStyle(
       color: state.isHovered ? Colors.limeAccent : Colors.green,
       shape: FlPortShape.triangle,
-      linkStyleBuilder: (state) => FlLinkStyle(
-        useGradient: false,
-        color: state.isSelected
-            ? Colors.lightGreen
-            : state.isHovered
-                ? Colors.limeAccent
-                : Colors.green,
+      linkStyleBuilder: (state) => FlLinkStyle.gradient(
         gradient: const LinearGradient(
-          colors: [Colors.lightGreenAccent, Colors.green],
+          colors: [Colors.lightGreenAccent, Colors.blue],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -62,7 +50,8 @@ FlPortStyle controlOutputPortStyle(state) => FlPortStyle(
       ),
     );
 
-FlPortStyle controlInputPortStyle(state) => controlOutputPortStyle(state);
+FlPortStyle controlInputPortStyle(PortState state) =>
+    controlOutputPortStyle(state);
 
 NodePrototype createValueNode<T>({
   required String idName,
