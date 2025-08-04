@@ -130,6 +130,25 @@ class FlLinkStyle {
       curveType: curveType ?? this.curveType,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FlLinkStyle) return false;
+    if (gradient != null || other.gradient != null) return false;
+
+    return color == other.color &&
+        lineWidth == other.lineWidth &&
+        drawMode == other.drawMode &&
+        curveType == other.curveType;
+  }
+
+  @override
+  int get hashCode =>
+      color.hashCode ^
+      lineWidth.hashCode ^
+      drawMode.hashCode ^
+      curveType.hashCode;
 }
 
 typedef FlLinkStyleBuilder = FlLinkStyle Function(LinkState style);

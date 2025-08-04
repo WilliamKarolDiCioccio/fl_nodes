@@ -516,9 +516,10 @@ class NodeEditorRenderBox extends RenderBox
 
   bool _portsPositionsDirty = true;
 
-  final Map<FlLinkStyle, (Path, Paint)> batchByLinkStyle = {};
+  final List<(Path, Paint)> _gradientLinks = [];
+  final Map<FlLinkStyle, (Path, Paint)> _solidColorsLinksBatches = {};
 
-  final List<(String, Path)> linksHitTestData = [];
+  final List<(String, Path)> _linksHitTestData = [];
 
   void _paintLinks(Canvas canvas, Rect viewport) {
     // Here we collect data also for ports and children to avoid multiple loops
@@ -530,8 +531,9 @@ class NodeEditorRenderBox extends RenderBox
       final Set<LinkData> linkData = {};
 
       // We cannot just reset the paths because the link styles are stateful that change hash code
-      batchByLinkStyle.clear();
-      linksHitTestData.clear();
+      _gradientLinks.clear();
+      _solidColorsLinksBatches.clear();
+      _linksHitTestData.clear();
 
       for (final link in _controller.linksById.values) {
         final outNode = _controller.nodes[link.fromTo.from]!;
@@ -577,7 +579,7 @@ class NodeEditorRenderBox extends RenderBox
               break;
           }
 
-          linksHitTestData.add((data.id, path));
+          _linksHitTestData.add((data.id, path));
 
           final shader = data.linkStyle.gradient!.createShader(
             Rect.fromPoints(data.outPortOffset, data.inPortOffset),
@@ -588,10 +590,10 @@ class NodeEditorRenderBox extends RenderBox
             ..style = PaintingStyle.stroke
             ..strokeWidth = data.linkStyle.lineWidth;
 
-          canvas.drawPath(path, paint);
+          _gradientLinks.add((path, paint));
         } else {
           final style = data.linkStyle;
-          batchByLinkStyle.putIfAbsent(style, () {
+          _solidColorsLinksBatches.putIfAbsent(style, () {
             return (
               Path(),
               Paint()
@@ -615,14 +617,18 @@ class NodeEditorRenderBox extends RenderBox
               break;
           }
 
-          linksHitTestData.add((data.id, path));
+          _linksHitTestData.add((data.id, path));
 
-          batchByLinkStyle[style]!.$1.addPath(path, Offset.zero);
+          _solidColorsLinksBatches[style]!.$1.addPath(path, Offset.zero);
         }
       }
     }
 
-    for (final entry in batchByLinkStyle.entries) {
+    for (final (path, paint) in _gradientLinks) {
+      canvas.drawPath(path, paint);
+    }
+
+    for (final entry in _solidColorsLinksBatches.entries) {
       final (path, paint) = entry.value;
       canvas.drawPath(path, paint);
     }
@@ -1056,7 +1062,7 @@ class NodeEditorRenderBox extends RenderBox
   String? _findHitLink(Offset transformedPosition, Rect checkRect) {
     const tolerance = 4.0;
 
-    for (final (id, path) in linksHitTestData) {
+    for (final (id, path) in _linksHitTestData) {
       if (checkRect.overlaps(path.getBounds())) {
         if (isPointNearPath(path, transformedPosition, tolerance)) {
           return id;
