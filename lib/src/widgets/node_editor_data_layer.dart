@@ -460,8 +460,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     _setZoom(
       targetZoom,
-      animate:
-          defaultTargetPlatform != TargetPlatform.macOS &&
+      animate: defaultTargetPlatform != TargetPlatform.macOS &&
           defaultTargetPlatform != TargetPlatform.iOS &&
           defaultTargetPlatform != TargetPlatform.android,
     );
