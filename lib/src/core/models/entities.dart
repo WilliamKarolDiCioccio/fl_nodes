@@ -125,24 +125,46 @@ abstract class PortPrototype {
     required this.direction,
     required this.type,
   });
+
+  bool compatibleWith(PortPrototype other);
 }
 
-class DataInputPortPrototype extends PortPrototype {
+class DataInputPortPrototype<T> extends PortPrototype {
   DataInputPortPrototype({
     required super.idName,
     required super.displayName,
     super.styleBuilder,
-    super.dataType,
-  }) : super(direction: PortDirection.input, type: PortType.data);
+  }) : super(dataType: T, direction: PortDirection.input, type: PortType.data);
+
+  // called by [DataOutputPortPrototype.compatibleWith], see note there
+  bool _isCompatibleWithOutput(PortPrototype other) =>
+      other is DataOutputPortPrototype<T>;
+
+  @override
+  bool compatibleWith(PortPrototype other) => _isCompatibleWithOutput(other);
 }
 
-class DataOutputPortPrototype extends PortPrototype {
+class DataOutputPortPrototype<T> extends PortPrototype {
   DataOutputPortPrototype({
     required super.idName,
     required super.displayName,
     super.styleBuilder,
-    super.dataType,
-  }) : super(direction: PortDirection.output, type: PortType.data);
+  }) : super(dataType: T, direction: PortDirection.output, type: PortType.data);
+
+  // the check we'd like to make here is:
+  //    other is DataInputPortPrototype<U> && T is U
+  //      => if [other] is an Input<Animal>, then we should be an Output<Animal/Cat/Dog/...>
+  // which could also be written:
+  //    DataInputPortPrototype<T> is other.runtimeType
+  //    => Input<Cat> is Input<Animal>
+  //
+  // unfortunately dart's type/reflection system is extremely limited,
+  // so you can't easily do that sort of check; instead, we (ab)use the
+  // fact that /instances/ know the actual type parameter, so we ask it
+  // to perform the type check for us
+  @override
+  bool compatibleWith(PortPrototype other) =>
+      other is DataInputPortPrototype && other._isCompatibleWithOutput(this);
 }
 
 class ControlInputPortPrototype extends PortPrototype {
@@ -151,6 +173,10 @@ class ControlInputPortPrototype extends PortPrototype {
     required super.displayName,
     super.styleBuilder,
   }) : super(direction: PortDirection.input, type: PortType.control);
+
+  @override
+  bool compatibleWith(PortPrototype other) =>
+      other is ControlOutputPortPrototype;
 }
 
 class ControlOutputPortPrototype extends PortPrototype {
@@ -159,6 +185,10 @@ class ControlOutputPortPrototype extends PortPrototype {
     required super.displayName,
     super.styleBuilder,
   }) : super(direction: PortDirection.output, type: PortType.control);
+
+  @override
+  bool compatibleWith(PortPrototype other) =>
+      other is ControlInputPortPrototype;
 }
 
 /// The state of a port painted on the canvas.

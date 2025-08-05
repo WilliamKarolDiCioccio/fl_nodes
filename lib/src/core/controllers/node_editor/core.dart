@@ -413,17 +413,6 @@ class FlNodeEditorController {
     String port2IdName, {
     String? eventId,
   }) {
-    bool areTypesCompatible(Type type1, Type type2) {
-      if (type1 == dynamic || type2 == dynamic) return true;
-
-      if ((type1 == int || type1 == double) &&
-          (type2 == int || type2 == double)) {
-        return true;
-      }
-
-      return type1 == type2;
-    }
-
     // Check for self-links
     if (node1Id == node2Id) return null;
 
@@ -432,28 +421,35 @@ class FlNodeEditorController {
     final node2 = nodes[node2Id]!;
     final port2 = node2.ports[port2IdName]!;
 
-    if (!areTypesCompatible(
-      port1.prototype.dataType,
-      port2.prototype.dataType,
-    )) {
+    String getErrorMessage(PortPrototype port1, PortPrototype port2) {
+      // display a specific message if they're incompatible because of different types (e.g. control vs data ports)
+      if (port1.type != port2.type) {
+        return 'Cannot connect a ${port1.type.name} port to a ${port2.type.name} port';
+      }
+
+      // display a specific message if they're incompatible because they're both the same direction (e.g. input & input)
+      if (port1.direction == port2.direction) {
+        return 'Cannot connect two ${port1.direction.name} ports';
+      }
+
+      if (port1.dataType != port2.dataType) {
+        return "Cannot connect a port of type '${port1.dataType}' to a port of type '${port2.dataType}'";
+      }
+
+      // We don't know why they incompatible, so just show a generic error message
+      return "These two ports are incompatible";
+    }
+
+    if (!port1.prototype.compatibleWith(port2.prototype)) {
       showNodeEditorSnackbar(
-        'Cannot connect ports of different data types: ${port1.prototype.dataType} and ${port2.prototype.dataType}',
+        getErrorMessage(port1.prototype, port2.prototype),
         SnackbarType.error,
       );
       return null;
-    } else if (port1.prototype.type != port2.prototype.type) {
-      showNodeEditorSnackbar(
-        'Cannot connect ports of different types: ${port1.prototype.type} and ${port2.prototype.type}',
-        SnackbarType.error,
-      );
-      return null;
-    } else if (port1.prototype.direction == port2.prototype.direction) {
-      showNodeEditorSnackbar(
-        'Cannot connect two ports with the same direction: ${port1.prototype.displayName} and ${port2.prototype.displayName}',
-        SnackbarType.error,
-      );
-      return null;
-    } else if (port1.links.any(
+    }
+
+    // if this exact link already exists, don't do anything
+    if (port1.links.any(
           (link) =>
               link.fromTo.from == node2Id && link.fromTo.to == port2IdName,
         ) ||
@@ -482,35 +478,6 @@ class FlNodeEditorController {
         toPort: port1IdName
       );
     }
-
-    bool canConnect(FromTo fromTo) {
-      final fromNode = nodes[fromTo.from]!;
-      final fromPort = fromNode.ports[fromTo.to]!;
-      final toNode = nodes[fromTo.fromPort]!;
-      final toPort = toNode.ports[fromTo.toPort]!;
-
-      // Check if the ports are compatible
-      if (fromPort.prototype.direction == toPort.prototype.direction) {
-        showNodeEditorSnackbar(
-          'Cannot connect two ports of the same type: ${fromPort.prototype.displayName} and ${toPort.prototype.displayName}',
-          SnackbarType.error,
-        );
-        return false;
-      }
-
-      // Check if the input port already has a link
-      if (toPort.prototype.type == PortType.data && toPort.links.isNotEmpty) {
-        showNodeEditorSnackbar(
-          'Cannot connect multiple links to an data input port: ${toPort.prototype.displayName} in node ${toNode.prototype.displayName}',
-          SnackbarType.error,
-        );
-        return false;
-      }
-
-      return true;
-    }
-
-    if (!canConnect(fromTo)) return null;
 
     final link = Link(
       id: const Uuid().v4(),
