@@ -158,8 +158,8 @@ Explore fully working examples:
 
 | 📱Mobile   | Android | iOS |
 | ---------- | ------- | --- |
-| **native** | ✅      | ❌  |
-| **web**    | ❌      | 🧪  |
+| **native** | ✅      | 🧪  |
+| **web**    | ✅      | 🧪  |
 
 ---
 
