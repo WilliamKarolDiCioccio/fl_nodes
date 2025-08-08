@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
-import '../../models/entities.dart';
-import '../../utils/renderbox.dart';
+import '../models/entities.dart';
+import '../utils/renderbox.dart';
 
 /// Calculates the encompassing rectangle of the selected nodes.
 ///

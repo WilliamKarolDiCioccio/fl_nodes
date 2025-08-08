@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
+import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 
-import '../../models/entities.dart';
-
+import '../models/entities.dart';
 import 'core.dart';
 
 typedef OnExecute = Future<void> Function(

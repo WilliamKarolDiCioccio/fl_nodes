@@ -13,7 +13,7 @@ import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
 
 import '../constants.dart';
-import '../core/controllers/node_editor/core.dart';
+import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/events.dart';
 import '../core/models/styles.dart';

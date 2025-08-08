@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:fl_nodes/src/widgets/debug_info.dart';
 
-import '../core/controllers/node_editor/core.dart';
+import '../core/controller/core.dart';
 
 import 'builders.dart';
 import 'node_editor_data_layer.dart';

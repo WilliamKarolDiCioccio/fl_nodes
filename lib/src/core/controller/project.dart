@@ -1,14 +1,11 @@
 import 'dart:convert';
 
+import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
-import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
-
-import '../../models/entities.dart';
-import '../../models/events.dart';
-
+import '../models/entities.dart';
+import '../models/events.dart';
 import 'core.dart';
 
 typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);

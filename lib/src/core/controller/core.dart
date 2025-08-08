@@ -2,17 +2,17 @@ import 'dart:math';
 
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/constants.dart';
-import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
-import 'package:fl_nodes/src/core/controllers/node_editor/history.dart';
-import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
+import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/controller/history.dart';
+import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../models/config.dart';
-import '../../models/entities.dart';
+import '../models/config.dart';
+import '../models/entities.dart';
 import 'clipboard.dart';
 import 'event_bus.dart';
 import 'runner.dart';

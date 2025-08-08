@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
+import 'package:fl_nodes/src/core/controller/project.dart';
 
-import '../controllers/node_editor/core.dart';
+import '../controller/core.dart';
 
 import 'entities.dart';
 

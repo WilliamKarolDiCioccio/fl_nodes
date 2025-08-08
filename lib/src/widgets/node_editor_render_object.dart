@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 
 import 'package:fl_nodes/src/widgets/deafult_node_widget.dart';
 
-import '../core/controllers/node_editor/core.dart';
+import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/styles.dart';
 
