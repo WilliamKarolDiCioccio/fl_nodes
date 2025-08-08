@@ -98,7 +98,7 @@ We're iterating fast, thanks to community adoption, forks, and feedback. Here's 
 
 ## 📚 **Quickstart Guide**
 
-For a fast and easy setup, check out our [Quickstart Guide](https://github.com/WilliamKarolDiCioccio/fl_nodes/blob/main/QUICKSTART.md). It covers the basics to get you up and running with **FlNodes** in no time!
+For a fast and easy setup, check out our [Quickstart Guide](https://github.com/WilliamKarolDiCioccio/fl_nodes/wiki/Quickstart). It covers the basics to get you up and running with **FlNodes** in no time!
 
 ---
 
