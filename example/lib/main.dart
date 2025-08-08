@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:example/data_handlers.dart';
+import 'package:example/nodes.dart';
+import 'package:example/utils/snackbar.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-
-import 'package:example/data_handlers.dart';
-import 'package:example/nodes.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:fl_nodes/fl_nodes.dart';
 
 import './widgets/hierarchy.dart';
 import './widgets/search.dart';
@@ -141,6 +140,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
         return proceed == true;
       },
+      onCallback: (type, message) =>
+          showNodeEditorSnackbar(context, message, type),
     );
 
     registerDataHandlers(_nodeEditorController);
@@ -284,8 +285,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                         opacity: 0.5,
                         child: Padding(
                           padding: const EdgeInsets.all(8),
-                          child: defaultTargetPlatform == TargetPlatform.android ||
-                                     defaultTargetPlatform == TargetPlatform.iOS
+                          child: defaultTargetPlatform ==
+                                      TargetPlatform.android ||
+                                  defaultTargetPlatform == TargetPlatform.iOS
                               ? const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

@@ -1,21 +1,18 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-
-import 'package:uuid/uuid.dart';
-
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/constants.dart';
+import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/history.dart';
 import 'package:fl_nodes/src/core/controllers/node_editor/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
-import 'package:fl_nodes/src/core/utils/snackbar.dart';
 import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../models/config.dart';
 import '../../models/entities.dart';
-
 import 'clipboard.dart';
 import 'event_bus.dart';
 import 'runner.dart';
@@ -31,12 +28,15 @@ import 'utils.dart';
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
 class FlNodeEditorController {
+  FlCallback? onCallback;
+
   FlNodeEditorController({
     this.config = const FlNodeEditorConfig(),
     this.style = const FlNodeEditorStyle(),
-    Future<bool> Function(Map<String, dynamic> jsonData)? projectSaver,
-    Future<Map<String, dynamic>?> Function(bool isSaved)? projectLoader,
-    Future<bool> Function(bool isSaved)? projectCreator,
+    ProjectSaver? projectSaver,
+    ProjectLoader? projectLoader,
+    ProjectCreator? projectCreator,
+    this.onCallback,
   }) {
     clipboard = FlNodeEditorClipboard(this);
     runner = FlNodeEditorRunner(this);
@@ -441,9 +441,9 @@ class FlNodeEditorController {
     }
 
     if (!port1.prototype.compatibleWith(port2.prototype)) {
-      showNodeEditorSnackbar(
+      onCallback?.call(
+        FlCallbackType.error,
         getErrorMessage(port1.prototype, port2.prototype),
-        SnackbarType.error,
       );
       return null;
     }

@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 
 import 'package:uuid/uuid.dart';
 
+import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
+
 import '../../models/entities.dart';
 import '../../models/events.dart';
-import '../../utils/snackbar.dart';
 
 import 'core.dart';
+
+typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
+typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
+typedef ProjectCreator = Future<bool> Function(bool isSaved);
 
 /// A class that allows to specify serialization and deserialization logic for custom data types.
 class DataHandler {
@@ -200,9 +205,9 @@ class FlNodeEditorProject {
     try {
       jsonData = _toJson();
     } catch (e) {
-      showNodeEditorSnackbar(
-        'Failed to save project.  Unable to serialize project data.',
-        SnackbarType.error,
+      controller.onCallback?.call(
+        FlCallbackType.error,
+        'Failed to save project. Unable to serialize project data. ($e)',
       );
       return;
     }
@@ -216,9 +221,9 @@ class FlNodeEditorProject {
 
     controller.eventBus.emit(SaveProjectEvent(id: const Uuid().v4()));
 
-    showNodeEditorSnackbar(
+    controller.onCallback?.call(
+      FlCallbackType.success,
       'Project saved successfully.',
-      SnackbarType.success,
     );
   }
 
@@ -237,9 +242,9 @@ class FlNodeEditorProject {
     }
 
     if (jsonData == null) {
-      showNodeEditorSnackbar(
+      controller.onCallback?.call(
+        FlCallbackType.error,
         'Failed to load project. Invalid project data.',
-        SnackbarType.error,
       );
       return;
     }
@@ -249,18 +254,18 @@ class FlNodeEditorProject {
     try {
       _fromJson(jsonData);
     } catch (e) {
-      showNodeEditorSnackbar(
-        'Failed to load project. Unable to deserialize project data.',
-        SnackbarType.error,
+      controller.onCallback?.call(
+        FlCallbackType.error,
+        'Failed to load project. Unable to deserialize project data ($e)',
       );
       return;
     }
 
     controller.eventBus.emit(LoadProjectEvent(id: const Uuid().v4()));
 
-    showNodeEditorSnackbar(
+    controller.onCallback?.call(
+      FlCallbackType.success,
       'Project loaded successfully.',
-      SnackbarType.success,
     );
   }
 
@@ -276,9 +281,9 @@ class FlNodeEditorProject {
 
     controller.eventBus.emit(NewProjectEvent(id: const Uuid().v4()));
 
-    showNodeEditorSnackbar(
+    controller.onCallback?.call(
+      FlCallbackType.success,
       'New project created successfully.',
-      SnackbarType.success,
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/core/utils/snackbar.dart';
 
 import '../../models/entities.dart';
 
@@ -248,9 +248,9 @@ class FlNodeEditorRunner {
       );
     } catch (e) {
       controller.focusNodesById({node.id});
-      showNodeEditorSnackbar(
+      controller.onCallback?.call(
+        FlCallbackType.error,
         'Error executing node: ${node.prototype.displayName}: $e',
-        SnackbarType.error,
       );
       return;
     }

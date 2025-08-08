@@ -1,31 +1,35 @@
-import 'package:fl_nodes/src/constants.dart';
+import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 
-enum SnackbarType { success, error, warning, info }
-
-void showNodeEditorSnackbar(String message, SnackbarType type) {
+void showNodeEditorSnackbar(
+  BuildContext context,
+  String message,
+  FlCallbackType type,
+) {
   late Color backgroundColor;
 
   switch (type) {
-    case SnackbarType.success:
+    case FlCallbackType.success:
       backgroundColor = Colors.green;
       break;
-    case SnackbarType.error:
+    case FlCallbackType.error:
       backgroundColor = Colors.red;
       break;
-    case SnackbarType.warning:
+    case FlCallbackType.warning:
       backgroundColor = Colors.orange;
       break;
-    case SnackbarType.info:
+    case FlCallbackType.info:
       backgroundColor = Colors.blue;
       break;
   }
-  if (kNodeEditorWidgetKey.currentContext != null) {
-    ScaffoldMessenger.of(kNodeEditorWidgetKey.currentContext!).showSnackBar(
+
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

@@ -4,12 +4,13 @@ import 'package:flutter/services.dart';
 
 import 'package:uuid/uuid.dart';
 
+import 'package:fl_nodes/src/core/controllers/node_editor/callback.dart';
+
 import '../../../constants.dart';
 import '../../models/entities.dart';
 import '../../models/events.dart';
 import '../../utils/json_extensions.dart';
 import '../../utils/renderbox.dart';
-import '../../utils/snackbar.dart';
 
 import 'core.dart';
 import 'event_bus.dart';
@@ -84,18 +85,18 @@ class FlNodeEditorClipboard {
 
       base64Data = base64Encode(utf8.encode(jsonData));
     } catch (e) {
-      showNodeEditorSnackbar(
+      controller.onCallback?.call(
+        FlCallbackType.error,
         'Failed to copy nodes. Invalid clipboard data. ($e)',
-        SnackbarType.error,
       );
       return '';
     }
 
     await Clipboard.setData(ClipboardData(text: base64Data));
 
-    showNodeEditorSnackbar(
+    controller.onCallback?.call(
+      FlCallbackType.success,
       'Nodes copied to clipboard.',
-      SnackbarType.success,
     );
 
     eventBus.emit(
@@ -132,9 +133,9 @@ class FlNodeEditorClipboard {
         jsonDecode(jsonData['encompassingRect']),
       );
     } catch (e) {
-      showNodeEditorSnackbar(
+      controller.onCallback?.call(
+        FlCallbackType.error,
         'Failed to paste nodes. Invalid clipboard data. ($e)',
-        SnackbarType.error,
       );
       return;
     }
