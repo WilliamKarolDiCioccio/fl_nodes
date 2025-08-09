@@ -1,7 +1,6 @@
+import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:flutter/material.dart';
-
-import 'package:fl_nodes/src/core/controller/core.dart';
 
 class DebugInfoWidget extends StatefulWidget {
   final FlNodeEditorController controller;
@@ -36,8 +35,8 @@ class _DebugInfoWidgetState extends State<DebugInfoWidget> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 0,
-      right: 0,
+      bottom: 16,
+      right: 16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -50,8 +49,20 @@ class _DebugInfoWidgetState extends State<DebugInfoWidget> {
             style: const TextStyle(color: Colors.green, fontSize: 16),
           ),
           Text(
+            'Node count: ${widget.controller.nodes.length}',
+            style: const TextStyle(color: Colors.yellow, fontSize: 16),
+          ),
+          Text(
+            'Links count: ${widget.controller.linksById.length}',
+            style: const TextStyle(color: Colors.orange, fontSize: 16),
+          ),
+          Text(
             'Selection count: $selectionCount',
             style: const TextStyle(color: Colors.blue, fontSize: 16),
+          ),
+          Text(
+            'LOD level: ${widget.controller.lodLevel}',
+            style: const TextStyle(color: Colors.purple, fontSize: 16),
           ),
         ],
       ),
