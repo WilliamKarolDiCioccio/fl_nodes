@@ -1,26 +1,23 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-import 'package:flutter_context_menu/flutter_context_menu.dart';
-import 'package:flutter_shaders/flutter_shaders.dart';
-import 'package:keymap/keymap.dart';
-
 import 'package:fl_nodes/src/core/utils/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
 import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_context_menu/flutter_context_menu.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:keymap/keymap.dart';
 
 import '../constants.dart';
 import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/events.dart';
 import '../core/models/styles.dart';
-
 import 'builders.dart';
 
 class FlOverlayData {
@@ -424,45 +421,47 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   }) {
     if (!widget.controller.config.enableZoom) return;
 
-    const double zoomSpeed = 0.1; // Adjust this to fine-tune zoom sensitivity
-
+    const double zoomSpeed = 0.1;
     final double sensitivity = widget.controller.config.zoomSensitivity;
-    final double logZoom = log(zoom); // Convert to logarithmic scale
 
-    // Calculate new zoom level in log space
+    late double targetZoom;
 
-    late double delta;
+    // Check if we're on a mobile platform
+    final bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
 
-    if (isTrackpadInput) {
-      // Trackpad: amount is in range (0, 1] for zoom out, (1, ∞) for zoom in
-      // Due to the logarithmic scale, we need to multiply by 10 to get a reasonable delta.
-      // NOTE: macOS seems to have a different behavior, so we need to account for that.
-
-      final double bias = switch (defaultTargetPlatform) {
-        TargetPlatform.macOS => 1,
-        TargetPlatform.windows => 10,
-        TargetPlatform.linux => 5,
-        TargetPlatform.android || TargetPlatform.iOS => 0.75,
-        _ => 1
-      };
-
-      delta = log(amount) * sensitivity * bias;
-    } else {
-      // Mouse wheel or other input: positive zooms in, negative zooms out
-      delta = amount * zoomSpeed * sensitivity;
+    // Mobile: simple linear/multiplicative scaling - no logarithms
+    if (isMobile) {
+      final double delta = defaultTargetPlatform == TargetPlatform.android
+          ? -amount * zoomSpeed * sensitivity // Flip for Android
+          : amount * zoomSpeed * sensitivity; // Keep as-is for iOS
+      targetZoom = zoom * (1.0 + delta);
     }
+    // Desktop: use logarithmic scaling for smooth trackpad/mouse wheel input
+    else {
+      final double logZoom = log(zoom);
+      late double delta;
 
-    final double targetLogZoom =
-        isTrackpadInput ? logZoom + delta : logZoom - delta;
+      if (isTrackpadInput) {
+        final double weight = switch (defaultTargetPlatform) {
+          TargetPlatform.macOS => 1.0,
+          TargetPlatform.windows => 10.0,
+          TargetPlatform.linux => 5.0,
+          _ => 1.0
+        };
+        delta = log(amount) * sensitivity * weight;
+      } else {
+        delta = amount * zoomSpeed * sensitivity;
+      }
 
-    final double targetZoom =
-        exp(targetLogZoom); // Convert back to linear space
+      final double targetLogZoom =
+          isTrackpadInput ? logZoom + delta : logZoom - delta;
+      targetZoom = exp(targetLogZoom);
+    }
 
     _setZoom(
       targetZoom,
-      animate: defaultTargetPlatform != TargetPlatform.macOS &&
-          defaultTargetPlatform != TargetPlatform.iOS &&
-          defaultTargetPlatform != TargetPlatform.android,
+      animate: !isMobile && defaultTargetPlatform != TargetPlatform.macOS,
     );
   }
 
