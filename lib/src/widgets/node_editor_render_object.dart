@@ -8,12 +8,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-import 'package:fl_nodes/src/widgets/deafult_node_widget.dart';
-
 import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/styles.dart';
-
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -274,19 +271,19 @@ class NodeEditorRenderBox extends RenderBox
 
     final lineColor = gridStyle.lineColor;
 
-    gridShader.setFloat(4, gridStyle.lineWidth);
-    gridShader.setFloat(5, lineColor.r * lineColor.a);
-    gridShader.setFloat(6, lineColor.g * lineColor.a);
-    gridShader.setFloat(7, lineColor.b * lineColor.a);
-    gridShader.setFloat(8, lineColor.a);
+    gridShader.setFloat(2, gridStyle.lineWidth);
+    gridShader.setFloat(3, lineColor.r * lineColor.a);
+    gridShader.setFloat(4, lineColor.g * lineColor.a);
+    gridShader.setFloat(5, lineColor.b * lineColor.a);
+    gridShader.setFloat(6, lineColor.a);
 
     final intersectionColor = gridStyle.intersectionColor;
 
-    gridShader.setFloat(9, gridStyle.intersectionRadius);
-    gridShader.setFloat(10, intersectionColor.r * intersectionColor.a);
-    gridShader.setFloat(11, intersectionColor.g * intersectionColor.a);
-    gridShader.setFloat(12, intersectionColor.b * intersectionColor.a);
-    gridShader.setFloat(13, intersectionColor.a);
+    gridShader.setFloat(7, gridStyle.intersectionRadius);
+    gridShader.setFloat(8, intersectionColor.r * intersectionColor.a);
+    gridShader.setFloat(9, intersectionColor.g * intersectionColor.a);
+    gridShader.setFloat(10, intersectionColor.b * intersectionColor.a);
+    gridShader.setFloat(11, intersectionColor.a);
   }
 
   Set<String> visibleNodes = {};
@@ -435,7 +432,7 @@ class NodeEditorRenderBox extends RenderBox
       _transformMatrixDirty = true;
     }
 
-    final (viewport, startX, startY) = _prepareCanvas(context.canvas, size);
+    final viewport = _prepareCanvas(context.canvas, size);
 
     // Performing the visibility update here ensures all layout operations are done.
 
@@ -444,7 +441,7 @@ class NodeEditorRenderBox extends RenderBox
       viewport.inflate(300),
     );
 
-    _paintGrid(context.canvas, viewport, startX, startY);
+    _paintGrid(context.canvas, viewport);
 
     _paintLinks(context.canvas, viewport);
 
@@ -477,12 +474,10 @@ class NodeEditorRenderBox extends RenderBox
     return _transformMatrix!;
   }
 
-  (Rect, double, double) _prepareCanvas(Canvas canvas, Size size) {
+  Rect _prepareCanvas(Canvas canvas, Size size) {
     canvas.transform(_getTransformMatrix().storage);
 
     final viewport = _calculateViewport();
-    final startX = _calculateStart(viewport.left, style.gridStyle.gridSpacingX);
-    final startY = _calculateStart(viewport.top, style.gridStyle.gridSpacingY);
 
     canvas.clipRect(
       viewport,
@@ -490,26 +485,20 @@ class NodeEditorRenderBox extends RenderBox
       doAntiAlias: false,
     );
 
-    return (viewport, startX, startY);
-  }
-
-  double _calculateStart(double viewportEdge, double gridSpacing) {
-    return (viewportEdge / gridSpacing).floor() * gridSpacing;
+    return viewport;
   }
 
   ////////////////////////////////////////////////////////////////////
   /// Painting methods
   ////////////////////////////////////////////////////////////////////
 
-  void _paintGrid(Canvas canvas, Rect viewport, double startX, double startY) {
+  void _paintGrid(Canvas canvas, Rect viewport) {
     if (!style.gridStyle.showGrid) return;
 
-    gridShader.setFloat(2, startX);
-    gridShader.setFloat(3, startY);
-    gridShader.setFloat(14, viewport.left);
-    gridShader.setFloat(15, viewport.top);
-    gridShader.setFloat(16, viewport.right);
-    gridShader.setFloat(17, viewport.bottom);
+    gridShader.setFloat(12, viewport.left);
+    gridShader.setFloat(13, viewport.top);
+    gridShader.setFloat(14, viewport.right);
+    gridShader.setFloat(15, viewport.bottom);
 
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }

@@ -6,8 +6,6 @@ precision highp float;
 
 uniform float uGridSpacingX;
 uniform float uGridSpacingY;
-uniform float uStartX;
-uniform float uStartY;
 uniform float uLineWidth;
 uniform vec4 uLineColor;
 uniform float uIntersectionRadius;
@@ -36,6 +34,11 @@ float getCircleAlpha(float dist, float radius) {
     return 1.0 - smoothStep(radius - pixelRange, radius + pixelRange, dist);
 }
 
+// Calculate start positions for grid lines
+float calculateStart(float viewportEdge, float gridSpacing) {
+    return floor(viewportEdge / gridSpacing) * gridSpacing;
+}
+
 void main() {
     vec2 fragCoord = FlutterFragCoord().xy;
     float x = fragCoord.x;
@@ -45,6 +48,9 @@ void main() {
     float viewportTop = uViewport.y;
     float viewportRight = uViewport.z;
     float viewportBottom = uViewport.w;
+
+    float startX = calculateStart(viewportLeft, uGridSpacingX);
+    float startY = calculateStart(viewportTop, uGridSpacingY);
 
     // Discard fragments outside the viewport
     if (x < viewportLeft || x > viewportRight || y < viewportTop || y > viewportBottom) {
@@ -58,8 +64,8 @@ void main() {
 
     // Calculate vertical line alpha
     if (uGridSpacingX > 0.0) {
-        float xSteps = round((x - uStartX) / uGridSpacingX);
-        float lineX = uStartX + xSteps * uGridSpacingX;
+        float xSteps = round((x - startX) / uGridSpacingX);
+        float lineX = startX + xSteps * uGridSpacingX;
         if (lineX >= viewportLeft && lineX <= viewportRight) {
             float dx = abs(x - lineX);
             verticalAlpha = getLineAlpha(dx, uLineWidth);
@@ -68,8 +74,8 @@ void main() {
 
     // Calculate horizontal line alpha
     if (uGridSpacingY > 0.0) {
-        float ySteps = round((y - uStartY) / uGridSpacingY);
-        float lineY = uStartY + ySteps * uGridSpacingY;
+        float ySteps = round((y - startY) / uGridSpacingY);
+        float lineY = startY + ySteps * uGridSpacingY;
         if (lineY >= viewportTop && lineY <= viewportBottom) {
             float dy = abs(y - lineY);
             horizontalAlpha = getLineAlpha(dy, uLineWidth);
@@ -78,11 +84,11 @@ void main() {
 
     // Calculate intersection alpha
     if (uIntersectionRadius > 0.0 && uGridSpacingX > 0.0 && uGridSpacingY > 0.0) {
-        float xSteps = round((x - uStartX) / uGridSpacingX);
-        float ySteps = round((y - uStartY) / uGridSpacingY);
+        float xSteps = round((x - startX) / uGridSpacingX);
+        float ySteps = round((y - startY) / uGridSpacingY);
         vec2 intersection = vec2(
-            uStartX + xSteps * uGridSpacingX,
-            uStartY + ySteps * uGridSpacingY
+            startX + xSteps * uGridSpacingX,
+            startY + ySteps * uGridSpacingY
         );
         
         if (intersection.x >= viewportLeft && intersection.x <= viewportRight &&
