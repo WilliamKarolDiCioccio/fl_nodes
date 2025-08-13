@@ -451,11 +451,13 @@ class FlNodeEditorController {
     // if this exact link already exists, don't do anything
     if (port1.links.any(
           (link) =>
-              link.fromTo.from == node2Id && link.fromTo.to == port2IdName,
+              link.fromTo.from == node2Id &&
+              link.fromTo.fromPort == port2IdName,
         ) ||
         port2.links.any(
           (link) =>
-              link.fromTo.from == node1Id && link.fromTo.to == port1IdName,
+              link.fromTo.from == node1Id &&
+              link.fromTo.fromPort == port1IdName,
         )) {
       return null;
     }
@@ -466,16 +468,16 @@ class FlNodeEditorController {
     if (port1.prototype.direction == PortDirection.output) {
       fromTo = (
         from: node1Id,
-        to: port1IdName,
-        fromPort: node2Id,
-        toPort: port2IdName
+        fromPort: port1IdName,
+        to: node2Id,
+        toPort: port2IdName,
       );
     } else {
       fromTo = (
         from: node2Id,
-        to: port2IdName,
-        fromPort: node1Id,
-        toPort: port1IdName
+        fromPort: port2IdName,
+        to: node1Id,
+        toPort: port1IdName,
       );
     }
 
@@ -514,20 +516,20 @@ class FlNodeEditorController {
     bool isHandled = false,
   }) {
     if (!nodes.containsKey(link.fromTo.from) ||
-        !nodes.containsKey(link.fromTo.fromPort)) {
+        !nodes.containsKey(link.fromTo.to)) {
       return;
     }
 
     final fromNode = nodes[link.fromTo.from]!;
-    final toNode = nodes[link.fromTo.fromPort]!;
+    final toNode = nodes[link.fromTo.to]!;
 
-    if (!fromNode.ports.containsKey(link.fromTo.to) ||
+    if (!fromNode.ports.containsKey(link.fromTo.fromPort) ||
         !toNode.ports.containsKey(link.fromTo.toPort)) {
       return;
     }
 
-    final fromPort = nodes[link.fromTo.from]!.ports[link.fromTo.to]!;
-    final toPort = nodes[link.fromTo.fromPort]!.ports[link.fromTo.toPort]!;
+    final fromPort = nodes[link.fromTo.from]!.ports[link.fromTo.fromPort]!;
+    final toPort = nodes[link.fromTo.to]!.ports[link.fromTo.toPort]!;
 
     fromPort.links.add(link);
     toPort.links.add(link);
@@ -566,8 +568,8 @@ class FlNodeEditorController {
     final link = linksById[id]!;
 
     // Remove the link from its associated ports
-    final fromPort = nodes[link.fromTo.from]?.ports[link.fromTo.to];
-    final toPort = nodes[link.fromTo.fromPort]?.ports[link.fromTo.toPort];
+    final fromPort = nodes[link.fromTo.from]?.ports[link.fromTo.fromPort];
+    final toPort = nodes[link.fromTo.to]?.ports[link.fromTo.toPort];
 
     fromPort?.links.remove(link);
     toPort?.links.remove(link);
