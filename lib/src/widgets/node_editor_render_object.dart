@@ -12,6 +12,7 @@ import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/styles.dart';
 import 'builders.dart';
+import 'default_node_widget.dart';
 
 class NodeDiffCheckData {
   String id;
@@ -100,7 +101,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
                   nodeBuilder: nodeBuilder,
                 ),
               )
-              .toList(),
+              .toList() as List<Widget>,
         );
 
   @override
