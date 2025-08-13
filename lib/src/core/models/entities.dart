@@ -54,12 +54,11 @@ final class Link {
   }
 
   Map<String, dynamic> toJson() {
-    // fixme: the JSON save format still uses the old names
     return {
       'id': id,
       'from': fromTo.from,
-      'to': fromTo.fromPort,
-      'fromPort': fromTo.to,
+      'fromPort': fromTo.fromPort,
+      'to': fromTo.to,
       'toPort': fromTo.toPort,
     };
   }
@@ -67,11 +66,10 @@ final class Link {
   factory Link.fromJson(Map<String, dynamic> json) {
     return Link(
       id: json['id'],
-      // fixme: see note on [toJson]
       fromTo: (
         from: json['from'],
-        fromPort: json['to'],
-        to: json['fromPort'],
+        fromPort: json['fromPort'],
+        to: json['to'],
         toPort: json['toPort'],
       ),
       state: LinkState(),
