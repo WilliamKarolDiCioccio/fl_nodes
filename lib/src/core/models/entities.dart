@@ -57,8 +57,8 @@ final class Link {
     return {
       'id': id,
       'from': fromTo.from,
-      'to': fromTo.to,
       'fromPort': fromTo.fromPort,
+      'to': fromTo.to,
       'toPort': fromTo.toPort,
     };
   }
@@ -68,8 +68,8 @@ final class Link {
       id: json['id'],
       fromTo: (
         from: json['from'],
-        to: json['to'],
         fromPort: json['fromPort'],
+        to: json['to'],
         toPort: json['toPort'],
       ),
       state: LinkState(),

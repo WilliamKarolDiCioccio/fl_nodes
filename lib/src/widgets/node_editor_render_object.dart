@@ -527,8 +527,8 @@ class NodeEditorRenderBox extends RenderBox
 
       for (final link in _controller.linksById.values) {
         final outNode = _controller.nodes[link.fromTo.from]!;
-        final inNode = _controller.nodes[link.fromTo.fromPort]!;
-        final outPort = outNode.ports[link.fromTo.to]!;
+        final inNode = _controller.nodes[link.fromTo.to]!;
+        final outPort = outNode.ports[link.fromTo.fromPort]!;
         final inPort = inNode.ports[link.fromTo.toPort]!;
 
         final Rect pathBounds = Rect.fromPoints(
