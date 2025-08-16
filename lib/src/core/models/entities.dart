@@ -1,6 +1,7 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/controller/runner.dart';
+import 'package:fl_nodes/src/core/utils/single_listener_change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -190,24 +191,25 @@ class ControlOutputPortPrototype extends PortPrototype {
 }
 
 /// The state of a port painted on the canvas.
-class PortState {
-  bool isHovered; // Not saved as it is only used during rendering
+class PortState with SingleListenerChangeNotifier {
+  bool _isHovered;
+  bool get isHovered => _isHovered;
+  set isHovered(bool val) {
+    if (_isHovered == val) return;
+    _isHovered = val;
+    notifyListeners();
+  }
 
   PortState({
-    this.isHovered = false,
-  });
+    bool isHovered = false,
+  }) : _isHovered = isHovered;
 
-  factory PortState.fromJson(Map<String, dynamic> json) {
-    return PortState(
-      isHovered: json['isHovered'] ?? false,
-    );
-  }
+  // since isHovered is only meaningful during rendering, no need to save/restore it
+  factory PortState.fromJson(Map<String, dynamic> json) => PortState();
+  Map<String, dynamic> toJson() => {};
 
-  Map<String, dynamic> toJson() {
-    return {
-      'isHovered': isHovered,
-    };
-  }
+  PortState copyWith({bool? isHovered}) =>
+      PortState(isHovered: isHovered ?? this.isHovered);
 
   @override
   bool operator ==(Object other) =>
@@ -235,7 +237,13 @@ final class PortInstance {
     required this.prototype,
     required this.state,
     this.offset = Offset.zero,
-  });
+  }) {
+    // rebuild the cached style when the state changes
+    state.listener = () => _portStyle = null;
+  }
+
+  FlPortStyle? _portStyle;
+  FlPortStyle get style => _portStyle ??= prototype.styleBuilder(state);
 
   Map<String, dynamic> toJson() {
     return {
@@ -274,7 +282,9 @@ final class PortInstance {
   }) {
     final instance = PortInstance(
       prototype: prototype,
-      state: state ?? this.state,
+      // we can't reuse the same instance, since they should only
+      // notify the new [PortInstance] object, not the old ones
+      state: (state ?? this.state).copyWith(),
       offset: offset ?? this.offset,
     );
 

@@ -223,7 +223,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     final absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
-      port.prototype.styleBuilder(port.state).linkStyleBuilder(LinkState()),
+      port.style.linkStyleBuilder(LinkState()),
       absolutePortOffset,
       worldPosition!,
     );
