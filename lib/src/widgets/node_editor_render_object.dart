@@ -544,9 +544,7 @@ class NodeEditorRenderBox extends RenderBox
             id: link.id,
             outPortOffset: outNode.offset + outPort.offset,
             inPortOffset: inNode.offset + inPort.offset,
-            linkStyle: outPort.prototype
-                .styleBuilder(outPort.state)
-                .linkStyleBuilder(link.state),
+            linkStyle: outPort.style.linkStyleBuilder(link.state),
           ),
         );
       }
@@ -676,7 +674,7 @@ class NodeEditorRenderBox extends RenderBox
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
-                style: port.prototype.styleBuilder(port.state),
+                style: port.style,
               ),
             );
           }
@@ -696,7 +694,7 @@ class NodeEditorRenderBox extends RenderBox
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
-                style: port.prototype.styleBuilder(port.state),
+                style: port.style,
               ),
             );
           }
