@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes/src/widgets/default_node_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/styles.dart';
 import 'builders.dart';
-import 'default_node_widget.dart';
 
 class NodeDiffCheckData {
   String id;
@@ -633,6 +633,10 @@ class NodeEditorRenderBox extends RenderBox
   final List<((String, String), Rect)> portsHitTestData = [];
 
   void _paintChildren(PaintingContext context) {
+    _paintChildrenDefault(context);
+  }
+
+  void _paintChildrenDefault(PaintingContext context) {
     if (_controller.nodesDataDirty ||
         _controller.linksDataDirty ||
         _transformMatrixDirty ||
@@ -668,6 +672,8 @@ class NodeEditorRenderBox extends RenderBox
             ),
           );
 
+          if (lodLevel <= 2) continue;
+
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
               PortData(
@@ -687,6 +693,8 @@ class NodeEditorRenderBox extends RenderBox
               const Radius.circular(4),
             ),
           );
+
+          if (lodLevel <= 2) continue;
 
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
