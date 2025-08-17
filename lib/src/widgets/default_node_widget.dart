@@ -1,23 +1,20 @@
 import 'dart:async';
 
+import 'package:fl_nodes/src/core/utils/renderbox.dart';
+import 'package:fl_nodes/src/widgets/context_menu.dart';
+import 'package:fl_nodes/src/widgets/improved_listener.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_context_menu/flutter_context_menu.dart';
-
-import 'package:fl_nodes/src/core/utils/renderbox.dart';
-import 'package:fl_nodes/src/widgets/context_menu.dart';
-import 'package:fl_nodes/src/widgets/improved_listener.dart';
 
 import '../constants.dart';
 import '../core/controller/core.dart';
 import '../core/models/entities.dart';
 import '../core/models/events.dart';
 import '../core/models/styles.dart';
-
 import 'builders.dart';
 
 typedef _TempLink = ({String nodeId, String portId});
@@ -223,7 +220,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     final absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
-      port.prototype.styleBuilder(port.state).linkStyleBuilder(LinkState()),
+      port.style.linkStyleBuilder(LinkState()),
       absolutePortOffset,
       worldPosition!,
     );
@@ -749,45 +746,35 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   void _updatePortsPosition() {
-    if (!mounted) return;
-
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    final renderBoxSize = renderBox.size;
+    // Early return with combined null checks
+    final renderBox = context.findRenderObject() as RenderBox?;
     final nodeBox =
         widget.node.key.currentContext?.findRenderObject() as RenderBox?;
-    if (nodeBox == null) return;
 
+    if (renderBox == null || nodeBox == null) return;
+
+    // Cache frequently used values
+    final renderBoxSize = renderBox.size;
     final nodeOffset = nodeBox.localToGlobal(Offset.zero);
+    final isCollapsed = widget.node.state.isCollapsed;
+    final collapsedYAdjustment = isCollapsed ? -renderBoxSize.height + 8 : 0;
 
+    // Process ports
     for (final port in widget.node.ports.values) {
-      final portKey = port.key;
-      final RenderBox? portBox =
-          portKey.currentContext?.findRenderObject() as RenderBox?;
+      final portBox = port.key.currentContext?.findRenderObject() as RenderBox?;
+      if (portBox == null) continue;
 
-      if (portBox == null) {
-        continue;
-      }
-
+      // Calculate relative offset with collapsed adjustment
       final portOffset = portBox.localToGlobal(Offset.zero);
-      var relativeOffset = portOffset - nodeOffset;
+      final relativeY = portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
 
-      if (widget.node.state.isCollapsed) {
-        relativeOffset = Offset(
-          relativeOffset.dx,
-          relativeOffset.dy - renderBoxSize.height + 8,
-        );
-      }
-
-      final newOffset = Offset(
+      // Set port offset based on direction
+      port.offset = Offset(
         port.prototype.direction == PortDirection.input
             ? 0
             : renderBoxSize.width,
-        relativeOffset.dy + portBox.size.height / 2,
+        relativeY + portBox.size.height / 2,
       );
-
-      port.offset = newOffset;
     }
   }
 }

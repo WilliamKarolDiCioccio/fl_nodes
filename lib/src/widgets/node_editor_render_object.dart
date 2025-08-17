@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes/src/widgets/default_node_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -100,7 +101,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
                   nodeBuilder: nodeBuilder,
                 ),
               )
-              .toList(),
+              .toList() as List<Widget>,
         );
 
   @override
@@ -543,9 +544,7 @@ class NodeEditorRenderBox extends RenderBox
             id: link.id,
             outPortOffset: outNode.offset + outPort.offset,
             inPortOffset: inNode.offset + inPort.offset,
-            linkStyle: outPort.prototype
-                .styleBuilder(outPort.state)
-                .linkStyleBuilder(link.state),
+            linkStyle: outPort.style.linkStyleBuilder(link.state),
           ),
         );
       }
@@ -634,6 +633,10 @@ class NodeEditorRenderBox extends RenderBox
   final List<((String, String), Rect)> portsHitTestData = [];
 
   void _paintChildren(PaintingContext context) {
+    _paintChildrenDefault(context);
+  }
+
+  void _paintChildrenDefault(PaintingContext context) {
     if (_controller.nodesDataDirty ||
         _controller.linksDataDirty ||
         _transformMatrixDirty ||
@@ -669,13 +672,15 @@ class NodeEditorRenderBox extends RenderBox
             ),
           );
 
+          if (lodLevel <= 2) continue;
+
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
               PortData(
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
-                style: port.prototype.styleBuilder(port.state),
+                style: port.style,
               ),
             );
           }
@@ -689,13 +694,15 @@ class NodeEditorRenderBox extends RenderBox
             ),
           );
 
+          if (lodLevel <= 2) continue;
+
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
               PortData(
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
-                style: port.prototype.styleBuilder(port.state),
+                style: port.style,
               ),
             );
           }
