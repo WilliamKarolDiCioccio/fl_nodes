@@ -202,6 +202,9 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final comboKey =
+        defaultTargetPlatform == TargetPlatform.macOS ? "Meta" : "Ctrl";
+
     return Scaffold(
       body: Center(
         child: Row(
@@ -297,13 +300,13 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(' - Tap: Select Node'),
-                                    Text(' - Double Tap: Clear Selection'),
-                                    Text(' - Long Press: Open Context Menu'),
+                                    Text('- Tap: Select Node'),
+                                    Text('- Double Tap: Clear Selection'),
+                                    Text('- Long Press: Open Context Menu'),
                                     Text(
-                                      ' - Drag: Start Linking / Select Nodes',
+                                      '- Drag: Start Linking / Select Nodes',
                                     ),
-                                    Text(' - Pinch: Zoom In/Out'),
+                                    Text('- Pinch: Zoom In/Out'),
                                     SizedBox(height: 8),
                                     Text(
                                       'Additional Gestures:',
@@ -311,38 +314,46 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(' - Two-Finger Drag: Pan'),
+                                    Text('- Two-Finger Drag: Pan'),
                                   ],
                                 )
-                              : const Column(
+                              : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Mouse Commands:',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(' - Left Click: Select Node/Link'),
-                                    Text(' - Right Click: Open Context Menu'),
-                                    Text(' - Scroll: Zoom In/Out'),
-                                    Text(' - Middle Click: Pan'),
-                                    SizedBox(height: 8),
-                                    Text(
+                                    const Text(
+                                      '- Left Click: Select Node/Link',
+                                    ),
+                                    const Text(
+                                      '- Right Click: Open Context Menu',
+                                    ),
+                                    const Text('- Scroll: Zoom In/Out'),
+                                    const Text('- Middle Click: Pan'),
+                                    const SizedBox(height: 8),
+                                    const Text(
                                       'Keyboard Commands:',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(' - Ctrl + S: Save Project'),
-                                    Text(' - Ctrl + O: Open Project'),
-                                    Text(' - Ctrl + N: New Project'),
-                                    Text(' - Ctrl + C: Copy Node'),
-                                    Text(' - Ctrl + V: Paste Node'),
-                                    Text(' - Ctrl + X: Cut Node'),
-                                    Text(' - Delete | Backspace: Remove Node'),
-                                    Text(' - Ctrl + Z: Undo'),
-                                    Text(' - Ctrl + Y: Redo'),
+                                    Text('- $comboKey + S: Save Project'),
+                                    Text('- $comboKey + O: Open Project'),
+                                    Text(
+                                      '- $comboKey + Shift + N: New Project',
+                                    ),
+                                    Text('- $comboKey + C: Copy Node'),
+                                    Text('- $comboKey + V: Paste Node'),
+                                    Text('- $comboKey + X: Cut Node'),
+                                    const Text(
+                                      '- Delete | Backspace: Remove Node',
+                                    ),
+                                    Text('- $comboKey + Z: Undo'),
+                                    Text('- $comboKey + Y: Redo'),
                                   ],
                                 ),
                         ),

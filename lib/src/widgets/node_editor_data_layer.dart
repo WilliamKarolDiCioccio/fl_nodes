@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
-import 'package:keymap/keymap.dart';
 
 import '../constants.dart';
 import '../core/controller/core.dart';
@@ -763,192 +762,156 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
               },
               child: child,
             )
-          : KeyboardWidget(
-              bindings: [
-                KeyAction(
-                  LogicalKeyboardKey.delete,
-                  "Remove selected nodes",
-                  () {
-                    for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNodeById(
-                        nodeId,
-                        isHandled:
-                            nodeId != widget.controller.selectedNodeIds.last,
-                      );
-                    }
-
-                    for (final link in widget.controller.selectedLinkIds) {
-                      widget.controller.removeLinkById(link);
-                    }
-
-                    widget.controller.clearSelection();
-                  },
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.backspace,
-                  "Remove selected nodes",
-                  () {
-                    for (final nodeId in widget.controller.selectedNodeIds) {
-                      widget.controller.removeNodeById(
-                        nodeId,
-                        isHandled:
-                            nodeId != widget.controller.selectedNodeIds.last,
-                      );
-                    }
-
-                    for (final link in widget.controller.selectedLinkIds) {
-                      widget.controller.removeLinkById(link);
-                    }
-
-                    widget.controller.clearSelection();
-                  },
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyC,
-                  "Copy selected nodes",
-                  () => widget.controller.clipboard.copySelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyV,
-                  "Paste selected nodes",
-                  () => widget.controller.clipboard.pasteSelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyX,
-                  "Cut selected nodes",
-                  () => widget.controller.clipboard.cutSelection(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyS,
-                  "Save project",
-                  () => widget.controller.project.save(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyO,
-                  "Open project",
-                  () => widget.controller.project.load(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
+          : CallbackShortcuts(
+              bindings: <ShortcutActivator, VoidCallback>{
+                const SingleActivator(LogicalKeyboardKey.delete): () {
+                  for (final nodeId in widget.controller.selectedNodeIds) {
+                    widget.controller.removeNodeById(
+                      nodeId,
+                      isHandled:
+                          nodeId != widget.controller.selectedNodeIds.last,
+                    );
+                  }
+                  for (final link in widget.controller.selectedLinkIds) {
+                    widget.controller.removeLinkById(link);
+                  }
+                  widget.controller.clearSelection();
+                },
+                const SingleActivator(LogicalKeyboardKey.backspace): () {
+                  for (final nodeId in widget.controller.selectedNodeIds) {
+                    widget.controller.removeNodeById(
+                      nodeId,
+                      isHandled:
+                          nodeId != widget.controller.selectedNodeIds.last,
+                    );
+                  }
+                  for (final link in widget.controller.selectedLinkIds) {
+                    widget.controller.removeLinkById(link);
+                  }
+                  widget.controller.clearSelection();
+                },
+                const SingleActivator(LogicalKeyboardKey.keyC, control: true):
+                    () => widget.controller.clipboard.copySelection(),
+                const SingleActivator(LogicalKeyboardKey.keyV, control: true):
+                    () => widget.controller.clipboard.pasteSelection(),
+                const SingleActivator(LogicalKeyboardKey.keyX, control: true):
+                    () => widget.controller.clipboard.cutSelection(),
+                const SingleActivator(LogicalKeyboardKey.keyS, control: true):
+                    () => widget.controller.project.save(),
+                const SingleActivator(LogicalKeyboardKey.keyO, control: true):
+                    () => widget.controller.project.load(),
+                SingleActivator(
                   LogicalKeyboardKey.keyN,
-                  "Create new project",
-                  () => widget.controller.project.create(),
-                  isControlPressed: true,
-                  isShiftPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyZ,
-                  "Undo",
-                  () => widget.controller.history.undo(),
-                  isControlPressed: true,
-                ),
-                KeyAction(
-                  LogicalKeyboardKey.keyY,
-                  "Redo",
-                  () => widget.controller.history.redo(),
-                  isControlPressed: true,
-                ),
-              ],
-              child: MouseRegion(
-                cursor: _isDragging
-                    ? SystemMouseCursors.move
-                    : SystemMouseCursors.basic,
-                child: ImprovedListener(
-                  onDoubleClick: () => widget.controller.clearSelection(),
-                  onPointerPressed: (event) {
-                    _isLinking = false;
-                    _tempLink = null;
-                    _isSelecting = false;
+                  control: defaultTargetPlatform != TargetPlatform.macOS,
+                  meta: defaultTargetPlatform == TargetPlatform.macOS,
+                  shift: true,
+                ): () => widget.controller.project.create(),
+                const SingleActivator(LogicalKeyboardKey.keyZ, control: true):
+                    () => widget.controller.history.undo(),
+                const SingleActivator(LogicalKeyboardKey.keyY, control: true):
+                    () => widget.controller.history.redo(),
+              },
+              child: Focus(
+                autofocus: true,
+                child: MouseRegion(
+                  cursor: _isDragging
+                      ? SystemMouseCursors.move
+                      : SystemMouseCursors.basic,
+                  child: ImprovedListener(
+                    onDoubleClick: () => widget.controller.clearSelection(),
+                    onPointerPressed: (event) {
+                      _isLinking = false;
+                      _tempLink = null;
+                      _isSelecting = false;
 
-                    final locator = _isNearPort(event.position);
-
-                    if (event.buttons == kMiddleMouseButton) {
-                      _onDragStart();
-                    } else if (event.buttons == kPrimaryMouseButton) {
-                      if (locator != null && !_isLinking && _tempLink == null) {
-                        _onLinkStart(locator);
-                      } else {
-                        _onSelectStart(event.position);
-                      }
-                    } else if (event.buttons == kSecondaryMouseButton) {
-                      if (locator != null &&
-                          !widget.controller.nodes[locator.nodeId]!.state
-                              .isCollapsed) {
-                        /// If a port is near the cursor, show the port context menu
-                        createAndShowContextMenu(
-                          context,
-                          entries: portContextMenuEntries(
-                            event.position,
-                            locator: locator,
-                          ),
-                          position: event.position,
-                        );
-                      } else if (!isContextMenuVisible) {
-                        // Else show the editor context menu
-                        createAndShowContextMenu(
-                          context,
-                          entries: editorContextMenuEntries(event.position),
-                          position: event.position,
-                        );
-                      }
-                    }
-                  },
-                  onPointerMoved: (event) {
-                    if (_isDragging && widget.controller.config.enablePan) {
-                      _onDragUpdate(event.localDelta);
-                    } else if (_isLinking) {
-                      _onLinkUpdate(event.position);
-                    } else if (_isSelecting) {
-                      _onSelectUpdate(event.position);
-                    }
-                  },
-                  onPointerReleased: (event) {
-                    if (_isDragging) {
-                      _onDragEnd();
-                    } else if (_isLinking) {
                       final locator = _isNearPort(event.position);
 
-                      if (locator != null) {
-                        _onLinkEnd(locator);
-                      } else if (!isContextMenuVisible) {
-                        // Show the create submenu if no port is near the cursor
-                        createAndShowContextMenu(
-                          context,
-                          entries: createSubmenuEntries(event.position),
-                          position: event.position,
-                          onDismiss: (value) => _onLinkCancel(),
-                        );
+                      if (event.buttons == kMiddleMouseButton) {
+                        _onDragStart();
+                      } else if (event.buttons == kPrimaryMouseButton) {
+                        if (locator != null &&
+                            !_isLinking &&
+                            _tempLink == null) {
+                          _onLinkStart(locator);
+                        } else {
+                          _onSelectStart(event.position);
+                        }
+                      } else if (event.buttons == kSecondaryMouseButton) {
+                        if (locator != null &&
+                            !widget.controller.nodes[locator.nodeId]!.state
+                                .isCollapsed) {
+                          /// If a port is near the cursor, show the port context menu
+                          createAndShowContextMenu(
+                            context,
+                            entries: portContextMenuEntries(
+                              event.position,
+                              locator: locator,
+                            ),
+                            position: event.position,
+                          );
+                        } else if (!isContextMenuVisible) {
+                          // Else show the editor context menu
+                          createAndShowContextMenu(
+                            context,
+                            entries: editorContextMenuEntries(event.position),
+                            position: event.position,
+                          );
+                        }
                       }
-                    } else if (_isSelecting) {
-                      _onSelectEnd();
-                    }
-                  },
-                  onPointerSignalReceived: (event) {
-                    if (event is PointerScrollEvent &&
-                        widget.controller.config.enablePan &&
-                        event.scrollDelta != const Offset(10, 10)) {
-                      _setZoomFromRawInput(
-                        event.scrollDelta.dy,
-                        event.position,
-                      );
-                    }
-                    if (event is PointerScaleEvent) {
-                      if (kIsWeb) {
+                    },
+                    onPointerMoved: (event) {
+                      if (_isDragging && widget.controller.config.enablePan) {
+                        _onDragUpdate(event.localDelta);
+                      } else if (_isLinking) {
+                        _onLinkUpdate(event.position);
+                      } else if (_isSelecting) {
+                        _onSelectUpdate(event.position);
+                      }
+                    },
+                    onPointerReleased: (event) {
+                      if (_isDragging) {
+                        _onDragEnd();
+                      } else if (_isLinking) {
+                        final locator = _isNearPort(event.position);
+
+                        if (locator != null) {
+                          _onLinkEnd(locator);
+                        } else if (!isContextMenuVisible) {
+                          // Show the create submenu if no port is near the cursor
+                          createAndShowContextMenu(
+                            context,
+                            entries: createSubmenuEntries(event.position),
+                            position: event.position,
+                            onDismiss: (value) => _onLinkCancel(),
+                          );
+                        }
+                      } else if (_isSelecting) {
+                        _onSelectEnd();
+                      }
+                    },
+                    onPointerSignalReceived: (event) {
+                      if (event is PointerScrollEvent &&
+                          widget.controller.config.enablePan &&
+                          event.scrollDelta != const Offset(10, 10)) {
                         _setZoomFromRawInput(
-                          event.scale,
+                          event.scrollDelta.dy,
                           event.position,
-                          isTrackpadInput: true,
                         );
                       }
-                    }
-                  },
-                  onPointerPanZoomStart:
-                      _trackpadGestureRecognizer.addPointerPanZoom,
-                  child: child,
+                      if (event is PointerScaleEvent) {
+                        if (kIsWeb) {
+                          _setZoomFromRawInput(
+                            event.scale,
+                            event.position,
+                            isTrackpadInput: true,
+                          );
+                        }
+                      }
+                    },
+                    onPointerPanZoomStart:
+                        _trackpadGestureRecognizer.addPointerPanZoom,
+                    child: child,
+                  ),
                 ),
               ),
             );
