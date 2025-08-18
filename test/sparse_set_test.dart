@@ -1,8 +1,7 @@
 import 'dart:math';
 
+import 'package:fl_nodes/src/core/utils/dsa/sparse_set.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:fl_nodes/src/core/utils/sparse_set.dart';
 
 void main() {
   group('SparseSet Tests', () {

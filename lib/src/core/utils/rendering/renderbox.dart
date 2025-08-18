@@ -1,7 +1,6 @@
-import 'package:flutter/widgets.dart';
-
-import 'package:fl_nodes/src/core/models/entities.dart';
 import 'package:fl_nodes/src/constants.dart';
+import 'package:fl_nodes/src/core/models/entities.dart';
+import 'package:flutter/widgets.dart';
 
 /// Retrieves the global offset of a widget identified by a [GlobalKey].
 Offset? getOffsetFromGlobalKey(GlobalKey key) {

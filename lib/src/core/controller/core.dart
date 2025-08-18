@@ -6,8 +6,8 @@ import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/core/utils/renderbox.dart';
-import 'package:fl_nodes/src/core/utils/spatial_hash_grid.dart';
+import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
+import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 

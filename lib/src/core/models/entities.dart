@@ -1,7 +1,7 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/controller/runner.dart';
-import 'package:fl_nodes/src/core/utils/single_listener_change_notifier.dart';
+import 'package:fl_nodes/src/core/utils/state/single_listener_change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
