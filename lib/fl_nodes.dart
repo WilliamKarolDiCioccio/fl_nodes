@@ -1,5 +1,6 @@
 export 'package:fl_nodes/src/core/controller/callback.dart' show FlCallbackType;
 export 'package:fl_nodes/src/core/controller/core.dart';
+export 'package:fl_nodes/src/core/localization/delegate.dart';
 export 'package:fl_nodes/src/core/models/entities.dart'
     show
         Link,
