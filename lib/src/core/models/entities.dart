@@ -1,9 +1,10 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
-import 'package:fl_nodes/src/core/controller/runner.dart';
 import 'package:fl_nodes/src/core/utils/state/single_listener_change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+
+typedef FlLocalizedString = String Function(BuildContext context);
 
 typedef FromTo = ({String from, String to, String fromPort, String toPort});
 
@@ -110,7 +111,7 @@ enum PortType { data, control }
 /// It defines the name, data type, direction, and if it allows multiple links.
 abstract class PortPrototype {
   final String idName;
-  final String displayName;
+  final FlLocalizedString displayName;
   final FlPortStyleBuilder styleBuilder;
   final Type dataType;
   final PortDirection direction;
@@ -312,7 +313,7 @@ typedef EditorBuilder = Widget Function(
 /// If explicitly allowed, the user can change the value of the field.
 class FieldPrototype {
   final String idName;
-  final String displayName;
+  final FlLocalizedString displayName;
   final FlFieldStyle style;
   final Type dataType;
   final dynamic defaultData;
@@ -322,7 +323,7 @@ class FieldPrototype {
 
   FieldPrototype({
     required this.idName,
-    this.displayName = '',
+    required this.displayName,
     this.style = const FlFieldStyle(),
     this.dataType = dynamic,
     this.defaultData,
@@ -377,23 +378,31 @@ class FieldInstance {
   }
 }
 
+typedef FlOnNodeExecute = Future<void> Function(
+  Map<String, dynamic> ports,
+  Map<String, dynamic> fields,
+  Map<String, dynamic> execState,
+  Future<void> Function(Set<String>) forward,
+  void Function(Set<(String, dynamic)>) put,
+);
+
 /// A node prototype is the blueprint for a node instance.
 ///
 /// It defines the name, description, color, ports, fields, and onExecute function.
 final class NodePrototype {
   final String idName;
-  final String displayName;
-  final String description;
+  final FlLocalizedString displayName;
+  final FlLocalizedString description;
   final FlNodeStyleBuilder styleBuilder;
   final FlNodeHeaderStyleBuilder headerStyleBuilder;
   final List<PortPrototype> ports;
   final List<FieldPrototype> fields;
-  final OnExecute onExecute;
+  final FlOnNodeExecute onExecute;
 
   NodePrototype({
     required this.idName,
     required this.displayName,
-    this.description = '',
+    required this.description,
     this.styleBuilder = defaultNodeStyle,
     this.headerStyleBuilder = defaultNodeHeaderStyle,
     this.ports = const [],

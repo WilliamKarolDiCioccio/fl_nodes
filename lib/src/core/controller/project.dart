@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,9 +9,9 @@ import '../models/entities.dart';
 import '../models/events.dart';
 import 'core.dart';
 
-typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
-typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
-typedef ProjectCreator = Future<bool> Function(bool isSaved);
+typedef FlProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
+typedef FlProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
+typedef FlProjectCreator = Future<bool> Function(bool isSaved);
 
 /// A class that allows to specify serialization and deserialization logic for custom data types.
 class DataHandler {
@@ -197,6 +198,8 @@ class FlNodeEditorProject {
   ///
   /// e.g. Save to a file, save to a database, etc.
   void save() async {
+    final strings = FlNodeEditorLocalizations.fallback;
+
     late final Map<String, dynamic> jsonData;
 
     try {
@@ -204,7 +207,7 @@ class FlNodeEditorProject {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to save project. Unable to serialize project data. ($e)',
+        strings.failedToSaveProjectErrorMsg(e.toString()),
       );
       return;
     }
@@ -220,7 +223,7 @@ class FlNodeEditorProject {
 
     controller.onCallback?.call(
       FlCallbackType.success,
-      'Project saved successfully.',
+      strings.projectSavedSuccessfullyMsg,
     );
   }
 
@@ -230,6 +233,8 @@ class FlNodeEditorProject {
   ///
   /// e.g. If the project data is invalid, the user will be prompted to save the project.
   void load({Map<String, dynamic>? data}) async {
+    final strings = FlNodeEditorLocalizations.fallback;
+
     late final Map<String, dynamic>? jsonData;
 
     if (data != null) {
@@ -241,7 +246,7 @@ class FlNodeEditorProject {
     if (jsonData == null) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to load project. Invalid project data.',
+        strings.failedToLoadProjectErrorMsg('jsonData == null'),
       );
       return;
     }
@@ -253,7 +258,7 @@ class FlNodeEditorProject {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to load project. Unable to deserialize project data ($e)',
+        strings.failedToLoadProjectErrorMsg(e.toString()),
       );
       return;
     }
@@ -262,7 +267,7 @@ class FlNodeEditorProject {
 
     controller.onCallback?.call(
       FlCallbackType.success,
-      'Project loaded successfully.',
+      strings.projectLoadedSuccessfullyMsg,
     );
   }
 
@@ -272,6 +277,8 @@ class FlNodeEditorProject {
   ///
   /// e.g. If the project is not saved, the user will be prompted to save the project.
   void create() async {
+    final strings = FlNodeEditorLocalizations.fallback;
+
     final shouldProceed = await projectCreator?.call(isSaved);
 
     if (shouldProceed == false) return;
@@ -280,7 +287,7 @@ class FlNodeEditorProject {
 
     controller.onCallback?.call(
       FlCallbackType.success,
-      'New project created successfully.',
+      strings.newProjectCreatedSuccessfullyMsg,
     );
   }
 }

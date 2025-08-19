@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
@@ -35,6 +36,8 @@ class FlNodeEditorClipboard {
   /// to JSON and then encoded to base64 (to avoid direct tampering with the JSON data)
   /// and then copied to the clipboard.
   Future<String> copySelection() async {
+    final strings = FlNodeEditorLocalizations.fallback;
+
     if (selectedNodeIds.isEmpty) return '';
 
     final encompassingRect = calculateEncompassingRect(selectedNodeIds, nodes);
@@ -84,7 +87,7 @@ class FlNodeEditorClipboard {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to copy nodes. Invalid clipboard data. ($e)',
+        strings.failedToCopySelectionErrorMsg(e.toString()),
       );
       return '';
     }
@@ -93,7 +96,7 @@ class FlNodeEditorClipboard {
 
     controller.onCallback?.call(
       FlCallbackType.success,
-      'Nodes copied to clipboard.',
+      strings.selectionCopiedSuccessfullyMsg,
     );
 
     eventBus.emit(
@@ -115,6 +118,8 @@ class FlNodeEditorClipboard {
   ///
   /// See [mapToNewIds] for more info on how the new IDs are generated.
   void pasteSelection({Offset? position}) async {
+    final strings = FlNodeEditorLocalizations.fallback;
+
     final clipboardData = await Clipboard.getData('text/plain');
     if (clipboardData == null || clipboardData.text!.isEmpty) return;
 
@@ -132,7 +137,7 @@ class FlNodeEditorClipboard {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to paste nodes. Invalid clipboard data. ($e)',
+        strings.failedToPasteSelectionErrorMsg(e.toString()),
       );
       return;
     }
