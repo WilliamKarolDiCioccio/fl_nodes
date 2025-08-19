@@ -10,15 +10,18 @@ abstract class FlNodeEditorLocalizations {
 
   FlNodeEditorLocalizations(this.locale);
 
-  static FlNodeEditorLocalizations of(BuildContext context) {
+  static FlNodeEditorLocalizations of(BuildContext? context) {
+    if (context == null) return _fallback;
+
     final loc = Localizations.of<FlNodeEditorLocalizations>(
       context,
       FlNodeEditorLocalizations,
     );
+
     return loc ?? FlNodeEditorLocalizationsEn(const Locale('en'));
   }
 
-  static final FlNodeEditorLocalizations fallback =
+  static final FlNodeEditorLocalizations _fallback =
       switch (PlatformDispatcher.instance.locale.languageCode) {
     'it' => FlNodeEditorLocalizationsIt(const Locale('it')),
     _ => FlNodeEditorLocalizationsEn(const Locale('en')),

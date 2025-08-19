@@ -605,12 +605,14 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       MenuItem(
         label: strings.cutSelectionAction,
         icon: Icons.content_cut,
-        onSelected: () => widget.controller.clipboard.cutSelection(),
+        onSelected: () =>
+            widget.controller.clipboard.cutSelection(context: context),
       ),
       MenuItem(
         label: strings.copySelectionAction,
         icon: Icons.copy,
-        onSelected: () => widget.controller.clipboard.copySelection(),
+        onSelected: () =>
+            widget.controller.clipboard.copySelection(context: context),
       ),
     ];
   }

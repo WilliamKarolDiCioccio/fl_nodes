@@ -181,28 +181,32 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     registerDataHandlers(_nodeEditorController);
     registerNodes(context, _nodeEditorController);
 
+    _loadSampleProject();
+  }
+
+  Future<void> _loadSampleProject() async {
     const sampleProjectLink =
         'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/example/assets/www/node_project.json';
 
-    () async {
-      final response = await http.get(Uri.parse(sampleProjectLink));
-      if (response.statusCode == 200) {
-        _nodeEditorController.project.load(
-          data: jsonDecode(response.body),
-        );
-      } else {
-        if (!mounted) return;
+    final response = await http.get(Uri.parse(sampleProjectLink));
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.failedToLoadSampleProject,
-            ),
-            backgroundColor: Colors.red,
+    if (response.statusCode == 200 && mounted) {
+      _nodeEditorController.project.load(
+        data: jsonDecode(response.body),
+        context: context,
+      );
+    } else {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.failedToLoadSampleProject,
           ),
-        );
-      }
-    }();
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -299,8 +303,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),
-                              onPressed: () =>
-                                  _nodeEditorController.runner.executeGraph(),
+                              onPressed: () => _nodeEditorController.runner
+                                  .executeGraph(context: context),
                               icon: const Icon(
                                 Icons.play_arrow,
                                 size: 32,

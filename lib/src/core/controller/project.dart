@@ -197,8 +197,8 @@ class FlNodeEditorProject {
   /// The behavior of this method is determined by the [projectSaver] callback and user defined logic.
   ///
   /// e.g. Save to a file, save to a database, etc.
-  void save() async {
-    final strings = FlNodeEditorLocalizations.fallback;
+  void save({BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
 
     late final Map<String, dynamic> jsonData;
 
@@ -232,8 +232,8 @@ class FlNodeEditorProject {
   /// The behavior of this method is determined by the [projectLoader] callback and user defined logic.
   ///
   /// e.g. If the project data is invalid, the user will be prompted to save the project.
-  void load({Map<String, dynamic>? data}) async {
-    final strings = FlNodeEditorLocalizations.fallback;
+  void load({Map<String, dynamic>? data, BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
 
     late final Map<String, dynamic>? jsonData;
 
@@ -276,8 +276,8 @@ class FlNodeEditorProject {
   /// The behavior of this method is determined by the [projectCreator] callback and user defined logic.
   ///
   /// e.g. If the project is not saved, the user will be prompted to save the project.
-  void create() async {
-    final strings = FlNodeEditorLocalizations.fallback;
+  void create({BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
 
     final shouldProceed = await projectCreator?.call(isSaved);
 

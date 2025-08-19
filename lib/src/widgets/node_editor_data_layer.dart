@@ -628,17 +628,20 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
             MenuItem(
               label: strings.saveProjectAction,
               icon: Icons.save,
-              onSelected: () => widget.controller.project.save(),
+              onSelected: () =>
+                  widget.controller.project.save(context: context),
             ),
             MenuItem(
               label: strings.openProjectAction,
               icon: Icons.folder_open,
-              onSelected: () => widget.controller.project.load(),
+              onSelected: () =>
+                  widget.controller.project.load(context: context),
             ),
             MenuItem(
               label: strings.newProjectAction,
               icon: Icons.new_label,
-              onSelected: () => widget.controller.project.create(),
+              onSelected: () =>
+                  widget.controller.project.create(context: context),
             ),
           ],
         ),
@@ -794,21 +797,24 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   widget.controller.clearSelection();
                 },
                 const SingleActivator(LogicalKeyboardKey.keyC, control: true):
-                    () => widget.controller.clipboard.copySelection(),
+                    () => widget.controller.clipboard
+                        .copySelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyV, control: true):
-                    () => widget.controller.clipboard.pasteSelection(),
+                    () => widget.controller.clipboard
+                        .pasteSelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyX, control: true):
-                    () => widget.controller.clipboard.cutSelection(),
+                    () => widget.controller.clipboard
+                        .cutSelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyS, control: true):
-                    () => widget.controller.project.save(),
+                    () => widget.controller.project.save(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyO, control: true):
-                    () => widget.controller.project.load(),
+                    () => widget.controller.project.load(context: context),
                 SingleActivator(
                   LogicalKeyboardKey.keyN,
                   control: defaultTargetPlatform != TargetPlatform.macOS,
                   meta: defaultTargetPlatform == TargetPlatform.macOS,
                   shift: true,
-                ): () => widget.controller.project.create(),
+                ): () => widget.controller.project.create(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyZ, control: true):
                     () => widget.controller.history.undo(),
                 const SingleActivator(LogicalKeyboardKey.keyY, control: true):

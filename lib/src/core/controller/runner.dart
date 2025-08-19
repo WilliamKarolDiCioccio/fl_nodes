@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:flutter/material.dart';
 
 import '../models/entities.dart';
 import 'core.dart';
@@ -152,7 +153,7 @@ class FlNodeEditorRunner {
   }
 
   /// Executes the entire graph asynchronously
-  Future<void> executeGraph() async {
+  Future<void> executeGraph({BuildContext? context}) async {
     _executedNodes = {};
     _execState = {};
 
@@ -163,7 +164,7 @@ class FlNodeEditorRunner {
         continue;
       }
 
-      await _executeNode(node);
+      await _executeNode(node, context: context);
     }
   }
 
@@ -173,8 +174,8 @@ class FlNodeEditorRunner {
   /// with the data dependecy map. It provides the onExecute callback with the
   /// necessary context information and callbacks to forward events and put data.
   /// The method also handles errors and displays them in the node editor.
-  Future<void> _executeNode(NodeInstance node) async {
-    final strings = FlNodeEditorLocalizations.fallback;
+  Future<void> _executeNode(NodeInstance node, {BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
 
     /// A function that forwards events to connected nodes through control ports.
     ///
