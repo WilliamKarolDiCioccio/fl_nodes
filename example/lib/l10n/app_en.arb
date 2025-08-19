@@ -1,0 +1,254 @@
+{
+  "@@locale": "en",
+  "appTitle": "Node Editor Example",
+  "@appTitle": {},
+  "saveProjectDialogTitle": "Save Project",
+  "@saveProjectDialogTitle": {},
+  "unsavedChangesTitle": "Unsaved Changes",
+  "@unsavedChangesTitle": {},
+  "unsavedChangesMsg": "You have unsaved changes. Do you want to proceed without saving?",
+  "@unsavedChangesMsg": {},
+  "cancel": "Cancel",
+  "@cancel": {},
+  "proceed": "Proceed",
+  "@proceed": {},
+  "failedToLoadSampleProject": "Failed to load sample project. Please check your internet connection.",
+  "@failedToLoadSampleProject": {},
+  "searchNodesTooltip": "Search Nodes by Name",
+  "@searchNodesTooltip": {},
+  "toggleHierarchyTooltip": "Toggle Hierarchy Panel",
+  "@toggleHierarchyTooltip": {},
+  "toggleSnapToGridTooltip": "Toggle Snap to Grid",
+  "@toggleSnapToGridTooltip": {},
+  "executeGraphTooltip": "Execute Graph",
+  "@executeGraphTooltip": {},
+  "touchCommandsTitle": "Touch Commands:",
+  "@touchCommandsTitle": {},
+  "touchTap": "- Tap: Select Node",
+  "@touchTap": {},
+  "touchDoubleTap": "- Double Tap: Clear Selection",
+  "@touchDoubleTap": {},
+  "touchLongPress": "- Long Press: Open Context Menu",
+  "@touchLongPress": {},
+  "touchDrag": "- Drag: Start Linking / Select Nodes",
+  "@touchDrag": {},
+  "touchPinch": "- Pinch: Zoom In/Out",
+  "@touchPinch": {},
+  "touchAdditionalGestures": "Additional Gestures:",
+  "@touchAdditionalGestures": {},
+  "touchTwoFingerDrag": "- Two-Finger Drag: Pan",
+  "@touchTwoFingerDrag": {},
+  "mouseCommandsTitle": "Mouse Commands:",
+  "@mouseCommandsTitle": {},
+  "mouseLeftClick": "- Left Click: Select Node/Link",
+  "@mouseLeftClick": {},
+  "mouseRightClick": "- Right Click: Open Context Menu",
+  "@mouseRightClick": {},
+  "mouseScroll": "- Scroll: Zoom In/Out",
+  "@mouseScroll": {},
+  "mouseMiddleClick": "- Middle Click: Pan",
+  "@mouseMiddleClick": {},
+  "keyboardCommandsTitle": "Keyboard Commands:",
+  "@keyboardCommandsTitle": {},
+  "keyboardSave": "- {comboKey} + S: Save Project",
+  "@keyboardSave": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardOpen": "- {comboKey} + O: Open Project",
+  "@keyboardOpen": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardNew": "- {comboKey} + Shift + N: New Project",
+  "@keyboardNew": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardCopy": "- {comboKey} + C: Copy Node",
+  "@keyboardCopy": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardPaste": "- {comboKey} + V: Paste Node",
+  "@keyboardPaste": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardCut": "- {comboKey} + X: Cut Node",
+  "@keyboardCut": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardDelete": "- Delete | Backspace: Remove Node",
+  "@keyboardDelete": {},
+  "keyboardUndo": "- {comboKey} + Z: Undo",
+  "@keyboardUndo": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "keyboardRedo": "- {comboKey} + Y: Redo",
+  "@keyboardRedo": {
+    "placeholders": {
+      "comboKey": {
+        "type": "String"
+      }
+    }
+  },
+  "searching": "Searching...",
+  "@searching": {},
+  "noResults": "No results found",
+  "@noResults": {},
+  "nextResult": "Next Result",
+  "@nextResult": {},
+  "previousResult": "Previous Result",
+  "@previousResult": {},
+  "resultsCount": "{count} results",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resultPosition": "{current} di {total}",
+  "@resultPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "numericValueNodeName": "Numeric Value",
+  "@numericValueNodeName": {},
+  "booleanValueNodeName": "Boolean Value",
+  "@booleanValueNodeName": {},
+  "stringValueNodeName": "String Value",
+  "@stringValueNodeName": {},
+  "numericListValueNodeName": "Numeric List Value",
+  "@numericListValueNodeName": {},
+  "booleanListValueNodeName": "Boolean List Value",
+  "@booleanListValueNodeName": {},
+  "stringListValueNodeName": "String List Value",
+  "@stringListValueNodeName": {},
+  "valueNodeDescription": "Holds a constant {type} value.",
+  "@valueNodeDescription": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "completedPortName": "Completed",
+  "@completedPortName": {},
+  "valuePortName": "Value",
+  "@valuePortName": {},
+  "valueFieldName": "Value",
+  "@valueFieldName": {},
+  "operatorNodeName": "Operator",
+  "@operatorNodeName": {},
+  "operatorNodeDescription": "Applies a chosen operation to two numbers.",
+  "@operatorNodeDescription": {},
+  "execPortName": "Exec",
+  "@execPortName": {},
+  "resultPortName": "Result",
+  "@resultPortName": {},
+  "operationPortName": "Operation",
+  "@operationPortName": {},
+  "addFieldOption": "Add",
+  "@addFieldOption": {},
+  "subtractFieldOption": "Subtract",
+  "@subtractFieldOption": {},
+  "multiplyFieldOption": "Multiply",
+  "@multiplyFieldOption": {},
+  "divideFieldOption": "Divide",
+  "@divideFieldOption": {},
+  "randomNodeName": "Random",
+  "@randomNodeName": {},
+  "randomNodeDescription": "Outputs a random number between 0 and 1.",
+  "@randomNodeDescription": {},
+  "ifNodeName": "If",
+  "@ifNodeName": {},
+  "ifNodeDescription": "Executes a branch based on a condition.",
+  "@ifNodeDescription": {},
+  "conditionPortName": "Condition",
+  "@conditionPortName": {},
+  "truePortName": "True",
+  "@truePortName": {},
+  "falsePortName": "False",
+  "@falsePortName": {},
+  "comparatorNodeName": "Comparator",
+  "@comparatorNodeName": {},
+  "comparatorNodeDescription": "Compares two numbers based on a chosen comparator.",
+  "@comparatorNodeDescription": {},
+  "comparatorPortName": "Comparator",
+  "@comparatorPortName": {},
+  "equalFieldOption": "==",
+  "@equalFieldOption": {},
+  "notEqualFieldOption": "!=",
+  "@notEqualFieldOption": {},
+  "greaterFieldOption": ">",
+  "@greaterFieldOption": {},
+  "greaterEqualFieldOption": ">=",
+  "@greaterEqualFieldOption": {},
+  "lessFieldOption": "<",
+  "@lessFieldOption": {},
+  "lessEqualFieldOption": "<=",
+  "@lessEqualFieldOption": {},
+  "printNodeName": "Print",
+  "@printNodeName": {},
+  "printNodeDescription": "Prints a value to the console.",
+  "@printNodeDescription": {},
+  "printNodeSnackbarMessage": "Value: {value}",
+  "@printNodeSnackbarMessage": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "roundNodeName": "Round",
+  "@roundNodeName": {},
+  "roundNodeDescription": "Rounds a number to a specified number of decimals.",
+  "@roundNodeDescription": {},
+  "roundedPortName": "Rounded",
+  "@roundedPortName": {},
+  "decimalsFieldName": "Decimals",
+  "@decimalsFieldName": {},
+  "forEachLoopNodeName": "For Each Loop",
+  "@forEachLoopNodeName": {},
+  "forEachLoopNodeDescription": "Executes a loop for each element in a list executing an operation.",
+  "@forEachLoopNodeDescription": {},
+  "listPortName": "List",
+  "@listPortName": {},
+  "loopBodyPortName": "Loop Body",
+  "@loopBodyPortName": {},
+  "listElementPortName": "List Element",
+  "@listElementPortName": {},
+  "listIndexPortName": "List Index",
+  "@listIndexPortName": {}
+}
