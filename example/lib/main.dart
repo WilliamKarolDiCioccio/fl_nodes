@@ -22,8 +22,23 @@ void main() {
   runApp(const NodeEditorExampleApp());
 }
 
-class NodeEditorExampleApp extends StatelessWidget {
+class NodeEditorExampleApp extends StatefulWidget {
   const NodeEditorExampleApp({super.key});
+
+  @override
+  State<NodeEditorExampleApp> createState() => _NodeEditorExampleAppState();
+}
+
+class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
+  Locale _locale = const Locale('it'); // Default to Italian
+
+  void _toggleLocale() {
+    setState(() {
+      _locale = _locale.languageCode == 'it'
+          ? const Locale('en')
+          : const Locale('it');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +54,22 @@ class NodeEditorExampleApp extends StatelessWidget {
         const Locale('en'), // English
         const Locale('it'), // Italian
       ],
-      locale: const Locale('it'),
+      locale: _locale,
       title: 'Fl Nodes Example',
       theme: ThemeData.dark(),
-      home: const NodeEditorExampleScreen(),
+      home: NodeEditorExampleScreen(onLocaleToggle: _toggleLocale),
       debugShowCheckedModeBanner: kDebugMode,
     );
   }
 }
 
 class NodeEditorExampleScreen extends StatefulWidget {
-  const NodeEditorExampleScreen({super.key});
+  const NodeEditorExampleScreen({
+    super.key,
+    required this.onLocaleToggle,
+  });
+
+  final VoidCallback onLocaleToggle;
 
   @override
   State<NodeEditorExampleScreen> createState() =>
@@ -193,6 +213,10 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get current locale to display appropriate flag/text
+    final currentLocale = Localizations.localeOf(context);
+    final isItalian = currentLocale.languageCode == 'it';
+
     return Scaffold(
       body: Center(
         child: Row(
@@ -234,6 +258,21 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                             ),
                             SearchWidget(controller: _nodeEditorController),
                             const Spacer(),
+                            // Locale toggle button
+                            IconButton.filled(
+                              tooltip: isItalian
+                                  ? 'Switch to English'
+                                  : 'Cambia in Italiano',
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                              ),
+                              onPressed: widget.onLocaleToggle,
+                              icon: const Icon(
+                                Icons.translate,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                            ),
                             IconButton.filled(
                               tooltip: AppLocalizations.of(context)!
                                   .toggleSnapToGridTooltip,
