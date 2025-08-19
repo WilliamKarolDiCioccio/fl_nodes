@@ -4,15 +4,17 @@ import 'dart:io';
 import 'package:example/data_handlers.dart';
 import 'package:example/nodes.dart';
 import 'package:example/utils/snackbar.dart';
+import 'package:example/widgets/instructions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 
 import './widgets/hierarchy.dart';
 import './widgets/search.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +28,19 @@ class NodeEditorExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Node Editor Example',
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        const FlNodeEditorLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en'), // English
+        const Locale('it'), // Italian
+      ],
+      locale: const Locale('it'),
+      title: 'Fl Nodes Example',
       theme: ThemeData.dark(),
       home: const NodeEditorExampleScreen(),
       debugShowCheckedModeBanner: kDebugMode,
@@ -54,7 +68,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     _nodeEditorController = FlNodeEditorController(
       projectSaver: (jsonData) async {
         final String? outputPath = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save Project',
+          dialogTitle: AppLocalizations.of(context)!.saveProjectDialogTitle,
           fileName: 'node_project.json',
           type: FileType.custom,
           allowedExtensions: ['json'],
@@ -73,18 +87,18 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text('Unsaved Changes'),
-                content: const Text(
-                  'You have unsaved changes. Do you want to proceed without saving?',
+                title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
+                content: Text(
+                  AppLocalizations.of(context)!.unsavedChangesMsg,
                 ),
                 actions: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(context)!.cancel),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Proceed'),
+                    child: Text(AppLocalizations.of(context)!.proceed),
                   ),
                 ],
               );
@@ -120,18 +134,18 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Unsaved Changes'),
-              content: const Text(
-                'You have unsaved changes. Do you want to proceed without saving?',
+              title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
+              content: Text(
+                AppLocalizations.of(context)!.unsavedChangesMsg,
               ),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Proceed'),
+                  child: Text(AppLocalizations.of(context)!.proceed),
                 ),
               ],
             );
@@ -160,38 +174,15 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Failed to load sample project. Please check your internet connection.',
+              AppLocalizations.of(context)!.failedToLoadSampleProject,
             ),
             backgroundColor: Colors.red,
           ),
         );
       }
     }();
-
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Welcome to FlNodes live example! Keep in mind that this is a work in progress and some features may not work as expected.",
-          ),
-          backgroundColor: Colors.blue,
-        ),
-      );
-
-      if (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "This example is not optimized for mobile devices. Please use a desktop browser for the best experience.",
-            ),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    });
   }
 
   @override
@@ -202,9 +193,6 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final comboKey =
-        defaultTargetPlatform == TargetPlatform.macOS ? "Meta" : "Ctrl";
-
     return Scaffold(
       body: Center(
         child: Row(
@@ -228,7 +216,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                           spacing: 8,
                           children: [
                             IconButton.filled(
-                              tooltip: 'Toggle Hierarchy Panel',
+                              tooltip: AppLocalizations.of(context)!
+                                  .toggleHierarchyTooltip,
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),
@@ -246,7 +235,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                             SearchWidget(controller: _nodeEditorController),
                             const Spacer(),
                             IconButton.filled(
-                              tooltip: 'Toggle Snap to Grid',
+                              tooltip: AppLocalizations.of(context)!
+                                  .toggleSnapToGridTooltip,
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),
@@ -265,7 +255,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                               ),
                             ),
                             IconButton.filled(
-                              tooltip: 'Execute Graph',
+                              tooltip: AppLocalizations.of(context)!
+                                  .executeGraphTooltip,
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),
@@ -284,80 +275,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                     FlOverlayData(
                       bottom: 0,
                       left: 0,
-                      child: Opacity(
-                        opacity: 0.5,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: defaultTargetPlatform ==
-                                      TargetPlatform.android ||
-                                  defaultTargetPlatform == TargetPlatform.iOS
-                              ? const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Touch Commands:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('- Tap: Select Node'),
-                                    Text('- Double Tap: Clear Selection'),
-                                    Text('- Long Press: Open Context Menu'),
-                                    Text(
-                                      '- Drag: Start Linking / Select Nodes',
-                                    ),
-                                    Text('- Pinch: Zoom In/Out'),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Additional Gestures:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('- Two-Finger Drag: Pan'),
-                                  ],
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Mouse Commands:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Text(
-                                      '- Left Click: Select Node/Link',
-                                    ),
-                                    const Text(
-                                      '- Right Click: Open Context Menu',
-                                    ),
-                                    const Text('- Scroll: Zoom In/Out'),
-                                    const Text('- Middle Click: Pan'),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Keyboard Commands:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text('- $comboKey + S: Save Project'),
-                                    Text('- $comboKey + O: Open Project'),
-                                    Text(
-                                      '- $comboKey + Shift + N: New Project',
-                                    ),
-                                    Text('- $comboKey + C: Copy Node'),
-                                    Text('- $comboKey + V: Paste Node'),
-                                    Text('- $comboKey + X: Cut Node'),
-                                    const Text(
-                                      '- Delete | Backspace: Remove Node',
-                                    ),
-                                    Text('- $comboKey + Z: Undo'),
-                                    Text('- $comboKey + Y: Redo'),
-                                  ],
-                                ),
-                        ),
-                      ),
+                      child: const InstructionsWidget(),
                     ),
                   ];
                 },

@@ -1,7 +1,6 @@
+import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:fl_nodes/fl_nodes.dart';
 
 class HierarchyWidget extends StatefulWidget {
   final FlNodeEditorController controller;
@@ -86,7 +85,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                       ),
                       child: ListTile(
                         title: Text(
-                          node.prototype.displayName,
+                          node.prototype.displayName(context),
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isSelected ? Colors.white : Colors.white70,
