@@ -26,7 +26,7 @@ abstract class FlNodeEditorLocalizations {
       FlNodeEditorLocalizations,
     );
 
-    return loc ?? FlNodeEditorLocalizationsEn(const Locale('en'));
+    return loc ?? _fallback;
   }
 
   static final FlNodeEditorLocalizations _fallback =
