@@ -30,14 +30,41 @@ class NodeEditorExampleApp extends StatefulWidget {
 }
 
 class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
-  Locale _locale = const Locale('it'); // Default to Italian
+  late Locale _locale;
 
-  void _toggleLocale() {
+  final locales = [
+    'en',
+    'it',
+    'fr',
+    'es',
+    'de',
+    'ja',
+    'zh',
+    'ko',
+    'ru',
+    'ar',
+  ];
+
+  void _cycleLocale() {
     setState(() {
-      _locale = _locale.languageCode == 'it'
-          ? const Locale('en')
-          : const Locale('it');
+      final currentIndex = locales.indexOf(_locale.languageCode);
+      final nextIndex = (currentIndex + 1) % locales.length;
+      _locale = Locale(locales[nextIndex]);
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+    final supportedLanguageCodes = locales.toSet();
+    final defaultLanguageCode =
+        supportedLanguageCodes.contains(systemLocale.languageCode)
+            ? systemLocale.languageCode
+            : 'en';
+
+    _locale = Locale(defaultLanguageCode);
   }
 
   @override
@@ -51,13 +78,12 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [
-        const Locale('en'), // English
-        const Locale('it'), // Italian
+        ...locales.map((lang) => Locale(lang)),
       ],
       locale: _locale,
       title: 'Fl Nodes Example',
       theme: ThemeData.dark(),
-      home: NodeEditorExampleScreen(onLocaleToggle: _toggleLocale),
+      home: NodeEditorExampleScreen(onLocaleToggle: _cycleLocale),
       debugShowCheckedModeBanner: kDebugMode,
     );
   }
@@ -217,10 +243,6 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get current locale to display appropriate flag/text
-    final currentLocale = Localizations.localeOf(context);
-    final isItalian = currentLocale.languageCode == 'it';
-
     return Scaffold(
       body: Center(
         child: Row(
@@ -264,9 +286,8 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                             const Spacer(),
                             // Locale toggle button
                             IconButton.filled(
-                              tooltip: isItalian
-                                  ? 'Switch to English'
-                                  : 'Cambia in Italiano',
+                              tooltip: AppLocalizations.of(context)!
+                                  .cycleLocaleTooltip,
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),

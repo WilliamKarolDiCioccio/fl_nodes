@@ -1,7 +1,15 @@
 import 'dart:ui';
 
+import 'package:fl_nodes/src/core/localization/ar.dart';
+import 'package:fl_nodes/src/core/localization/de.dart';
 import 'package:fl_nodes/src/core/localization/en.dart';
+import 'package:fl_nodes/src/core/localization/es.dart';
+import 'package:fl_nodes/src/core/localization/fr.dart';
 import 'package:fl_nodes/src/core/localization/it.dart';
+import 'package:fl_nodes/src/core/localization/ja.dart';
+import 'package:fl_nodes/src/core/localization/ko.dart';
+import 'package:fl_nodes/src/core/localization/ru.dart';
+import 'package:fl_nodes/src/core/localization/zh.dart';
 import 'package:flutter/widgets.dart';
 
 /// An abstract class that defines the localizations for the Node Editor.
@@ -24,6 +32,14 @@ abstract class FlNodeEditorLocalizations {
   static final FlNodeEditorLocalizations _fallback =
       switch (PlatformDispatcher.instance.locale.languageCode) {
     'it' => FlNodeEditorLocalizationsIt(const Locale('it')),
+    'fr' => FlNodeEditorLocalizationsFr(const Locale('fr')),
+    'es' => FlNodeEditorLocalizationsEs(const Locale('es')),
+    'de' => FlNodeEditorLocalizationsDe(const Locale('de')),
+    'ja' => FlNodeEditorLocalizationsJa(const Locale('ja')),
+    'zh' => FlNodeEditorLocalizationsZh(const Locale('zh')),
+    'ko' => FlNodeEditorLocalizationsKo(const Locale('ko')),
+    'ru' => FlNodeEditorLocalizationsRu(const Locale('ru')),
+    'ar' => FlNodeEditorLocalizationsAr(const Locale('ar')),
     _ => FlNodeEditorLocalizationsEn(const Locale('en')),
   };
 
@@ -66,13 +82,32 @@ class FlNodeEditorLocalizationsDelegate
   const FlNodeEditorLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) => ['en', 'it'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => [
+        'en',
+        'it',
+        'fr',
+        'es',
+        'de',
+        'ja',
+        'zh',
+        'ko',
+        'ru',
+        'ar',
+      ].contains(locale.languageCode);
 
   @override
   Future<FlNodeEditorLocalizations> load(Locale locale) async {
     return switch (locale.languageCode) {
-      'it' => FlNodeEditorLocalizationsIt(locale),
       'en' => FlNodeEditorLocalizationsEn(locale),
+      'it' => FlNodeEditorLocalizationsIt(locale),
+      'fr' => FlNodeEditorLocalizationsFr(locale),
+      'es' => FlNodeEditorLocalizationsEs(locale),
+      'de' => FlNodeEditorLocalizationsDe(locale),
+      'ja' => FlNodeEditorLocalizationsJa(locale),
+      'zh' => FlNodeEditorLocalizationsZh(locale),
+      'ko' => FlNodeEditorLocalizationsKo(locale),
+      'ru' => FlNodeEditorLocalizationsRu(locale),
+      'ar' => FlNodeEditorLocalizationsAr(locale),
       _ => FlNodeEditorLocalizationsEn(locale)
     };
   }

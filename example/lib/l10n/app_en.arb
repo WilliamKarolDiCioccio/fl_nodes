@@ -250,5 +250,7 @@
   "listElementPortName": "List Element",
   "@listElementPortName": {},
   "listIndexPortName": "List Index",
-  "@listIndexPortName": {}
+  "@listIndexPortName": {},
+  "cycleLocaleTooltip": "Change language",
+  "@cycleLocaleTooltip": {}
 }
