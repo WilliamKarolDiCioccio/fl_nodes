@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
+import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:fl_nodes/src/core/models/styles.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
@@ -11,10 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../constants.dart';
-import '../core/controller/core.dart';
 import '../core/models/entities.dart';
-import '../core/models/events.dart';
-import '../core/models/styles.dart';
 import 'builders.dart';
 
 typedef _TempLink = ({String nodeId, String portId});
@@ -244,12 +245,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     widget.controller.clearTempLink();
   }
 
-  /// UPDATED _buildField:
-  /// This method now always wraps the field content in a GestureDetector that
-  /// handles tap events—even when a custom fieldBuilder is provided.
   Widget _buildField(FieldInstance field) {
     if (widget.node.state.isCollapsed) {
-      return SizedBox(key: field.key, height: 0, width: 0);
+      return SizedBox.shrink(key: field.key);
     }
 
     // Get the field content either from the custom builder or use default visualizer.
@@ -259,16 +257,19 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             padding: field.prototype.style.padding,
             decoration: field.prototype.style.decoration,
             child: Row(
+              spacing: 8,
               children: [
                 Flexible(
                   child: Text(
-                    field.prototype.displayName,
+                    field.prototype.displayName(context),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(child: field.prototype.visualizerBuilder(field.data)),
+                SizedBox(
+                  width: 56,
+                  child: field.prototype.visualizerBuilder(field.data),
+                ),
               ],
             ),
           );
@@ -315,7 +316,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       children: [
         Flexible(
           child: Text(
-            port.prototype.displayName,
+            port.prototype.displayName(context),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
             overflow: TextOverflow.ellipsis,
             textAlign: isInput ? TextAlign.left : TextAlign.right,
@@ -547,22 +548,24 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   List<ContextMenuEntry> _defaultNodeContextMenuEntries() {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     return [
-      const MenuHeader(text: 'Node Menu'),
+      MenuHeader(text: strings.nodeMenuLabel),
       MenuItem(
-        label: 'See Description',
+        label: strings.seeNodeDescriptionAction,
         icon: Icons.info,
         onSelected: () {
           showDialog(
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text(widget.node.prototype.displayName),
-                content: Text(widget.node.prototype.description),
+                title: Text(widget.node.prototype.displayName(context)),
+                content: Text(widget.node.prototype.description(context)),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
+                    child: Text(strings.closeAction),
                   ),
                 ],
               );
@@ -572,7 +575,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       ),
       const MenuDivider(),
       MenuItem(
-        label: widget.node.state.isCollapsed ? 'Expand' : 'Collapse',
+        label: widget.node.state.isCollapsed
+            ? strings.expandNodeAction
+            : strings.collapseNodeAction,
         icon: widget.node.state.isCollapsed
             ? Icons.arrow_drop_down
             : Icons.arrow_right,
@@ -581,7 +586,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       ),
       const MenuDivider(),
       MenuItem(
-        label: 'Delete',
+        label: strings.deleteNodeAction,
         icon: Icons.delete,
         onSelected: () {
           if (widget.node.state.isSelected) {
@@ -598,14 +603,16 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
         },
       ),
       MenuItem(
-        label: 'Cut',
+        label: strings.cutSelectionAction,
         icon: Icons.content_cut,
-        onSelected: () => widget.controller.clipboard.cutSelection(),
+        onSelected: () =>
+            widget.controller.clipboard.cutSelection(context: context),
       ),
       MenuItem(
-        label: 'Copy',
+        label: strings.copySelectionAction,
         icon: Icons.copy,
-        onSelected: () => widget.controller.clipboard.copySelection(),
+        onSelected: () =>
+            widget.controller.clipboard.copySelection(context: context),
       ),
     ];
   }
@@ -614,10 +621,12 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     Offset position, {
     required _TempLink locator,
   }) {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     return [
-      const MenuHeader(text: "Port Menu"),
+      MenuHeader(text: strings.portMenuLabel),
       MenuItem(
-        label: 'Remove Links',
+        label: strings.cutLinksAction,
         icon: Icons.remove_circle,
         onSelected: () {
           widget.controller.breakPortLinks(locator.nodeId, locator.portId);
@@ -650,7 +659,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
     return compatiblePrototypes.map((entry) {
       return MenuItem(
-        label: entry.value.displayName,
+        label: entry.value.displayName(context),
         icon: Icons.widgets,
         onSelected: () {
           widget.controller.addNode(
@@ -718,7 +727,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                         )
                       : _NodeHeaderWidget(
                           lodLevel: widget.controller.lodLevel,
-                          nodeDisplayName: widget.node.prototype.displayName,
+                          nodeDisplayName:
+                              widget.node.prototype.displayName(context),
                           style: widget.node.builtHeaderStyle,
                           onToggleCollapse: () =>
                               widget.controller.toggleCollapseSelectedNodes(

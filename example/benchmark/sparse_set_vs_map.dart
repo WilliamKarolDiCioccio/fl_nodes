@@ -1,6 +1,5 @@
 import 'package:benchmark_harness/benchmark_harness.dart';
-
-import 'package:fl_nodes/src/core/utils/sparse_set.dart';
+import 'package:fl_nodes/src/core/utils/dsa/sparse_set.dart';
 
 class SparseSetInsert extends BenchmarkBase {
   final int size;

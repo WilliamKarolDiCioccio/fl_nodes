@@ -33,9 +33,9 @@ class FlNodeEditorController {
   FlNodeEditorController({
     this.config = const FlNodeEditorConfig(),
     this.style = const FlNodeEditorStyle(),
-    ProjectSaver? projectSaver,
-    ProjectLoader? projectLoader,
-    ProjectCreator? projectCreator,
+    FlProjectSaver? projectSaver,
+    FlProjectLoader? projectLoader,
+    FlProjectCreator? projectCreator,
     this.onCallback,
   }) {
     clipboard = FlNodeEditorClipboard(this);
@@ -890,13 +890,16 @@ class FlNodeEditorController {
   }
 
   /// This method is used to find all nodes with the specified display name.
-  Future<List<String>> searchNodesByName(String name) async {
+  Future<List<String>> searchNodesByName(
+    BuildContext context,
+    String name,
+  ) async {
     final results = <String>[];
 
     final regex = RegExp(name, caseSensitive: false);
 
     for (final node in nodes.values) {
-      if (regex.hasMatch(node.prototype.displayName)) {
+      if (regex.hasMatch(node.prototype.displayName(context))) {
         results.add(node.id);
       }
     }

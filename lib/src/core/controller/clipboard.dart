@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
@@ -34,7 +36,9 @@ class FlNodeEditorClipboard {
   /// copyWith operations to reset the state of the nodes. The copied nodes are encoded
   /// to JSON and then encoded to base64 (to avoid direct tampering with the JSON data)
   /// and then copied to the clipboard.
-  Future<String> copySelection() async {
+  Future<String> copySelection({BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     if (selectedNodeIds.isEmpty) return '';
 
     final encompassingRect = calculateEncompassingRect(selectedNodeIds, nodes);
@@ -84,7 +88,7 @@ class FlNodeEditorClipboard {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to copy nodes. Invalid clipboard data. ($e)',
+        strings.failedToCopySelectionErrorMsg(e.toString()),
       );
       return '';
     }
@@ -93,7 +97,7 @@ class FlNodeEditorClipboard {
 
     controller.onCallback?.call(
       FlCallbackType.success,
-      'Nodes copied to clipboard.',
+      strings.selectionCopiedSuccessfullyMsg,
     );
 
     eventBus.emit(
@@ -114,7 +118,9 @@ class FlNodeEditorClipboard {
   /// The nodes are then deep copied with the new IDs and added to the node editor.
   ///
   /// See [mapToNewIds] for more info on how the new IDs are generated.
-  void pasteSelection({Offset? position}) async {
+  void pasteSelection({Offset? position, BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     final clipboardData = await Clipboard.getData('text/plain');
     if (clipboardData == null || clipboardData.text!.isEmpty) return;
 
@@ -132,7 +138,7 @@ class FlNodeEditorClipboard {
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Failed to paste nodes. Invalid clipboard data. ($e)',
+        strings.failedToPasteSelectionErrorMsg(e.toString()),
       );
       return;
     }
@@ -208,7 +214,7 @@ class FlNodeEditorClipboard {
   ///
   /// The selected nodes are copied to the clipboard and then removed from the node editor.
   /// The nodes are then removed from the node editor and the selection is cleared.
-  void cutSelection() async {
+  void cutSelection({BuildContext? context}) async {
     final clipboardContent = await copySelection();
     for (final id in selectedNodeIds) {
       controller.removeNodeById(id, isHandled: true);

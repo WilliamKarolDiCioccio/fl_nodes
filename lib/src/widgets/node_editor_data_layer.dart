@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
@@ -539,8 +540,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
       return compatiblePrototypes.map((entry) {
         return MenuItem(
-          label: entry.value.displayName,
-          value: entry.value.displayName,
+          label: entry.value.displayName(context),
           icon: Icons.widgets,
           onSelected: () {
             widget.controller.addNode(
@@ -581,11 +581,12 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         offset,
         zoom,
       )!;
+      final strings = FlNodeEditorLocalizations.of(context);
 
       return [
-        const MenuHeader(text: "Editor Menu"),
+        MenuHeader(text: strings.editorMenuLabel),
         MenuItem(
-          label: 'Center View',
+          label: strings.centerViewAction,
           icon: Icons.center_focus_strong,
           onSelected: () => widget.controller.setViewportOffset(
             Offset.zero,
@@ -593,51 +594,54 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
           ),
         ),
         MenuItem(
-          label: 'Reset Zoom',
+          label: strings.resetZoomAction,
           icon: Icons.zoom_in,
           onSelected: () => widget.controller.setViewportZoom(1.0),
         ),
         const MenuDivider(),
         MenuItem.submenu(
-          label: 'Create',
+          label: strings.createNodeAction,
           icon: Icons.add,
           items: createSubmenuEntries(position),
         ),
         MenuItem(
-          label: 'Paste',
+          label: strings.pasteSelectionAction,
           icon: Icons.paste,
           onSelected: () => widget.controller.clipboard
               .pasteSelection(position: worldPosition),
         ),
         const MenuDivider(),
         MenuItem.submenu(
-          label: 'Project',
+          label: strings.projectLabel,
           icon: Icons.folder,
           items: [
             MenuItem(
-              label: 'Undo',
+              label: strings.undoAction,
               icon: Icons.undo,
               onSelected: () => widget.controller.history.undo(),
             ),
             MenuItem(
-              label: 'Redo',
+              label: strings.redoAction,
               icon: Icons.redo,
               onSelected: () => widget.controller.history.redo(),
             ),
             MenuItem(
-              label: 'Save',
+              label: strings.saveProjectAction,
               icon: Icons.save,
-              onSelected: () => widget.controller.project.save(),
+              onSelected: () =>
+                  widget.controller.project.save(context: context),
             ),
             MenuItem(
-              label: 'Open',
+              label: strings.openProjectAction,
               icon: Icons.folder_open,
-              onSelected: () => widget.controller.project.load(),
+              onSelected: () =>
+                  widget.controller.project.load(context: context),
             ),
             MenuItem(
-              label: 'New',
+              label: strings.newProjectAction,
               icon: Icons.new_label,
-              onSelected: () => widget.controller.project.create(),
+              onSelected: () =>
+                  widget.controller.project.create(context: context),
             ),
           ],
         ),
@@ -648,10 +652,12 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       Offset position, {
       required _TempLink locator,
     }) {
+      final strings = FlNodeEditorLocalizations.of(context);
+
       return [
-        const MenuHeader(text: "Port Menu"),
+        MenuHeader(text: strings.portMenuLabel),
         MenuItem(
-          label: 'Remove Links',
+          label: strings.cutLinksAction,
           icon: Icons.remove_circle,
           onSelected: () {
             widget.controller.breakPortLinks(
@@ -791,21 +797,24 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   widget.controller.clearSelection();
                 },
                 const SingleActivator(LogicalKeyboardKey.keyC, control: true):
-                    () => widget.controller.clipboard.copySelection(),
+                    () => widget.controller.clipboard
+                        .copySelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyV, control: true):
-                    () => widget.controller.clipboard.pasteSelection(),
+                    () => widget.controller.clipboard
+                        .pasteSelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyX, control: true):
-                    () => widget.controller.clipboard.cutSelection(),
+                    () => widget.controller.clipboard
+                        .cutSelection(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyS, control: true):
-                    () => widget.controller.project.save(),
+                    () => widget.controller.project.save(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyO, control: true):
-                    () => widget.controller.project.load(),
+                    () => widget.controller.project.load(context: context),
                 SingleActivator(
                   LogicalKeyboardKey.keyN,
                   control: defaultTargetPlatform != TargetPlatform.macOS,
                   meta: defaultTargetPlatform == TargetPlatform.macOS,
                   shift: true,
-                ): () => widget.controller.project.create(),
+                ): () => widget.controller.project.create(context: context),
                 const SingleActivator(LogicalKeyboardKey.keyZ, control: true):
                     () => widget.controller.history.undo(),
                 const SingleActivator(LogicalKeyboardKey.keyY, control: true):

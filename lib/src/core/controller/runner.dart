@@ -1,18 +1,12 @@
 import 'dart:async';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:flutter/material.dart';
 
 import '../models/entities.dart';
 import 'core.dart';
-
-typedef OnExecute = Future<void> Function(
-  Map<String, dynamic> ports,
-  Map<String, dynamic> fields,
-  Map<String, dynamic> execState,
-  Future<void> Function(Set<String>) forward,
-  void Function(Set<(String, dynamic)>) put,
-);
 
 /// A class that manages the execution of the node editor graph.
 ///
@@ -159,7 +153,7 @@ class FlNodeEditorRunner {
   }
 
   /// Executes the entire graph asynchronously
-  Future<void> executeGraph() async {
+  Future<void> executeGraph({BuildContext? context}) async {
     _executedNodes = {};
     _execState = {};
 
@@ -170,7 +164,7 @@ class FlNodeEditorRunner {
         continue;
       }
 
-      await _executeNode(node);
+      await _executeNode(node, context: context);
     }
   }
 
@@ -180,7 +174,9 @@ class FlNodeEditorRunner {
   /// with the data dependecy map. It provides the onExecute callback with the
   /// necessary context information and callbacks to forward events and put data.
   /// The method also handles errors and displays them in the node editor.
-  Future<void> _executeNode(NodeInstance node) async {
+  Future<void> _executeNode(NodeInstance node, {BuildContext? context}) async {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     /// A function that forwards events to connected nodes through control ports.
     ///
     /// The function takes a [Set] of unique IDs of the ports to forward events to and
@@ -249,7 +245,7 @@ class FlNodeEditorRunner {
       controller.focusNodesById({node.id});
       controller.onCallback?.call(
         FlCallbackType.error,
-        'Error executing node: ${node.prototype.displayName}: $e',
+        strings.failedToExecuteNodeErrorMsg(e.toString()),
       );
       return;
     }

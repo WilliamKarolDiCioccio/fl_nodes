@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
+import 'package:example/l10n/app_localizations.dart';
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/material.dart';
 
 class SearchWidget extends StatefulWidget {
   final FlNodeEditorController controller;
@@ -16,40 +16,73 @@ class SearchWidget extends StatefulWidget {
 
 class _SearchWidgetState extends State<SearchWidget> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final List<String> _searchResults = [];
-  final FocusNode _focusNode = FocusNode();
-  String? _currentFocus;
+  int _currentFocusIndex = -1;
   bool _isSearching = false;
   bool _showSearch = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
-  void _toNextResult() async {
-    final idx = _searchResults.indexOf(_currentFocus!);
+  void _toNextResult() {
+    if (_searchResults.isEmpty) return;
 
-    if (idx < _searchResults.length - 1) {
-      _currentFocus = _searchResults[idx + 1];
-    } else {
-      _currentFocus = _searchResults[0];
-    }
+    setState(() {
+      _currentFocusIndex = (_currentFocusIndex + 1) % _searchResults.length;
+    });
 
-    widget.controller.focusNodesById({_currentFocus!});
+    _focusCurrentResult();
   }
 
-  void _toPreviousResult() async {
-    final idx = _searchResults.indexOf(_currentFocus!);
+  void _toPreviousResult() {
+    if (_searchResults.isEmpty) return;
 
-    if (idx > 0) {
-      _currentFocus = _searchResults[idx - 1];
-    } else {
-      _currentFocus = _searchResults[_searchResults.length - 1];
+    setState(() {
+      _currentFocusIndex = _currentFocusIndex <= 0
+          ? _searchResults.length - 1
+          : _currentFocusIndex - 1;
+    });
+
+    _focusCurrentResult();
+  }
+
+  void _focusCurrentResult() {
+    if (_currentFocusIndex >= 0 && _currentFocusIndex < _searchResults.length) {
+      final nodeId = _searchResults[_currentFocusIndex];
+      widget.controller.focusNodesById({nodeId});
+    }
+  }
+
+  void _resetFocus() {
+    setState(() {
+      _currentFocusIndex = -1;
+    });
+  }
+
+  String _getResultText() {
+    if (_isSearching) {
+      return AppLocalizations.of(context)!.searching;
     }
 
-    widget.controller.focusNodesById({_currentFocus!});
+    if (_searchResults.isEmpty) {
+      return AppLocalizations.of(context)!.noResults;
+    }
+
+    if (_currentFocusIndex >= 0) {
+      return AppLocalizations.of(context)!.resultPosition(
+        _currentFocusIndex + 1,
+        _searchResults.length,
+      );
+    }
+
+    return AppLocalizations.of(context)!.resultsCount(
+      _searchResults.length,
+    );
   }
 
   @override
@@ -65,14 +98,28 @@ class _SearchWidgetState extends State<SearchWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: const Icon(
-              Icons.search,
+            tooltip: AppLocalizations.of(context)!.searchNodesTooltip,
+            icon: Icon(
+              _showSearch ? Icons.close : Icons.search,
               size: 32,
               color: Colors.white,
             ),
             onPressed: () {
               setState(() {
                 _showSearch = !_showSearch;
+
+                if (!_showSearch) {
+                  _searchController.clear();
+                  _searchResults.clear();
+                  _resetFocus();
+                } else {
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) {
+                      // ignore: use_build_context_synchronously
+                      FocusScope.of(context).requestFocus(_searchFocusNode);
+                    }
+                  });
+                }
               });
             },
           ),
@@ -100,11 +147,12 @@ class _SearchWidgetState extends State<SearchWidget> {
                           width: 200,
                           child: TextField(
                             autofocus: true,
-                            focusNode: _focusNode,
+                            focusNode: _searchFocusNode,
                             controller: _searchController,
-                            decoration: const InputDecoration(
-                              hintText: 'Search nodes by name...',
-                              hintStyle: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText:
+                                  '${AppLocalizations.of(context)!.searchNodesTooltip}...',
+                              hintStyle: const TextStyle(color: Colors.white70),
                               border: InputBorder.none,
                             ),
                             style: const TextStyle(color: Colors.white),
@@ -113,6 +161,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                                 setState(() {
                                   _isSearching = false;
                                   _searchResults.clear();
+                                  _resetFocus();
                                 });
                                 return;
                               }
@@ -120,58 +169,77 @@ class _SearchWidgetState extends State<SearchWidget> {
                               setState(() {
                                 _isSearching = true;
                                 _searchResults.clear();
+                                _resetFocus();
                               });
 
-                              _searchResults.addAll(
-                                await widget.controller
-                                    .searchNodesByName(value),
-                              );
+                              try {
+                                final results = await widget.controller
+                                    .searchNodesByName(context, value);
 
-                              setState(() {
-                                _isSearching = false;
-                              });
+                                // Only update if the search term hasn't changed
+                                if (_searchController.text == value) {
+                                  setState(() {
+                                    _searchResults.clear();
+                                    _searchResults.addAll(results);
+                                    _isSearching = false;
+                                  });
+                                }
+                              } catch (e) {
+                                if (_searchController.text == value) {
+                                  setState(() {
+                                    _isSearching = false;
+                                  });
+                                }
+                              }
                             },
                             onSubmitted: (value) {
-                              if (_searchResults.isEmpty) return;
+                              if (_searchResults.isNotEmpty) {
+                                if (_currentFocusIndex >= 0 &&
+                                    _searchResults.length > 1) {
+                                  _toNextResult();
+                                } else {
+                                  setState(() {
+                                    _currentFocusIndex = 0;
+                                  });
+                                  _focusCurrentResult();
+                                }
 
-                              if (_currentFocus == null) {
-                                _currentFocus = _searchResults.first;
-
-                                widget.controller.focusNodesById(
-                                  {_currentFocus!},
-                                );
-                              } else {
-                                _toNextResult();
+                                _searchFocusNode.requestFocus();
                               }
-
-                              _focusNode.requestFocus();
                             },
-                            onTapOutside: (event) => _focusNode.unfocus(),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        if (_currentFocus != null)
+                        if (_searchResults.isNotEmpty) ...[
                           IconButton(
                             icon: const Icon(
-                              Icons.navigate_before,
+                              Icons.keyboard_arrow_up,
                               color: Colors.white,
                             ),
                             onPressed: _toPreviousResult,
+                            tooltip:
+                                AppLocalizations.of(context)!.previousResult,
                           ),
-                        if (_currentFocus != null)
                           IconButton(
                             icon: const Icon(
-                              Icons.navigate_next,
+                              Icons.keyboard_arrow_down,
                               color: Colors.white,
                             ),
                             onPressed: _toNextResult,
+                            tooltip: AppLocalizations.of(context)!.nextResult,
                           ),
+                        ],
                         const SizedBox(width: 8),
-                        Text(
-                          _isSearching
-                              ? 'Searching...'
-                              : '${_searchResults.length} results',
-                          style: const TextStyle(color: Colors.white),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 80),
+                          child: Text(
+                            _getResultText(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),
