@@ -260,20 +260,25 @@ class NodeEditorRenderBox extends RenderBox
   void _loadGridShader() {
     final gridStyle = style.gridStyle;
 
+    // uniform vec2 uGridSpacing
     gridShader.setFloat(0, gridStyle.gridSpacingX);
     gridShader.setFloat(1, gridStyle.gridSpacingY);
 
-    final lineColor = gridStyle.lineColor;
-
+    // uniform float uLineWidth
     gridShader.setFloat(2, gridStyle.lineWidth);
+
+    final lineColor = gridStyle.lineColor;
+    // uniform vec4 uLineColor
     gridShader.setFloat(3, lineColor.r * lineColor.a);
     gridShader.setFloat(4, lineColor.g * lineColor.a);
     gridShader.setFloat(5, lineColor.b * lineColor.a);
     gridShader.setFloat(6, lineColor.a);
 
-    final intersectionColor = gridStyle.intersectionColor;
-
+    // uniform float uIntersectionRadius
     gridShader.setFloat(7, gridStyle.intersectionRadius);
+
+    final intersectionColor = gridStyle.intersectionColor;
+    // uniform vec4 uIntersectionColor
     gridShader.setFloat(8, intersectionColor.r * intersectionColor.a);
     gridShader.setFloat(9, intersectionColor.g * intersectionColor.a);
     gridShader.setFloat(10, intersectionColor.b * intersectionColor.a);
@@ -489,10 +494,7 @@ class NodeEditorRenderBox extends RenderBox
   void _paintGrid(Canvas canvas, Rect viewport) {
     if (!style.gridStyle.showGrid) return;
 
-    gridShader.setFloat(12, viewport.left);
-    gridShader.setFloat(13, viewport.top);
-    gridShader.setFloat(14, viewport.right);
-    gridShader.setFloat(15, viewport.bottom);
+    print('viewport: $viewport');
 
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }
