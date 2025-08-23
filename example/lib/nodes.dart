@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:example/l10n/app_localizations.dart';
-import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:example/l10n/app_localizations.dart';
+
+import 'package:fl_nodes/fl_nodes.dart';
 
 enum Operator { add, subtract, multiply, divide }
 
@@ -131,6 +133,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         data.toString(),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        softWrap: false,
         style: const TextStyle(color: Colors.white),
       ),
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
@@ -181,6 +184,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         '"$data"',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        softWrap: false,
         style: const TextStyle(color: Colors.white),
       ),
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
@@ -217,6 +221,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
             : '[${data.join(', ')}]',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        softWrap: false,
         style: const TextStyle(color: Colors.white),
       ),
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
@@ -253,6 +258,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
             : '[${data.map((e) => e ? 'true' : 'false').join(', ')}]',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        softWrap: false,
         style: const TextStyle(color: Colors.white),
       ),
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
@@ -301,6 +307,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         formatStringList(data),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        softWrap: false,
         style: const TextStyle(color: Colors.white),
       ),
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(

@@ -48,26 +48,26 @@ class FlGridStyle {
   }
 }
 
-class FlSelectionAreaStyle {
+class FlHighlightAreaStyle {
   final Color color;
   final double borderWidth;
   final Color borderColor;
   final FlLineDrawMode borderDrawMode;
 
-  const FlSelectionAreaStyle({
+  const FlHighlightAreaStyle({
     this.color = const Color.fromARGB(25, 33, 150, 243),
     this.borderWidth = 1.0,
     this.borderColor = const Color.fromARGB(255, 33, 150, 243),
     this.borderDrawMode = FlLineDrawMode.solid,
   });
 
-  FlSelectionAreaStyle copyWith({
+  FlHighlightAreaStyle copyWith({
     Color? color,
     double? borderWidth,
     Color? borderColor,
     FlLineDrawMode? borderDrawMode,
   }) {
-    return FlSelectionAreaStyle(
+    return FlHighlightAreaStyle(
       color: color ?? this.color,
       borderWidth: borderWidth ?? this.borderWidth,
       borderColor: borderColor ?? this.borderColor,
@@ -314,7 +314,7 @@ class FlNodeEditorStyle {
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
   final FlGridStyle gridStyle;
-  final FlSelectionAreaStyle selectionAreaStyle;
+  final FlHighlightAreaStyle highlightAreaStyle;
 
   const FlNodeEditorStyle({
     this.decoration = const BoxDecoration(
@@ -322,20 +322,20 @@ class FlNodeEditorStyle {
     ),
     this.padding = const EdgeInsets.all(8.0),
     this.gridStyle = const FlGridStyle(),
-    this.selectionAreaStyle = const FlSelectionAreaStyle(),
+    this.highlightAreaStyle = const FlHighlightAreaStyle(),
   });
 
   FlNodeEditorStyle copyWith({
     BoxDecoration? decoration,
     EdgeInsetsGeometry? padding,
     FlGridStyle? gridStyle,
-    FlSelectionAreaStyle? selectionAreaStyle,
+    FlHighlightAreaStyle? highlightAreaStyle,
   }) {
     return FlNodeEditorStyle(
       decoration: decoration ?? this.decoration,
       padding: padding ?? this.padding,
       gridStyle: gridStyle ?? this.gridStyle,
-      selectionAreaStyle: selectionAreaStyle ?? this.selectionAreaStyle,
+      highlightAreaStyle: highlightAreaStyle ?? this.highlightAreaStyle,
     );
   }
 }

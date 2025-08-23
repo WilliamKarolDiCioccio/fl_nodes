@@ -1,36 +1,15 @@
-import 'package:fl_nodes/src/core/controller/core.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:flutter/material.dart';
 
-class DebugInfoWidget extends StatefulWidget {
+import 'package:fl_nodes/fl_nodes.dart';
+import 'package:fl_nodes/src/core/models/events.dart';
+
+class DebugInfoWidget extends StatelessWidget {
   final FlNodeEditorController controller;
 
   const DebugInfoWidget({
     super.key,
     required this.controller,
   });
-
-  @override
-  State<StatefulWidget> createState() => _DebugInfoWidgetState();
-}
-
-class _DebugInfoWidgetState extends State<DebugInfoWidget> {
-  double get viewportZoom => widget.controller.viewportZoom;
-  Offset get viewportOffset => widget.controller.viewportOffset;
-  int get selectionCount => widget.controller.selectedNodeIds.length;
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.controller.eventBus.events.listen((event) {
-      if (event is ViewportOffsetEvent ||
-          event is ViewportZoomEvent ||
-          event is NodeSelectionEvent) {
-        setState(() {});
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,29 +19,71 @@ class _DebugInfoWidgetState extends State<DebugInfoWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(
-            'X: ${viewportOffset.dx.toStringAsFixed(2)}, Y: ${viewportOffset.dy.toStringAsFixed(2)}',
-            style: const TextStyle(color: Colors.red, fontSize: 16),
+          ValueListenableBuilder<Offset>(
+            valueListenable: controller.viewportOffsetNotifier,
+            builder: (context, viewportOffset, child) {
+              return Text(
+                'Offset: x.${viewportOffset.dx.toStringAsFixed(2)}, y.${viewportOffset.dy.toStringAsFixed(2)}',
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+              );
+            },
           ),
-          Text(
-            'Zoom: ${viewportZoom.toStringAsFixed(2)}',
-            style: const TextStyle(color: Colors.green, fontSize: 16),
+          ValueListenableBuilder<double>(
+            valueListenable: controller.viewportZoomNotifier,
+            builder: (context, viewportZoom, child) {
+              return Text(
+                'Zoom: ${viewportZoom.toStringAsFixed(2)}',
+                style: const TextStyle(color: Colors.green, fontSize: 16),
+              );
+            },
           ),
-          Text(
-            'Node count: ${widget.controller.nodes.length}',
-            style: const TextStyle(color: Colors.yellow, fontSize: 16),
+          StreamBuilder(
+            stream: controller.eventBus.events.where(
+              (event) =>
+                  event is AddNodeEvent ||
+                  event is RemoveNodeEvent ||
+                  event is AddLinkEvent ||
+                  event is RemoveLinkEvent ||
+                  event is NodeSelectionEvent ||
+                  event is NodeDeselectionEvent,
+            ),
+            builder: (context, snapshot) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Node count: ${controller.nodes.length}',
+                    style: const TextStyle(
+                      color: Colors.yellow,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'Links count: ${controller.linksById.length}',
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'Selection count: ${controller.selectedNodeIds.length}',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          Text(
-            'Links count: ${widget.controller.linksById.length}',
-            style: const TextStyle(color: Colors.orange, fontSize: 16),
-          ),
-          Text(
-            'Selection count: $selectionCount',
-            style: const TextStyle(color: Colors.blue, fontSize: 16),
-          ),
-          Text(
-            'LOD level: ${widget.controller.lodLevel}',
-            style: const TextStyle(color: Colors.purple, fontSize: 16),
+          ValueListenableBuilder(
+            valueListenable: controller.lodLevelNotifier,
+            builder: (context, lodLevel, child) {
+              return Text(
+                'LOD level: $lodLevel',
+                style: const TextStyle(color: Colors.purple, fontSize: 16),
+              );
+            },
           ),
         ],
       ),

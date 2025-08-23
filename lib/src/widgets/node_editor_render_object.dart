@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes/src/core/models/config.dart';
+import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:fl_nodes/src/widgets/default_node_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -71,6 +73,7 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
 class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorController controller;
   final FlNodeEditorStyle style;
+  final FlNodeEditorConfig config;
   final FragmentShader gridShader;
   final FlNodeHeaderBuilder? headerBuilder;
   final FlNodeFieldBuilder? fieldBuilder;
@@ -82,6 +85,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     super.key,
     required this.controller,
     required this.style,
+    required this.config,
     required this.gridShader,
     this.headerBuilder,
     this.fieldBuilder,
@@ -109,13 +113,8 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     return NodeEditorRenderBox(
       controller: controller,
       style: style,
+      config: config,
       gridShader: gridShader,
-      offset: controller.viewportOffset,
-      zoom: controller.viewportZoom,
-      lodLevel: controller.lodLevel,
-      tmpLinkDrawData: _getTmpLinkData(),
-      selectionArea: controller.selectionArea,
-      nodesData: _getNodeDrawData(),
     );
   }
 
@@ -126,37 +125,8 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   ) {
     renderObject
       ..style = style
-      ..offset = controller.viewportOffset
-      ..zoom = controller.viewportZoom
-      ..lodLevel = controller.lodLevel
-      ..tmpLinkDrawData = _getTmpLinkData()
-      ..selectionArea = controller.selectionArea
-      ..updateNodes(_getNodeDrawData());
-  }
-
-  List<NodeDiffCheckData> _getNodeDrawData() {
-    return controller.nodesAsList
-        .map(
-          (node) => NodeDiffCheckData(
-            id: node.id,
-            offset: node.offset,
-            state: node.state,
-          ),
-        )
-        .toList();
-  }
-
-  LinkData? _getTmpLinkData() {
-    if (controller.tempLink == null) return null;
-
-    final link = controller.tempLink!;
-
-    return LinkData(
-      id: "", // Temporary link doesn't need an ID
-      outPortOffset: link.from,
-      inPortOffset: link.to,
-      linkStyle: link.style,
-    );
+      ..config = config
+      ..gridShader = gridShader;
   }
 }
 
@@ -167,23 +137,59 @@ class NodeEditorRenderBox extends RenderBox
   NodeEditorRenderBox({
     required FlNodeEditorController controller,
     required FlNodeEditorStyle style,
+    required FlNodeEditorConfig config,
     required FragmentShader gridShader,
-    required Offset offset,
-    required double zoom,
-    required int lodLevel,
-    required LinkData? tmpLinkDrawData,
-    required Rect selectionArea,
-    required List<NodeDiffCheckData> nodesData,
   })  : _controller = controller,
         _style = style,
-        _gridShader = gridShader,
-        _offset = offset,
-        _zoom = zoom,
-        _lodLevel = lodLevel,
-        _tmpLinkData = tmpLinkDrawData,
-        _selectionArea = selectionArea {
+        _config = config,
+        _gridShader = gridShader {
     _loadGridShader();
-    updateNodes(nodesData);
+
+    _updateNodes(
+      _getNodeDiffData(),
+    );
+
+    _offset = _controller.viewportOffset;
+    _zoom = _controller.viewportZoom;
+    _highlightArea = _controller.highlightArea;
+
+    _controller.eventBus.events.listen(_handleEvent);
+  }
+
+  void _handleEvent(NodeEditorEvent event) {
+    if (event is ViewportOffsetEvent) {
+      _offset = event.offset;
+      _transformMatrixDirty = true;
+      markNeedsPaint();
+    } else if (event is ViewportZoomEvent) {
+      _zoom = event.zoom;
+      _transformMatrixDirty = true;
+      markNeedsPaint();
+    } else if (event is AreaHighlightEvent) {
+      _highlightArea = event.area;
+      markNeedsPaint();
+    } else if (event is DrawTempLinkEvent) {
+      _tmpLinkData = _getTmpLinkData();
+      markNeedsPaint();
+    } else if (event is DragSelectionEvent) {
+      _updateNodes(
+        _getNodeDiffData(),
+      );
+    } else if (event is AddNodeEvent || event is RemoveNodeEvent) {
+      _updateNodes(
+        _getNodeDiffData(),
+      );
+    } else if (event is AddLinkEvent || event is RemoveLinkEvent) {
+      markNeedsPaint();
+    } else if (event is NodeSelectionEvent || event is NodeDeselectionEvent) {
+      markNeedsPaint();
+    } else if (event is LinkSelectionEvent || event is LinkDeselectionEvent) {
+      markNeedsPaint();
+    } else if (event is ConfigurationChangeEvent || event is StyleChangeEvent) {
+      _updateNodes(
+        _getNodeDiffData(),
+      );
+    }
   }
 
   final FlNodeEditorController _controller;
@@ -202,7 +208,14 @@ class NodeEditorRenderBox extends RenderBox
     markNeedsPaint();
   }
 
-  bool gridShaderStyleLoaded = false;
+  FlNodeEditorConfig _config;
+  FlNodeEditorConfig get config => _config;
+  set config(FlNodeEditorConfig value) {
+    if (_config == value) return;
+    _config = value;
+    markNeedsLayout();
+  }
+
   FragmentShader _gridShader;
   FragmentShader get gridShader => _gridShader;
   set gridShader(FragmentShader value) {
@@ -211,57 +224,42 @@ class NodeEditorRenderBox extends RenderBox
     markNeedsPaint();
   }
 
-  Offset _offset;
-  Offset get offset => _offset;
-  set offset(Offset value) {
-    if (_offset == value) return;
-    _offset = value;
-    _transformMatrixDirty = true;
-    markNeedsPaint();
-  }
-
-  double _zoom;
-  double get zoom => _zoom;
-  set zoom(double value) {
-    if (_zoom == value) return;
-    _zoom = value;
-    _transformMatrixDirty = true;
-    markNeedsPaint();
-  }
-
-  int _lodLevel;
-  int get lodLevel => _lodLevel;
-  set lodLevel(int value) {
-    if (_lodLevel == value) return;
-    _lodLevel = value;
-    markNeedsPaint();
-  }
-
   Matrix4? _transformMatrix;
   bool _transformMatrixDirty = true;
 
-  LinkData? _tmpLinkData;
-  LinkData? get tmpLinkDrawData => _tmpLinkData;
-  set tmpLinkDrawData(LinkData? value) {
-    if (_tmpLinkData == value) return;
-    _tmpLinkData = value;
-    markNeedsPaint();
-  }
+  Set<String> visibleNodes = {};
+  int get lodLevel => _controller.lodLevel;
 
-  Rect _selectionArea;
-  Rect get selectionArea => _selectionArea;
-  set selectionArea(Rect value) {
-    if (_selectionArea == value) return;
-    _selectionArea = value;
-    markNeedsPaint();
-  }
+  late Offset _offset;
+  late double _zoom;
+  LinkData? _tmpLinkData;
+  Rect? _highlightArea;
 
   List<NodeDiffCheckData> _nodesDiffCheckData = [];
-  List<NodeDiffCheckData> get nodesData => _nodesDiffCheckData;
-  set nodesData(List<NodeDiffCheckData> value) {
-    if (_nodesDiffCheckData == value) return;
-    _nodesDiffCheckData = value;
-    markNeedsLayout();
+
+  List<NodeDiffCheckData> _getNodeDiffData() {
+    return _controller.nodesAsList
+        .map(
+          (node) => NodeDiffCheckData(
+            id: node.id,
+            offset: node.offset,
+            state: node.state,
+          ),
+        )
+        .toList();
+  }
+
+  LinkData? _getTmpLinkData() {
+    if (_controller.tempLink == null) return null;
+
+    final link = _controller.tempLink!;
+
+    return LinkData(
+      id: "", // Temporary link doesn't need an ID
+      outPortOffset: link.from,
+      inPortOffset: link.to,
+      linkStyle: link.style,
+    );
   }
 
   void _loadGridShader() {
@@ -287,13 +285,8 @@ class NodeEditorRenderBox extends RenderBox
     gridShader.setFloat(11, intersectionColor.a);
   }
 
-  Set<String> visibleNodes = {};
-
-  void updateNodes(List<NodeDiffCheckData> nodesData) {
-    if (!_controller.nodesDataDirty) {
-      markNeedsPaint();
-      return;
-    }
+  void _updateNodes(List<NodeDiffCheckData> nodesData) {
+    if (!_controller.nodesDataDirty) return;
 
     _nodesDiffCheckData = nodesData;
 
@@ -337,7 +330,7 @@ class NodeEditorRenderBox extends RenderBox
 
   @override
   void setupParentData(RenderBox child) {
-    if (child.parentData is! NodeDiffCheckData) {
+    if (child.parentData is! _ParentData) {
       child.parentData = _ParentData();
     }
   }
@@ -416,10 +409,10 @@ class NodeEditorRenderBox extends RenderBox
 
   Rect _calculateViewport() {
     return Rect.fromLTWH(
-      -size.width / 2 / zoom - _offset.dx,
-      -size.height / 2 / zoom - _offset.dy,
-      size.width / zoom,
-      size.height / zoom,
+      -size.width / 2 / _zoom - _offset.dx,
+      -size.height / 2 / _zoom - _offset.dy,
+      size.width / _zoom,
+      size.height / _zoom,
     );
   }
 
@@ -450,7 +443,7 @@ class NodeEditorRenderBox extends RenderBox
 
     _paintTemporaryLink(context.canvas);
 
-    _paintSelectionArea(context.canvas, viewport);
+    _paintHighlightArea(context.canvas, viewport);
 
     if (kDebugMode) {
       paintDebugViewport(context.canvas, viewport);
@@ -469,8 +462,8 @@ class NodeEditorRenderBox extends RenderBox
 
     _transformMatrix = Matrix4.identity()
       ..translate(size.width / 2, size.height / 2)
-      ..scale(zoom, zoom, 1.0)
-      ..translate(offset.dx, offset.dy);
+      ..scale(_zoom, _zoom, 1.0)
+      ..translate(_offset.dx, _offset.dy);
 
     return _transformMatrix!;
   }
@@ -917,23 +910,23 @@ class NodeEditorRenderBox extends RenderBox
       ..close();
   }
 
-  void _paintSelectionArea(Canvas canvas, Rect viewport) {
-    if (selectionArea.isEmpty) return;
+  void _paintHighlightArea(Canvas canvas, Rect viewport) {
+    if (_highlightArea == null) return;
 
-    final style = _controller.style.selectionAreaStyle;
+    final style = _controller.style.highlightAreaStyle;
 
     final Paint selectionPaint = Paint()
       ..color = style.color
       ..style = PaintingStyle.fill;
 
-    canvas.drawRect(selectionArea, selectionPaint);
+    canvas.drawRect(_highlightArea!, selectionPaint);
 
     final Paint borderPaint = Paint()
       ..color = style.borderColor
       ..strokeWidth = style.borderWidth
       ..style = PaintingStyle.stroke;
 
-    canvas.drawRect(selectionArea, borderPaint);
+    canvas.drawRect(_highlightArea!, borderPaint);
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -971,7 +964,7 @@ class NodeEditorRenderBox extends RenderBox
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
     final Offset centeredPosition =
         position - Offset(size.width / 2, size.height / 2);
-    final Offset scaledPosition = centeredPosition.scale(1 / zoom, 1 / zoom);
+    final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
     for (final nodeId in _controller.spatialHashGrid.queryCoords(
@@ -1020,18 +1013,46 @@ class NodeEditorRenderBox extends RenderBox
     Rect checkRect,
     PointerEvent event,
   ) {
-    if (event is! PointerDownEvent && event is! PointerHoverEvent) return false;
-
-    final hitLinkId = _findHitLink(transformedPosition, checkRect);
-    final isHit = hitLinkId != null;
-
-    if (isHit) {
-      _handleLinkHit(hitLinkId, event);
-    } else if (event is PointerHoverEvent) {
-      _clearLinkHover();
+    if (event is! PointerDownEvent && event is! PointerHoverEvent) {
+      return false;
     }
 
-    return isHit;
+    final hitLinkId = _findHitLink(transformedPosition, checkRect);
+    if (hitLinkId == null) {
+      if (event is PointerHoverEvent) {
+        _clearLinkHover();
+      }
+      return false;
+    }
+
+    final nodeIds =
+        _controller.spatialHashGrid.queryCoords(transformedPosition);
+
+    if (nodeIds.isNotEmpty) {
+      for (final nodeId in nodeIds) {
+        final child = _childrenById[nodeId]!;
+        final childParentData = child.parentData as _ParentData;
+
+        final childRect = Rect.fromLTWH(
+          childParentData.offset.dx,
+          childParentData.offset.dy,
+          child.size.width,
+          child.size.height,
+        );
+
+        if (childRect.contains(transformedPosition)) {
+          if (event is PointerHoverEvent) {
+            _clearLinkHover();
+          }
+
+          return false;
+        }
+      }
+    }
+
+    _handleLinkHit(hitLinkId, event);
+
+    return true;
   }
 
   bool hitTestPorts(
@@ -1110,7 +1131,8 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _clearLinkHover() {
-    if (lastHoveredLinkId != null) {
+    if (lastHoveredLinkId != null &&
+        _controller.linksById.containsKey(lastHoveredLinkId!)) {
       _controller.linksById[lastHoveredLinkId!]!.state.isHovered = false;
       _controller.linksDataDirty = true;
       lastHoveredLinkId = null;
@@ -1145,7 +1167,7 @@ class NodeEditorRenderBox extends RenderBox
 
     final Offset centeredPosition =
         event.localPosition - Offset(size.width / 2, size.height / 2);
-    final Offset scaledPosition = centeredPosition.scale(1 / zoom, 1 / zoom);
+    final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
     if (event is PointerDownEvent && event.buttons == kMiddleMouseButton) {

@@ -453,11 +453,6 @@ final class NodeState {
 final class NodeInstance {
   final String id; // Stored to acceleate lookups
 
-  /// This vairable is crucial to ensure that nodes are rendered correctly after a project load.
-  ///
-  /// For a clear explanation, please refer to the GitHub issue: https://github.com/WilliamKarolDiCioccio/fl_nodes/issues/57#issuecomment-2888250780
-  bool forceRecompute = true;
-
   // The resolved style for the node.
   late FlNodeStyle builtStyle;
   late FlNodeHeaderStyle builtHeaderStyle;
@@ -475,7 +470,6 @@ final class NodeInstance {
     required this.ports,
     required this.fields,
     required this.state,
-    this.forceRecompute = true,
     this.offset = Offset.zero,
   });
 

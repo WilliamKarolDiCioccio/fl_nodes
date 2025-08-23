@@ -27,7 +27,7 @@ import 'utils.dart';
 /// The controller also provides an event bus for the node editor, allowing
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
-class FlNodeEditorController {
+class FlNodeEditorController with ChangeNotifier {
   FlCallback? onCallback;
 
   FlNodeEditorController({
@@ -50,6 +50,7 @@ class FlNodeEditorController {
   }
 
   /// This method is used to dispose of the node editor controller and all of its resources, subsystems and members.
+  @override
   void dispose() {
     eventBus.close();
     history.clear();
@@ -57,6 +58,8 @@ class FlNodeEditorController {
     runner.dispose();
 
     clear();
+
+    super.dispose();
   }
 
   /// This method is used to clear the core controller and all of its subsystems.
@@ -87,19 +90,20 @@ class FlNodeEditorController {
   /// Viewport properties are used to manage the viewport of the node editor.
   ////////////////////////////////////////////////////////////////////////////////
 
-  Offset _viewportOffset = Offset.zero;
-  double _viewportZoom = 1.0;
+  final ValueNotifier<Offset> viewportOffsetNotifier =
+      ValueNotifier(Offset.zero);
+  final ValueNotifier<double> viewportZoomNotifier = ValueNotifier(1.0);
 
-  Offset get viewportOffset => _viewportOffset;
-  double get viewportZoom => _viewportZoom;
+  Offset get viewportOffset => viewportOffsetNotifier.value;
+  double get viewportZoom => viewportZoomNotifier.value;
 
   void updateViewportOffsetFromUI(Offset offset) {
-    _viewportOffset = offset;
+    viewportOffsetNotifier.value = offset;
 
     eventBus.emit(
       ViewportOffsetEvent(
         id: const Uuid().v4(),
-        _viewportOffset,
+        viewportOffsetNotifier.value,
         animate: false,
         isHandled: true,
       ),
@@ -110,18 +114,18 @@ class FlNodeEditorController {
   /// defaulting event parameters to the correct values.
 
   void updateViewportZoomFromUI(double zoom) {
-    _viewportZoom = zoom;
+    viewportZoomNotifier.value = zoom;
 
     eventBus.emit(
       ViewportZoomEvent(
         id: const Uuid().v4(),
-        _viewportZoom,
+        viewportZoom,
         animate: false,
         isHandled: true,
       ),
     );
 
-    lodLevel = _computeLODLevel(_viewportZoom);
+    lodLevelNotifier.value = _computeLODLevel(viewportZoom);
   }
 
   /// This method is used to set the offset of the viewport.
@@ -138,7 +142,7 @@ class FlNodeEditorController {
     eventBus.emit(
       ViewportOffsetEvent(
         id: const Uuid().v4(),
-        absolute ? offset : _viewportOffset + offset,
+        absolute ? offset : viewportOffset + offset,
         animate: animate,
         isHandled: isHandled,
       ),
@@ -164,14 +168,17 @@ class FlNodeEditorController {
       ),
     );
 
-    lodLevel = _computeLODLevel(_viewportZoom);
+    lodLevelNotifier.value = _computeLODLevel(viewportZoom);
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  /// Rendering accellerators are data stored in the controller to speed up rendering.
+  /// Rendering accelerators are data stored in the controller to speed up rendering.
   ////////////////////////////////////////////////////////////////////////////////
 
-  late int lodLevel = _computeLODLevel(viewportZoom);
+  late final lodLevelNotifier =
+      ValueNotifier<int>(_computeLODLevel(viewportZoom));
+  int get lodLevel => lodLevelNotifier.value;
+
   bool nodesDataDirty = false;
   bool linksDataDirty = false;
 
@@ -195,12 +202,21 @@ class FlNodeEditorController {
   /// Node editor configuration and style.
   //////////////////////////////////////////////////////////////////////////////////
 
-  FlNodeEditorConfig config; // Dynamic, can be changed at runtime
-  final FlNodeEditorStyle style; // Static, cannot be changed at runtime
+  FlNodeEditorConfig config;
 
   /// Set the global configuration of the node editor.
   void setConfig(FlNodeEditorConfig config) {
     this.config = config;
+
+    nodesDataDirty = true;
+    linksDataDirty = true;
+
+    eventBus.emit(
+      ConfigurationChangeEvent(
+        config,
+        id: const Uuid().v4(),
+      ),
+    );
   }
 
   /// Quick access to frequently used configuration properties.
@@ -237,6 +253,43 @@ class FlNodeEditorController {
   /// Enable or disable auto placement of nodes in the node editor.
   void enableAutoPlacement(bool enable) =>
       setConfig(config = config.copyWith(enableAutoPlacement: enable));
+
+  FlNodeEditorStyle style;
+
+  /// Set the style of the node editor.
+  void setStyle(FlNodeEditorStyle style) {
+    this.style = style;
+
+    nodesDataDirty = true;
+    linksDataDirty = true;
+
+    eventBus.emit(
+      StyleChangeEvent(
+        style,
+        id: const Uuid().v4(),
+      ),
+    );
+  }
+
+  ////////////////////////////////////////////////////////////////////////
+  /// Localization.
+  ////////////////////////////////////////////////////////////////////////
+
+  Locale locale = const Locale('en');
+
+  /// Set the locale of the node editor.
+  void setLocale(Locale locale) {
+    if (locale == this.locale) return;
+
+    this.locale = locale;
+
+    eventBus.emit(
+      LocaleChangeEvent(
+        locale,
+        id: const Uuid().v4(),
+      ),
+    );
+  }
 
   ////////////////////////////////////////////////////////////////////////
   /// Nodes and links management.
@@ -682,7 +735,9 @@ class FlNodeEditorController {
 
   final Set<String> selectedNodeIds = {};
   final Set<String> selectedLinkIds = {};
-  Rect selectionArea = Rect.zero;
+
+  Rect? _highlightArea;
+  Rect? get highlightArea => _highlightArea;
 
   /// This method is used to drag the selected nodes by a given delta affecting their offsets.
   ///
@@ -697,7 +752,7 @@ class FlNodeEditorController {
 
     // If the delta is not already in world coordinates,
     // convert it by dividing by the viewport zoom.
-    final Offset effectiveDelta = isWorldDelta ? delta : delta / _viewportZoom;
+    final Offset effectiveDelta = isWorldDelta ? delta : delta / viewportZoom;
 
     for (final id in selectedNodeIds) {
       final node = nodes[id]!;
@@ -745,10 +800,10 @@ class FlNodeEditorController {
   ///
   /// See [selectNodesByArea] for more information.
   ///
-  /// Emits a [SelectionAreaEvent] event.
-  void setSelectionArea(Rect area) {
-    selectionArea = area;
-    eventBus.emit(AreaSelectionEvent(id: const Uuid().v4(), area));
+  /// Emits a [highlightAreaEvent] event.
+  void setHighlightArea(Rect? area) {
+    _highlightArea = area;
+    eventBus.emit(AreaHighlightEvent(id: const Uuid().v4(), area));
   }
 
   /// This method is used to select nodes by their IDs.
@@ -772,22 +827,35 @@ class FlNodeEditorController {
       node?.state.isSelected = true;
     }
 
-    // eventBus.emit(
-    //   SelectionEvent(id: const Uuid().v4(), selectedNodeIds.toSet()),
-    // );
+    eventBus.emit(
+      NodeSelectionEvent(
+        id: const Uuid().v4(),
+        selectedNodeIds.toSet(),
+        isHandled: isHandled,
+      ),
+    );
   }
 
   /// This method is used to select nodes that are contained within the selection area.
   ///
-  /// This method is used in conjunction with the [setSelectionArea] method to select
+  /// This method is used in conjunction with the [sethighlightArea] method to select
   /// nodes that are contained within the selection area. The method queries the spatial
   /// hash grid to find nodes that are within the selection area and then selects them.
   ///
   /// See [selectNodesById] for more information.
   void selectNodesByArea({bool holdSelection = false}) async {
-    final containedNodes = spatialHashGrid.queryArea(selectionArea);
-    selectNodesById(containedNodes, holdSelection: holdSelection);
-    selectionArea = Rect.zero;
+    if (_highlightArea == null || _highlightArea == Rect.zero) {
+      return clearSelection();
+    }
+
+    final containedNodes = spatialHashGrid.queryArea(_highlightArea!);
+
+    selectNodesById(
+      containedNodes,
+      holdSelection: holdSelection,
+    );
+
+    _highlightArea = Rect.zero;
   }
 
   /// This method is used to select a link by its ID.
@@ -814,7 +882,11 @@ class FlNodeEditorController {
     linksDataDirty = true;
 
     eventBus.emit(
-      LinkSelectionEvent(id: const Uuid().v4(), selectedLinkIds.toSet()),
+      LinkSelectionEvent(
+        id: const Uuid().v4(),
+        selectedLinkIds.toSet(),
+        isHandled: isHandled,
+      ),
     );
   }
 
@@ -834,7 +906,7 @@ class FlNodeEditorController {
     nodesDataDirty = true;
 
     eventBus.emit(
-      NodeSelectionEvent(
+      NodeDeselectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
         isHandled: isHandled,
@@ -842,7 +914,7 @@ class FlNodeEditorController {
     );
 
     eventBus.emit(
-      LinkSelectionEvent(
+      LinkDeselectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
         isHandled: isHandled,

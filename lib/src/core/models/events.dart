@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:fl_nodes/src/core/controller/project.dart';
+import 'package:fl_nodes/src/core/models/config.dart';
+import 'package:fl_nodes/src/core/models/styles.dart';
 
 import '../controller/core.dart';
 
@@ -63,11 +65,29 @@ final class ViewportZoomEvent extends NodeEditorEvent {
   });
 }
 
-/// Event produced when an area selection is made.
-final class AreaSelectionEvent extends NodeEditorEvent {
-  final Rect area;
+/// Event produced when nodes are selected.
+final class NodeSelectionEvent extends NodeEditorEvent {
+  final Set<String> nodeIds;
 
-  const AreaSelectionEvent(this.area, {required super.id, super.isHandled});
+  const NodeSelectionEvent(this.nodeIds, {required super.id, super.isHandled});
+}
+
+/// Event produced when nodes are deselected.
+final class NodeDeselectionEvent extends NodeEditorEvent {
+  final Set<String> nodeIds;
+
+  const NodeDeselectionEvent(
+    this.nodeIds, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when an area is highlighted in the editor viewport (leads to selection).
+final class AreaHighlightEvent extends NodeEditorEvent {
+  final Rect? area;
+
+  const AreaHighlightEvent(this.area, {required super.id, super.isHandled});
 }
 
 /// Event produced when the user starts dragging a group of selected nodes.
@@ -157,18 +177,22 @@ final class DragSelectionEndEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user selects a group of nodes (one or more).
-final class NodeSelectionEvent extends NodeEditorEvent {
-  final Set<String> nodeIds;
-
-  const NodeSelectionEvent(this.nodeIds, {required super.id, super.isHandled});
-}
-
 /// Event produced when the user selects a group of links (one or more).
 final class LinkSelectionEvent extends NodeEditorEvent {
   final Set<String> linkIds;
 
   const LinkSelectionEvent(this.linkIds, {required super.id, super.isHandled});
+}
+
+/// Event produced when the user deselects a group of links (one or more).
+final class LinkDeselectionEvent extends NodeEditorEvent {
+  final Set<String> linkIds;
+
+  const LinkDeselectionEvent(
+    this.linkIds, {
+    required super.id,
+    super.isHandled,
+  });
 }
 
 /// Event produced when the user creates a new node.
@@ -361,9 +385,25 @@ final class NodeFieldEvent extends NodeEditorEvent {
   });
 }
 
-/// Event produced when the user updates the style of the node editor (e.g., theme changes).
-final class UpdateStyleEvent extends NodeEditorEvent {
-  const UpdateStyleEvent({required super.id});
+/// Event produced when the user changes the configuration of the node editor.
+final class ConfigurationChangeEvent extends NodeEditorEvent {
+  final FlNodeEditorConfig config;
+
+  const ConfigurationChangeEvent(this.config, {required super.id});
+}
+
+/// Event produced when the user changes the style of the node editor.
+final class StyleChangeEvent extends NodeEditorEvent {
+  final FlNodeEditorStyle style;
+
+  const StyleChangeEvent(this.style, {required super.id});
+}
+
+/// Event produced when the user changes the locale of the node editor.
+final class LocaleChangeEvent extends NodeEditorEvent {
+  final Locale locale;
+
+  const LocaleChangeEvent(this.locale, {required super.id});
 }
 
 /// Event produced when the user saves the current project (Ctrl+S).

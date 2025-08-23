@@ -1,19 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'package:example/data_handlers.dart';
 import 'package:example/nodes.dart';
 import 'package:example/utils/snackbar.dart';
 import 'package:example/widgets/instructions.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fl_nodes/fl_nodes.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:fl_nodes/fl_nodes.dart';
+
 import './widgets/hierarchy.dart';
 import './widgets/search.dart';
+
 import 'l10n/app_localizations.dart';
 
 void main() {
@@ -265,6 +268,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                         child: Row(
                           spacing: 8,
                           children: [
+                            // Hierarchy toggle button
                             IconButton.filled(
                               tooltip: AppLocalizations.of(context)!
                                   .toggleHierarchyTooltip,
@@ -282,6 +286,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                            // Search widget
                             SearchWidget(controller: _nodeEditorController),
                             const Spacer(),
                             // Locale toggle button
@@ -298,18 +303,17 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                            // Snap to grid toggle button
                             IconButton.filled(
                               tooltip: AppLocalizations.of(context)!
                                   .toggleSnapToGridTooltip,
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.blue,
                               ),
-                              onPressed: () => setState(() {
-                                _nodeEditorController.enableSnapToGrid(
-                                  !_nodeEditorController
-                                      .config.enableSnapToGrid,
-                                );
-                              }),
+                              onPressed: () =>
+                                  _nodeEditorController.enableSnapToGrid(
+                                !_nodeEditorController.config.enableSnapToGrid,
+                              ),
                               icon: Icon(
                                 _nodeEditorController.config.enableSnapToGrid
                                     ? Icons.grid_on
@@ -318,6 +322,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                            // Execute graph button
                             IconButton.filled(
                               tooltip: AppLocalizations.of(context)!
                                   .executeGraphTooltip,

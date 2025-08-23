@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/core/models/styles.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
@@ -73,31 +72,15 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void initState() {
     super.initState();
 
-    // First initialization of the node's style and insertion in the spatial hash grid.
-
-    widget.node.builtStyle =
-        widget.node.prototype.styleBuilder(widget.node.state);
-    widget.node.builtHeaderStyle =
-        widget.node.prototype.headerStyleBuilder(widget.node.state);
-
-    fakeTransparentColor = Color.alphaBlend(
-      widget.node.builtStyle.decoration.color!.withAlpha(255),
-      widget.controller.style.decoration.color!,
-    );
-
-    inPorts = widget.node.ports.values
-        .where((port) => port.prototype.direction == PortDirection.input)
-        .toList();
-    outPorts = widget.node.ports.values
-        .where((port) => port.prototype.direction == PortDirection.output)
-        .toList();
-
-    fields = widget.node.fields.values.toList();
+    _updateStyleCache();
+    _updatePortsAndFields();
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       _updatePortsPosition();
     });
+
+    widget.controller.eventBus.events.listen(_handleControllerEvents);
   }
 
   @override
@@ -110,40 +93,52 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void didUpdateWidget(DefaultNodeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Subsequent style and spatial hash grid updates are triggered by changes in the node's state or offset.
-    if (widget.node.state != oldWidget.node.state ||
-        widget.node.offset != oldWidget.node.offset ||
-        widget.node.forceRecompute) {
-      widget.node.builtStyle =
-          widget.node.prototype.styleBuilder(widget.node.state);
-      widget.node.builtHeaderStyle =
-          widget.node.prototype.headerStyleBuilder(widget.node.state);
-
-      fakeTransparentColor = Color.alphaBlend(
-        widget.node.builtStyle.decoration.color!.withAlpha(255),
-        widget.controller.style.decoration.color!,
-      );
+    if (oldWidget.node.key != widget.node.key) {
+      _updateStyleCache();
+      _updatePortsAndFields();
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-        _updatePortsPosition();
+        if (mounted) _updatePortsPosition();
       });
     }
+  }
 
-    if (widget.node.id != oldWidget.node.id || widget.node.forceRecompute) {
-      fakeTransparentColor = Color.alphaBlend(
-        widget.node.builtStyle.decoration.color!.withAlpha(255),
-        widget.controller.style.decoration.color!,
-      );
+  void _handleControllerEvents(NodeEditorEvent event) {
+    if (!mounted || event.isHandled) return;
 
-      inPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == PortDirection.input)
-          .toList();
-      outPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == PortDirection.output)
-          .toList();
+    if (event is DragSelectionEvent) {
+      if (!event.nodeIds.contains(widget.node.id)) return;
 
-      fields = widget.node.fields.values.toList();
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) _updatePortsPosition();
+      });
+    } else if (event is NodeSelectionEvent) {
+      if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
+    } else if (event is NodeDeselectionEvent) {
+      if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
+    } else if (event is CollapseEvent) {
+      if (!event.nodeIds.contains(widget.node.id)) return;
+
+      _updateStyleCache();
+
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) _updatePortsPosition();
+      });
+    } else if (event is NodeFieldEvent) {
+      if (event.nodeId == widget.node.id &&
+          (event.eventType == FieldEventType.submit ||
+              event.eventType == FieldEventType.cancel)) {
+        setState(() {});
+      }
+    } else if (event is AddNodeEvent) {
+      if (event.node.id == widget.node.id) setState(() {});
+    } else if (event is ConfigurationChangeEvent || event is StyleChangeEvent) {
+      _updatePortsAndFields();
+      _updateStyleCache();
+
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) _updatePortsPosition();
+      });
     }
   }
 
@@ -243,155 +238,6 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     _isLinking = false;
     _tempLink = null;
     widget.controller.clearTempLink();
-  }
-
-  Widget _buildField(FieldInstance field) {
-    if (widget.node.state.isCollapsed) {
-      return SizedBox.shrink(key: field.key);
-    }
-
-    // Get the field content either from the custom builder or use default visualizer.
-    final fieldContent = widget.fieldBuilder != null
-        ? widget.fieldBuilder!(context, field, widget.node.builtStyle)
-        : Container(
-            padding: field.prototype.style.padding,
-            decoration: field.prototype.style.decoration,
-            child: Row(
-              spacing: 8,
-              children: [
-                Flexible(
-                  child: Text(
-                    field.prototype.displayName(context),
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                SizedBox(
-                  width: 56,
-                  child: field.prototype.visualizerBuilder(field.data),
-                ),
-              ],
-            ),
-          );
-
-    // Wrap the content with a GestureDetector to ensure tap handling.
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: GestureDetector(
-        onTapDown: (details) {
-          if (field.prototype.onVisualizerTap != null) {
-            field.prototype.onVisualizerTap!(field.data, (dynamic data) {
-              widget.controller.setFieldData(
-                widget.node.id,
-                field.prototype.idName,
-                data: data,
-                eventType: FieldEventType.submit,
-              );
-            });
-          } else {
-            _showFieldEditorOverlay(widget.node.id, field, details);
-          }
-        },
-        child: fieldContent,
-      ),
-    );
-  }
-
-  Widget _buildPort(PortInstance port) {
-    if (widget.node.state.isCollapsed) {
-      return SizedBox(key: port.key, height: 0, width: 0);
-    }
-
-    if (widget.portBuilder != null) {
-      return widget.portBuilder!(context, port, widget.node.builtStyle);
-    }
-
-    final isInput = port.prototype.direction == PortDirection.input;
-
-    return Row(
-      mainAxisAlignment:
-          isInput ? MainAxisAlignment.start : MainAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      key: port.key,
-      children: [
-        Flexible(
-          child: Text(
-            port.prototype.displayName(context),
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-            overflow: TextOverflow.ellipsis,
-            textAlign: isInput ? TextAlign.left : TextAlign.right,
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _generateLayout() {
-    return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: inPorts.map((port) => _buildPort(port)).toList(),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: outPorts.map((port) => _buildPort(port)).toList(),
-            ),
-          ),
-        ],
-      ),
-      if (fields.isNotEmpty) const SizedBox(height: 16),
-      ...fields.map((field) => _buildField(field)),
-    ];
-  }
-
-  void _showFieldEditorOverlay(
-    String nodeId,
-    FieldInstance field,
-    TapDownDetails details,
-  ) {
-    final overlay = Overlay.of(context);
-    OverlayEntry? overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder: (context) {
-        return Stack(
-          children: [
-            GestureDetector(
-              onTap: () => overlayEntry?.remove(),
-              child: Container(color: Colors.transparent),
-            ),
-            Positioned(
-              left: details.globalPosition.dx,
-              top: details.globalPosition.dy,
-              child: Material(
-                child: field.prototype.editorBuilder!(
-                  context,
-                  () => overlayEntry?.remove(),
-                  field.data,
-                  (dynamic data, {required FieldEventType eventType}) {
-                    widget.controller.setFieldData(
-                      nodeId,
-                      field.prototype.idName,
-                      data: data,
-                      eventType: eventType,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    overlay.insert(overlayEntry);
   }
 
   Widget controlsWrapper(Widget child) {
@@ -681,9 +527,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                   )
                   .idName,
             );
+
             _isLinking = false;
             _tempLink = null;
-            setState(() {});
           }
         },
       );
@@ -705,12 +551,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             clipBehavior: Clip.none,
             children: [
               Container(
-                decoration: widget.controller.lodLevel <= 2
-                    ? widget.node.builtStyle.decoration.copyWith(
-                        color: fakeTransparentColor,
-                        borderRadius: BorderRadius.zero,
-                      )
-                    : widget.node.builtStyle.decoration,
+                decoration: widget.node.builtStyle.decoration,
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -726,14 +567,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                           ),
                         )
                       : _NodeHeaderWidget(
-                          lodLevel: widget.controller.lodLevel,
-                          nodeDisplayName:
-                              widget.node.prototype.displayName(context),
-                          style: widget.node.builtHeaderStyle,
-                          onToggleCollapse: () =>
-                              widget.controller.toggleCollapseSelectedNodes(
-                            !widget.node.state.isCollapsed,
-                          ),
+                          controller: widget.controller,
+                          node: widget.node,
                         ),
                   Offstage(
                     offstage: widget.node.state.isCollapsed,
@@ -742,7 +577,51 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: _generateLayout(),
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: inPorts
+                                      .map(
+                                        (port) => _PortWidget(
+                                          node: widget.node,
+                                          port: port,
+                                          portBuilder: widget.portBuilder,
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: outPorts
+                                      .map(
+                                        (port) => _PortWidget(
+                                          node: widget.node,
+                                          port: port,
+                                          portBuilder: widget.portBuilder,
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (fields.isNotEmpty) const SizedBox(height: 16),
+                          ...fields.map(
+                            (field) => _FieldWidget(
+                              controller: widget.controller,
+                              node: widget.node,
+                              field: field,
+                              fieldBuilder: widget.fieldBuilder,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -753,6 +632,33 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
         ),
       ),
     );
+  }
+
+  void _updateStyleCache() {
+    setState(() {
+      widget.node.builtStyle =
+          widget.node.prototype.styleBuilder(widget.node.state);
+      widget.node.builtHeaderStyle =
+          widget.node.prototype.headerStyleBuilder(widget.node.state);
+
+      fakeTransparentColor = Color.alphaBlend(
+        widget.node.builtStyle.decoration.color!.withAlpha(255),
+        widget.controller.style.decoration.color!,
+      );
+    });
+  }
+
+  void _updatePortsAndFields() {
+    setState(() {
+      inPorts = widget.node.ports.values
+          .where((port) => port.prototype.direction == PortDirection.input)
+          .toList();
+      outPorts = widget.node.ports.values
+          .where((port) => port.prototype.direction == PortDirection.output)
+          .toList();
+
+      fields = widget.node.fields.values.toList();
+    });
   }
 
   void _updatePortsPosition() {
@@ -790,51 +696,194 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 }
 
 class _NodeHeaderWidget extends StatelessWidget {
-  final int lodLevel;
-  final FlNodeHeaderStyle style;
-  final String nodeDisplayName;
-  final VoidCallback onToggleCollapse;
+  final FlNodeEditorController controller;
+  final NodeInstance node;
 
   const _NodeHeaderWidget({
-    required this.lodLevel,
-    required this.style,
-    required this.nodeDisplayName,
-    required this.onToggleCollapse,
+    required this.controller,
+    required this.node,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: style.padding,
-      decoration: lodLevel <= 2
-          ? style.decoration.copyWith(
-              color: style.decoration.color?.withAlpha(255),
-              borderRadius: BorderRadius.zero,
-            )
-          : style.decoration,
+      padding: node.builtHeaderStyle.padding,
+      decoration: node.builtHeaderStyle.decoration,
       child: Row(
         children: [
-          Visibility(
-            visible: lodLevel >= 3,
-            maintainState: true,
-            maintainSize: true,
-            maintainAnimation: true,
-            child: InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: onToggleCollapse,
-              child: Icon(style.icon, color: Colors.white, size: 20),
+          InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory,
+            onTap: () => controller.toggleCollapseSelectedNodes(
+              !node.state.isCollapsed,
+            ),
+            child: Icon(
+              node.builtHeaderStyle.icon,
+              color: Colors.white,
+              size: 20,
             ),
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              nodeDisplayName,
-              style: style.textStyle,
+              node.prototype.displayName(context),
+              style: node.builtHeaderStyle.textStyle,
               overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PortWidget extends StatelessWidget {
+  final NodeInstance node;
+  final PortInstance port;
+  final FlNodePortBuilder? portBuilder;
+
+  const _PortWidget({
+    required this.node,
+    required this.port,
+    this.portBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (node.state.isCollapsed) {
+      return SizedBox(key: port.key, height: 0, width: 0);
+    }
+
+    if (portBuilder != null) {
+      return portBuilder!(context, port, node.builtStyle);
+    }
+
+    final isInput = port.prototype.direction == PortDirection.input;
+
+    return Row(
+      mainAxisAlignment:
+          isInput ? MainAxisAlignment.start : MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      key: port.key,
+      children: [
+        Flexible(
+          child: Text(
+            port.prototype.displayName(context),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+            textAlign: isInput ? TextAlign.left : TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FieldWidget extends StatelessWidget {
+  final FlNodeEditorController controller;
+  final NodeInstance node;
+  final FieldInstance field;
+  final FlNodeFieldBuilder? fieldBuilder;
+
+  const _FieldWidget({
+    required this.controller,
+    required this.node,
+    required this.field,
+    this.fieldBuilder,
+  });
+
+  void _showFieldEditorOverlay(
+    BuildContext context,
+    TapDownDetails details,
+  ) {
+    final overlay = Overlay.of(context);
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: () => overlayEntry?.remove(),
+              child: Container(color: Colors.transparent),
+            ),
+            Positioned(
+              left: details.globalPosition.dx,
+              top: details.globalPosition.dy,
+              child: Material(
+                child: field.prototype.editorBuilder!(
+                  context,
+                  () => overlayEntry?.remove(),
+                  field.data,
+                  (dynamic data, {required FieldEventType eventType}) {
+                    controller.setFieldData(
+                      node.id,
+                      field.prototype.idName,
+                      data: data,
+                      eventType: eventType,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    overlay.insert(overlayEntry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (node.state.isCollapsed) {
+      return SizedBox.shrink(key: field.key);
+    }
+
+    // Get the field content either from the custom builder or use default visualizer.
+    final fieldContent = fieldBuilder != null
+        ? fieldBuilder!(context, field, node.builtStyle)
+        : Container(
+            padding: field.prototype.style.padding,
+            decoration: field.prototype.style.decoration,
+            child: Row(
+              spacing: 8,
+              children: [
+                Flexible(
+                  child: Text(
+                    field.prototype.displayName(context),
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(
+                  width: 56,
+                  child: field.prototype.visualizerBuilder(field.data),
+                ),
+              ],
+            ),
+          );
+
+    // Wrap the content with a GestureDetector to ensure tap handling.
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTapDown: (details) {
+          if (field.prototype.onVisualizerTap != null) {
+            field.prototype.onVisualizerTap!(field.data, (dynamic data) {
+              controller.setFieldData(
+                node.id,
+                field.prototype.idName,
+                data: data,
+                eventType: FieldEventType.submit,
+              );
+            });
+          } else {
+            _showFieldEditorOverlay(context, details);
+          }
+        },
+        child: fieldContent,
       ),
     );
   }
