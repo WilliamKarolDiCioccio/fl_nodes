@@ -10,6 +10,7 @@ import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
@@ -374,9 +375,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
           curve: Curves.easeOut,
         ),
       )..addListener(() {
-          widget.controller.updateViewportOffsetFromUI(
-            _offsetAnimation.value,
-          );
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            widget.controller.updateViewportOffsetFromUI(
+              _offsetAnimation.value,
+            );
+          });
         });
 
       _offsetAnimationController.forward();
@@ -462,9 +465,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
           curve: Curves.easeOut,
         ),
       )..addListener(() {
-          widget.controller.updateViewportZoomFromUI(
-            _zoomAnimation.value,
-          );
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            widget.controller.updateViewportZoomFromUI(
+              _zoomAnimation.value,
+            );
+          });
         });
 
       _zoomAnimationController.forward();
