@@ -132,7 +132,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       }
     } else if (event is AddNodeEvent) {
       if (event.node.id == widget.node.id) setState(() {});
-    } else if (event is ConfigurationChangeEvent || event is StyleChangeEvent) {
+    } else if (event is ConfigurationChangeEvent ||
+        event is StyleChangeEvent ||
+        event is LocaleChangeEvent) {
       _updatePortsAndFields();
       _updateStyleCache();
 

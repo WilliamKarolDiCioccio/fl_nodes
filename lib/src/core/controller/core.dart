@@ -206,6 +206,8 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// Set the global configuration of the node editor.
   void setConfig(FlNodeEditorConfig config) {
+    if (config == this.config) return;
+
     this.config = config;
 
     nodesDataDirty = true;
@@ -258,6 +260,8 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// Set the style of the node editor.
   void setStyle(FlNodeEditorStyle style) {
+    if (style == this.style) return;
+
     this.style = style;
 
     nodesDataDirty = true;
@@ -283,6 +287,15 @@ class FlNodeEditorController with ChangeNotifier {
 
     this.locale = locale;
 
+    nodesDataDirty = true;
+    linksDataDirty = true;
+
+    eventBus.emit(
+      LocaleChangeEvent(
+        locale,
+        id: const Uuid().v4(),
+      ),
+    );
     eventBus.emit(
       LocaleChangeEvent(
         locale,

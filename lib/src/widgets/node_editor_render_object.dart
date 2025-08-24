@@ -189,6 +189,13 @@ class NodeEditorRenderBox extends RenderBox
       _updateNodes(
         _getNodeDiffData(),
       );
+    } else if (event is LocaleChangeEvent) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        // Locale changes trigger a repaint that clears dirty flags, but port positions
+        // need recalculation for proper node rendering. This forces an additional repaint.
+        _controller.linksDataDirty = true;
+        markNeedsPaint();
+      });
     }
   }
 
