@@ -1,17 +1,5 @@
 # **FlNodes**
 
-🚀 **We're Participating in the OnlyDust Open Source Hackathon!**
-
-The `fl_nodes` project is taking part in the **[OnlyDust](https://onlydust.com) Open Source Hackathon starting** May 28th, 2025!
-
-If you're interested in Flutter, visual programming, or node-based interfaces, this is a great chance to contribute, learn, and collaborate. We’ll soon tag beginner-friendly issues and update documentation. We are ready to support contributors of all experience levels.
-
-👉 Check out the [Issues](https://github.com/WilliamKarolDiCioccio/fl_nodes/issues) to get started.
-
----
-
-![Coverage](https://github.com/WilliamKarolDiCioccio/fl_nodes/blob/main/coverage_badge.svg?sanitize=true)
-
 ## 🚀 **A Fully Customizable Node-Based Editor for Flutter**
 
 **FlNodes** is a lightweight, scalable, and highly customizable Flutter package for building interactive, node-based user interfaces.
@@ -48,6 +36,8 @@ Whether you're building tools for developers, designers, or end-users, **FlNodes
 
 - 📏 **Scalable Architecture** – Suitable for both lightweight diagrams and complex editors.
 
+- 🌐 **Localization Support** – Easily adapt your node editor to multiple languages.
+
 - 🎨 **Lightweight & Elegant** – Minimal dependencies, beautiful out of the box, and easy to style.
 
 ---
@@ -56,17 +46,7 @@ Whether you're building tools for developers, designers, or end-users, **FlNodes
 
 We're iterating fast, thanks to community adoption, forks, and feedback. Here's what’s next:
 
-### 🐛 Bug Fixes & Community Feedback
-
-- Addressing common issues raised in GitHub discussions and forks.
-
-- Fixes for node field state persistence and ID mismatches.
-
-- Improvements to hit testing and z-ordering in dense graphs.
-
 ### ⚙️ Performance Enhancements
-
-- **Surgical Rebuilds** – Rebuild only the nodes affected by data or structural changes.
 
 - **Static Branch Precomputation** – Improve runtime by detecting and collapsing static branches in execution graphs.
 

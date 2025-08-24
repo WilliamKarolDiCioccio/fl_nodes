@@ -1,48 +1,69 @@
 ## 0.1.0 (Beta)
 
-- Initial beta release showcasing core features.
-- Released to gather community feedback.
+- Initial beta release with core features.
+- Published to gather community feedback.
 
 ## 0.1.0+1 (Hotfix)
 
-- Fixed input system issues (partially resolved input-related problems).
+- Fixed several input system issues (partial resolution of input-related bugs).
 
 ## 0.2.0
 
-- **Custom Builders**: Introduced support for general-purpose node-based UIs.
-  - A guide will be provided in the future as the API stabilizes.
-- **Enhanced Styling**: Node styles now dynamically respond to entity states
-  (e.g., selected, collapsed).
-- **Snap-to-Grid**: Added a customizable grid-snapping feature for better
-  alignment.
-- **Performance Improvements**: Significantly optimized performance, especially
-  when handling large numbers of nodes.
+- **Custom Builders**: Added support for general-purpose node-based UIs.
+  _(A guide will be provided once the API stabilizes.)_
+- **Enhanced Styling**: Node styles now dynamically adapt to entity states (e.g., selected, collapsed).
+- **Snap-to-Grid**: Introduced customizable grid-snapping for easier alignment.
+- **Performance**: Optimized rendering performance, especially with large node graphs.
 
 ## 0.2.0+1 (Hotfix)
 
-- Fixed node rendering after creation and deletion
+- Fixed node rendering issues after creation and deletion.
 
 ## 0.3.0
 
-- **Better Interaction and Feedback**: Links can now be selected and, along with ports, are now highlighted on hover.
-- **Performance Improvements**: Significantly optimized performance, especially
-  when handling large numbers of nodes.
-- **Fixed Bugs**: offset restoration in undo/redo system and project loading failure when the editor is not empty ([#59](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/59) [#57](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/57)).
+- **Improved Interaction & Feedback**: Links can now be selected, and both links and ports highlight on hover.
+- **Performance**: Further performance boosts when working with large node counts.
+- **Bug Fixes**:
+
+  - Restored correct offset handling in the undo/redo system.
+  - Fixed project loading failure when opening a non-empty editor.
+    ([#59](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/59), [#57](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/57))
 
 ## 0.3.1
 
-- **Fixed Mobile Browser**: Fixed input on mobile browser platforms by replacing `os_detect` with `kIsWeb` and `defaultTargetPlatform` ([#73](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/73)).
-- **Exposed More Types To Public API**: Exported addtional symbols of common usage to avoid direct imports from src/ ([#72](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/72)).
+- **Mobile Browser Support**: Fixed input issues on mobile web platforms by replacing `os_detect` with `kIsWeb` and `defaultTargetPlatform`.
+  ([#73](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/73))
+- **Expanded Public API**: Exported additional commonly used types, removing the need for direct `src/` imports.
+  ([#72](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/72))
 
-Thanks to [playday3008](https://github.com/playday3008) for these fixes and improvements!
+Thanks to [playday3008](https://github.com/playday3008) for these contributions! 🎉
+
+## 0.3.2
+
+- **Port Compatibility Checks**: Port type checks now account for inheritance, improving flexibility.
+- **Performance**: Improved node scalability via cached responsive styles and optimized rendering.
+- **API Improvements**:
+
+  - Added a callback system for custom error handling and reporting.
+  - Simplified gradient link styling options.
+
+- **Fixes**:
+
+  1. Default LOD value now correctly matches zoom level.
+  2. Fixed gradient links not drawing when no dirty flag was set.
+  3. Restored proper style-based link draw batching with custom comparison logic.
+
+Special thanks to [Blokyk](https://github.com/Blokyk) for many of these improvements! 🙌
 
 ## 0.4.0
 
-- **Port Compatibility Checks**: Made port compatiility cheks aware of type inheritance when checking each port's data type.
-- **Improved Performance**: Enabling higher node counts by caching responsive styles and optimizing rendering code.
-- **Improved API**: Implemented a callback system to enable customized error handling and reporting and simplfied styling options for gradient links.
-- **Small Fixes**:
-  1. Fix default LOD value initialization to match zoom level.
-  2. Fixed gradient links not drawing if no dirty flag is set and restored proper style-based links draw batching with custom comparison logic.
+- **Localization Support**:
 
-Thanks to [Blokyk](https://github.com/Blokyk) for many of these fixes and improvements!
+  - Built-in system makes it easy to localize node-based UIs.
+  - Integrates seamlessly with Flutter’s `l10n` but also supports custom locale management.
+  - Ships with translations for common languages via a delegate (extensible by developers).
+  - Node labels can now directly adapt to the build context for simpler localization.
+
+- **State Management Overhaul**:
+
+  - Completely redesigned state system for smoother interactions and peak performance across devices.
