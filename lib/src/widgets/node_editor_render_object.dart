@@ -185,15 +185,24 @@ class NodeEditorRenderBox extends RenderBox
       markNeedsPaint();
     } else if (event is LinkSelectionEvent || event is LinkDeselectionEvent) {
       markNeedsPaint();
-    } else if (event is ConfigurationChangeEvent || event is StyleChangeEvent) {
+    } else if (event is ConfigurationChangeEvent) {
       _updateNodes(
         _getNodeDiffData(),
       );
-    } else if (event is LocaleChangeEvent) {
+    } else if (event is LocaleChangeEvent || event is StyleChangeEvent) {
+      // Locale changes trigger a repaint that clears dirty flags, but port positions
+      // need recalculation for proper node rendering. This forces an additional repaint.
+      _childrenNotLaidOut.addAll(_childrenById);
+
+      markNeedsLayout();
+
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        // Locale changes trigger a repaint that clears dirty flags, but port positions
-        // need recalculation for proper node rendering. This forces an additional repaint.
         _controller.linksDataDirty = true;
+        _controller.nodesDataDirty = true;
+        _portsPositionsDirty = true;
+
+        _childrenNotPainted.addAll(_childrenById.keys);
+
         markNeedsPaint();
       });
     }
@@ -206,6 +215,7 @@ class NodeEditorRenderBox extends RenderBox
   // calls the size method which implementation causes assertions to be thrown.
   // See: https://api.flutter.dev/flutter/rendering/RenderBox/size.html
   final Map<String, RenderBox> _childrenNotLaidOut = {};
+  final Set<String> _childrenNotPainted = {};
 
   FlNodeEditorStyle _style;
   FlNodeEditorStyle get style => _style;
@@ -437,10 +447,12 @@ class NodeEditorRenderBox extends RenderBox
 
     // Performing the visibility update here ensures all layout operations are done.
 
-    visibleNodes = _controller.spatialHashGrid.queryArea(
-      // Inflate the viewport to include nodes that are close to the edges
-      viewport.inflate(300),
-    );
+    visibleNodes = _controller.spatialHashGrid
+        .queryArea(
+          // Inflate the viewport to include nodes that are close to the edges
+          viewport.inflate(300),
+        )
+        .union(_childrenNotPainted);
 
     _paintGrid(context.canvas, viewport);
 
@@ -460,6 +472,8 @@ class NodeEditorRenderBox extends RenderBox
     _controller.nodesDataDirty = false;
     _controller.linksDataDirty = false;
     _transformMatrixDirty = false;
+
+    _childrenNotPainted.clear();
   }
 
   Matrix4 _getTransformMatrix() {
