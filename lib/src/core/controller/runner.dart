@@ -13,7 +13,7 @@ import 'core.dart';
 /// NOTE: This class is still in development and there are performance improvements to be made.
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
-  Map<String, NodeInstance> _nodes = {};
+  Map<String, FlNodeInstance> _nodes = {};
   Map<String, Set<String>> _dataDeps = {};
 
   Set<String> _executedNodes = {};
@@ -32,11 +32,12 @@ class FlNodeEditorRunner {
 
   /// Handles events from the controller and updates the graph accordingly.
   void _handleRunnerEvents(NodeEditorEvent event) {
-    if (event is AddNodeEvent ||
-        event is RemoveNodeEvent ||
-        event is AddLinkEvent ||
-        event is RemoveLinkEvent ||
-        (event is NodeFieldEvent && event.eventType == FieldEventType.submit)) {
+    if (event is FlAddNodeEvent ||
+        event is FlRemoveNodeEvent ||
+        event is FlAddLinkEvent ||
+        event is FlRemoveLinkEvent ||
+        (event is FlNodeFieldEvent &&
+            event.eventType == FlFieldEventType.submit)) {
       _buildDepsMap();
     }
   }
@@ -86,7 +87,7 @@ class FlNodeEditorRunner {
 
     for (final node in _nodes.values) {
       if (!node.ports.values.every(
-        (port) => port.prototype.direction == PortDirection.output,
+        (port) => port.prototype.direction == FlPortDirection.output,
       )) {
         continue;
       }
@@ -102,14 +103,14 @@ class FlNodeEditorRunner {
 
     _dataDeps[nodeId] = _getConnectedNodeIdsFromNode(
       _nodes[nodeId]!,
-      PortDirection.input,
-      PortType.data,
+      FlPortDirection.input,
+      FlPortType.data,
     );
 
     final connectedOutputNodeIds = _getConnectedNodeIdsFromNode(
       _nodes[nodeId]!,
-      PortDirection.output,
-      PortType.control,
+      FlPortDirection.output,
+      FlPortType.control,
     );
 
     for (final connectedNodeId in connectedOutputNodeIds) {
@@ -118,12 +119,12 @@ class FlNodeEditorRunner {
   }
 
   // Returns the unique IDs of nodes connected to a given port.
-  Set<String> _getConnectedNodeIdsFromPort(PortInstance port) {
+  Set<String> _getConnectedNodeIdsFromPort(FlPortInstance port) {
     final connectedNodeIds = <String>{};
 
     for (final link in port.links) {
       final connectedNode = _nodes[
-          port.prototype.direction == PortDirection.input
+          port.prototype.direction == FlPortDirection.input
               ? link.fromTo.from
               : link.fromTo.fromPort]!;
       connectedNodeIds.add(connectedNode.id);
@@ -134,9 +135,9 @@ class FlNodeEditorRunner {
 
   /// Returns the unique IDs of nodes connected to a given node's input or output ports.
   Set<String> _getConnectedNodeIdsFromNode(
-    NodeInstance node,
-    PortDirection direction,
-    PortType type,
+    FlNodeInstance node,
+    FlPortDirection direction,
+    FlPortType type,
   ) {
     final connectedNodeIds = <String>{};
 
@@ -159,7 +160,7 @@ class FlNodeEditorRunner {
 
     for (final node in _nodes.values) {
       if (!node.ports.values.every(
-        (port) => port.prototype.direction == PortDirection.output,
+        (port) => port.prototype.direction == FlPortDirection.output,
       )) {
         continue;
       }
@@ -174,7 +175,10 @@ class FlNodeEditorRunner {
   /// with the data dependecy map. It provides the onExecute callback with the
   /// necessary context information and callbacks to forward events and put data.
   /// The method also handles errors and displays them in the node editor.
-  Future<void> _executeNode(NodeInstance node, {BuildContext? context}) async {
+  Future<void> _executeNode(
+    FlNodeInstance node, {
+    BuildContext? context,
+  }) async {
     final strings = FlNodeEditorLocalizations.of(context);
 
     /// A function that forwards events to connected nodes through control ports.
@@ -191,7 +195,7 @@ class FlNodeEditorRunner {
           port,
         );
 
-        if (port.prototype.type != PortType.control) {
+        if (port.prototype.type != FlPortType.control) {
           throw Exception('Port ${port.prototype.idName} is not of type event');
         }
 
@@ -213,7 +217,7 @@ class FlNodeEditorRunner {
         final port = node.ports[idName]!;
         port.data = data;
 
-        if (port.prototype.type != PortType.data) {
+        if (port.prototype.type != FlPortType.data) {
           throw Exception('Port ${port.prototype.idName} is not of type data');
         }
 

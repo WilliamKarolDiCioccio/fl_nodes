@@ -12,7 +12,7 @@ import '../utils/rendering/renderbox.dart';
 /// The `margin` parameter can be used to add padding to the encompassing rectangle.
 Rect calculateEncompassingRect(
   Set<String> ids,
-  Map<String, NodeInstance> nodes, {
+  Map<String, FlNodeInstance> nodes, {
   double margin = 100.0,
 }) {
   Rect encompassingRect = Rect.zero;
@@ -36,7 +36,7 @@ Rect calculateEncompassingRect(
 /// This function is used when pasting nodes to generate new IDs for the
 /// pasted nodes, ports, and links. This is done to avoid conflicts with
 /// existing nodes and to allow for multiple pastes of the same selection.
-Future<Map<String, String>> mapToNewIds(List<NodeInstance> nodes) async {
+Future<Map<String, String>> mapToNewIds(List<FlNodeInstance> nodes) async {
   final Map<String, String> newIds = {};
 
   for (final node in nodes) {

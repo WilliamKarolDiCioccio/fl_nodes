@@ -34,9 +34,9 @@ class FlNodeEditorHistory {
   ///
   /// If the event is undoable and is not the same as the previous event,
   /// the redo stack is cleared as the user has made a new change.
-  /// If the event is a [DragSelectionEvent] and the previous event is also a
-  /// [DragSelectionEvent] with the same node IDs, the previous event is popped
-  /// and a new [DragSelectionEvent] is pushed after adding the deltas.
+  /// If the event is a [FlDragSelectionEvent] and the previous event is also a
+  /// [FlDragSelectionEvent] with the same node IDs, the previous event is popped
+  /// and a new [FlDragSelectionEvent] is pushed after adding the deltas.
   void _handleUndoableEvents(NodeEditorEvent event) {
     if (!event.isUndoable || _isTraversingHistory) return;
 
@@ -52,12 +52,13 @@ class FlNodeEditorHistory {
       return;
     }
 
-    if (event is DragSelectionEvent && previousEvent is DragSelectionEvent) {
+    if (event is FlDragSelectionEvent &&
+        previousEvent is FlDragSelectionEvent) {
       if (event.nodeIds.length == previousEvent.nodeIds.length &&
           event.nodeIds.every(previousEvent.nodeIds.contains)) {
         _undoStack.pop();
         _undoStack.push(
-          DragSelectionEvent(
+          FlDragSelectionEvent(
             id: event.id,
             event.nodeIds,
             event.delta + previousEvent.delta,
@@ -79,7 +80,7 @@ class FlNodeEditorHistory {
     _redoStack.push(event);
 
     try {
-      if (event is DragSelectionEvent) {
+      if (event is FlDragSelectionEvent) {
         controller.selectNodesById(event.nodeIds, isHandled: true);
         controller.dragSelection(
           -event.delta,
@@ -88,13 +89,13 @@ class FlNodeEditorHistory {
           resetUnboundOffset: true,
         );
         controller.clearSelection();
-      } else if (event is AddNodeEvent) {
+      } else if (event is FlAddNodeEvent) {
         controller.removeNodeById(event.node.id, eventId: event.id);
-      } else if (event is RemoveNodeEvent) {
+      } else if (event is FlRemoveNodeEvent) {
         controller.addNodeFromExisting(event.node, eventId: event.id);
-      } else if (event is AddLinkEvent) {
+      } else if (event is FlAddLinkEvent) {
         controller.removeLinkById(event.link.id, eventId: event.id);
-      } else if (event is RemoveLinkEvent) {
+      } else if (event is FlRemoveLinkEvent) {
         controller.addLinkFromExisting(event.link, eventId: event.id);
       }
     } finally {
@@ -111,7 +112,7 @@ class FlNodeEditorHistory {
     _undoStack.push(event);
 
     try {
-      if (event is DragSelectionEvent) {
+      if (event is FlDragSelectionEvent) {
         controller.selectNodesById(event.nodeIds, isHandled: true);
         controller.dragSelection(
           event.delta,
@@ -120,23 +121,23 @@ class FlNodeEditorHistory {
           resetUnboundOffset: true,
         );
         controller.clearSelection();
-      } else if (event is AddNodeEvent) {
+      } else if (event is FlAddNodeEvent) {
         controller.addNodeFromExisting(
           event.node.copyWith(
-            state: NodeState(isSelected: true),
+            state: FlNodeState(isSelected: true),
           ),
           eventId: event.id,
         );
-      } else if (event is RemoveNodeEvent) {
+      } else if (event is FlRemoveNodeEvent) {
         controller.removeNodeById(event.node.id, eventId: event.id);
-      } else if (event is AddLinkEvent) {
+      } else if (event is FlAddLinkEvent) {
         controller.addLinkFromExisting(
           event.link.copyWith(
-            state: LinkState(isSelected: true),
+            state: FlLinkState(isSelected: true),
           ),
           eventId: event.id,
         );
-      } else if (event is RemoveLinkEvent) {
+      } else if (event is FlRemoveLinkEvent) {
         controller.removeLinkById(
           event.link.id,
           eventId: event.id,

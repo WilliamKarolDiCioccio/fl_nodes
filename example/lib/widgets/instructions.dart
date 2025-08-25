@@ -1,6 +1,7 @@
-import 'package:example/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:example/l10n/app_localizations.dart';
 
 class InstructionsWidget extends StatelessWidget {
   const InstructionsWidget({super.key});

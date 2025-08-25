@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:fl_nodes/src/core/models/config.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/widgets/default_node_widget.dart';
+import 'package:fl_nodes/src/widgets/default_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +19,7 @@ import 'builders.dart';
 class NodeDiffCheckData {
   String id;
   Offset offset;
-  NodeState state;
+  FlNodeState state;
 
   NodeDiffCheckData({
     required this.id,
@@ -61,7 +61,7 @@ class PortData {
 class _ParentData extends ContainerBoxParentData<RenderBox> {
   String id = '';
   Offset nodeOffset = Offset.zero;
-  NodeState state = NodeState();
+  FlNodeState state = FlNodeState();
 
   // // // This is used to prevent unnecessary layout and painting of children
   // // bool hasBeenLaidOut = false;
@@ -75,11 +75,11 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorStyle style;
   final FlNodeEditorConfig config;
   final FragmentShader gridShader;
-  final FlNodeHeaderBuilder? headerBuilder;
-  final FlNodeFieldBuilder? fieldBuilder;
-  final FlNodePortBuilder? portBuilder;
-  final FlNodeContextMenuBuilder? contextMenuBuilder;
-  final FlNodeBuilder? nodeBuilder;
+  final NodeHeaderBuilder? headerBuilder;
+  final NodeFieldBuilder? fieldBuilder;
+  final NodePortBuilder? portBuilder;
+  final NodeContextMenuBuilder? contextMenuBuilder;
+  final NodeBuilder? nodeBuilder;
 
   NodeEditorRenderObjectWidget({
     super.key,
@@ -157,39 +157,41 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _handleEvent(NodeEditorEvent event) {
-    if (event is ViewportOffsetEvent) {
+    if (event is FlViewportOffsetEvent) {
       _offset = event.offset;
       _transformMatrixDirty = true;
       markNeedsPaint();
-    } else if (event is ViewportZoomEvent) {
+    } else if (event is FlViewportZoomEvent) {
       _zoom = event.zoom;
       _transformMatrixDirty = true;
       markNeedsPaint();
-    } else if (event is AreaHighlightEvent) {
+    } else if (event is FlAreaHighlightEvent) {
       _highlightArea = event.area;
       markNeedsPaint();
-    } else if (event is DrawTempLinkEvent) {
+    } else if (event is FlDrawTempLinkEvent) {
       _tmpLinkData = _getTmpLinkData();
       markNeedsPaint();
-    } else if (event is DragSelectionEvent) {
+    } else if (event is FlDragSelectionEvent) {
       _updateNodes(
         _getNodeDiffData(),
       );
-    } else if (event is AddNodeEvent || event is RemoveNodeEvent) {
+    } else if (event is FlAddNodeEvent || event is FlRemoveNodeEvent) {
       _updateNodes(
         _getNodeDiffData(),
       );
-    } else if (event is AddLinkEvent || event is RemoveLinkEvent) {
+    } else if (event is FlAddLinkEvent || event is FlRemoveLinkEvent) {
       markNeedsPaint();
-    } else if (event is NodeSelectionEvent || event is NodeDeselectionEvent) {
+    } else if (event is FlNodeSelectionEvent ||
+        event is FlNodeDeselectionEvent) {
       markNeedsPaint();
-    } else if (event is LinkSelectionEvent || event is LinkDeselectionEvent) {
+    } else if (event is FlLinkSelectionEvent ||
+        event is FlLinkDeselectionEvent) {
       markNeedsPaint();
-    } else if (event is ConfigurationChangeEvent) {
+    } else if (event is FlConfigurationChangeEvent) {
       _updateNodes(
         _getNodeDiffData(),
       );
-    } else if (event is LocaleChangeEvent || event is StyleChangeEvent) {
+    } else if (event is FlLocaleChangeEvent || event is FlStyleChangeEvent) {
       // Locale changes trigger a repaint that clears dirty flags, but port positions
       // need recalculation for proper node rendering. This forces an additional repaint.
       _childrenNotLaidOut.addAll(_childrenById);

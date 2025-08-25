@@ -43,11 +43,11 @@ class NodeEditorDataLayer extends StatefulWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
-  final FlNodeHeaderBuilder? headerBuilder;
-  final FlNodeFieldBuilder? fieldBuilder;
-  final FlNodePortBuilder? portBuilder;
-  final FlNodeContextMenuBuilder? contextMenuBuilder;
-  final FlNodeBuilder? nodeBuilder;
+  final NodeHeaderBuilder? headerBuilder;
+  final NodeFieldBuilder? fieldBuilder;
+  final NodePortBuilder? portBuilder;
+  final NodeContextMenuBuilder? contextMenuBuilder;
+  final NodeBuilder? nodeBuilder;
 
   const NodeEditorDataLayer({
     super.key,
@@ -123,18 +123,18 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   void _handleControllerEvents(NodeEditorEvent event) {
     if (!mounted || event.isHandled) return;
 
-    if (event is ViewportOffsetEvent) {
+    if (event is FlViewportOffsetEvent) {
       _setOffset(event.offset, animate: event.animate);
-    } else if (event is ViewportZoomEvent) {
+    } else if (event is FlViewportZoomEvent) {
       _setZoom(event.zoom, animate: event.animate);
-    } else if (event is DragSelectionEvent) {
+    } else if (event is FlDragSelectionEvent) {
       _suppressEvents();
-    } else if (event is AddNodeEvent ||
-        event is RemoveNodeEvent ||
-        event is PasteSelectionEvent ||
-        event is CutSelectionEvent ||
-        event is LoadProjectEvent ||
-        event is NewProjectEvent) {
+    } else if (event is FlAddNodeEvent ||
+        event is FlRemoveNodeEvent ||
+        event is FlPasteSelectionEvent ||
+        event is FlCutSelectionEvent ||
+        event is FlLoadProjectEvent ||
+        event is FlNewProjectEvent) {
       setState(() {});
     }
   }
@@ -263,7 +263,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     final absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
-      port.style.linkStyleBuilder(LinkState()),
+      port.style.linkStyleBuilder(FlLinkState()),
       absolutePortOffset,
       worldPosition!,
     );
@@ -485,7 +485,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     List<ContextMenuEntry> createSubmenuEntries(Offset position) {
       final fromLink = _tempLink != null;
 
-      final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
+      final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
 
       if (fromLink) {
         final startPort = widget

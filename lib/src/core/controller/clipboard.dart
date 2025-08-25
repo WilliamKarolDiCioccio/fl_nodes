@@ -24,8 +24,8 @@ class FlNodeEditorClipboard {
   NodeEditorEventBus get eventBus => controller.eventBus;
   Offset get viewportOffset => controller.viewportOffset;
   double get viewportZoom => controller.viewportZoom;
-  Map<String, NodePrototype> get nodePrototypes => controller.nodePrototypes;
-  Map<String, NodeInstance> get nodes => controller.nodes;
+  Map<String, FlNodePrototype> get nodePrototypes => controller.nodePrototypes;
+  Map<String, FlNodeInstance> get nodes => controller.nodes;
   Set<String> get selectedNodeIds => controller.selectedNodeIds;
 
   FlNodeEditorClipboard(this.controller);
@@ -64,7 +64,7 @@ class FlNodeEditorClipboard {
       // Update the node with deep copied ports, state, and relative offset
       return nodeCopy.copyWith(
         offset: relativeOffset,
-        state: NodeState(),
+        state: FlNodeState(),
         ports: updatedPorts,
       );
     }).toList();
@@ -101,7 +101,7 @@ class FlNodeEditorClipboard {
     );
 
     eventBus.emit(
-      CopySelectionEvent(
+      FlCopySelectionEvent(
         id: const Uuid().v4(),
         base64Data,
       ),
@@ -160,7 +160,7 @@ class FlNodeEditorClipboard {
 
     // Create instances from the JSON data.
     final instances = nodesJson.map((node) {
-      return NodeInstance.fromJson(
+      return FlNodeInstance.fromJson(
         node,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -181,7 +181,7 @@ class FlNodeEditorClipboard {
             port.copyWith(
               links: port.links.map((link) {
                 return link.copyWith(
-                  state: LinkState(),
+                  state: FlLinkState(),
                   id: newIds[link.id],
                   fromTo: (
                     from: newIds[link.fromTo.from]!,
@@ -202,7 +202,7 @@ class FlNodeEditorClipboard {
     }
 
     eventBus.emit(
-      PasteSelectionEvent(
+      FlPasteSelectionEvent(
         id: const Uuid().v4(),
         position,
         clipboardData.text!,
@@ -222,7 +222,7 @@ class FlNodeEditorClipboard {
     controller.clearSelection(isHandled: true);
 
     eventBus.emit(
-      CutSelectionEvent(
+      FlCutSelectionEvent(
         id: const Uuid().v4(),
         clipboardContent,
       ),

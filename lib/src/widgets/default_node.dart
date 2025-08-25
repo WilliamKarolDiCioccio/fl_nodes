@@ -24,12 +24,12 @@ typedef _TempLink = ({String nodeId, String portId});
 /// still respond to tap events in the same way as before.
 class DefaultNodeWidget extends StatefulWidget {
   final FlNodeEditorController controller;
-  final NodeInstance node;
-  final FlNodeHeaderBuilder? headerBuilder;
-  final FlNodeFieldBuilder? fieldBuilder;
-  final FlNodePortBuilder? portBuilder;
-  final FlNodeContextMenuBuilder? contextMenuBuilder;
-  final FlNodeBuilder? nodeBuilder;
+  final FlNodeInstance node;
+  final NodeHeaderBuilder? headerBuilder;
+  final NodeFieldBuilder? fieldBuilder;
+  final NodePortBuilder? portBuilder;
+  final NodeContextMenuBuilder? contextMenuBuilder;
+  final NodeBuilder? nodeBuilder;
 
   const DefaultNodeWidget({
     super.key,
@@ -61,9 +61,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
   late Color fakeTransparentColor;
 
-  late List<PortInstance> inPorts;
-  late List<PortInstance> outPorts;
-  late List<FieldInstance> fields;
+  late List<FlPortInstance> inPorts;
+  late List<FlPortInstance> outPorts;
+  late List<FlFieldInstance> fields;
 
   double get viewportZoom => widget.controller.viewportZoom;
   Offset get viewportOffset => widget.controller.viewportOffset;
@@ -106,17 +106,17 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void _handleControllerEvents(NodeEditorEvent event) {
     if (!mounted || event.isHandled) return;
 
-    if (event is DragSelectionEvent) {
+    if (event is FlDragSelectionEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
         if (mounted) _updatePortsPosition();
       });
-    } else if (event is NodeSelectionEvent) {
+    } else if (event is FlNodeSelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
-    } else if (event is NodeDeselectionEvent) {
+    } else if (event is FlNodeDeselectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
-    } else if (event is CollapseEvent) {
+    } else if (event is FlCollapseNodeEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
       _updateStyleCache();
@@ -124,17 +124,17 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       SchedulerBinding.instance.addPostFrameCallback((_) async {
         if (mounted) _updatePortsPosition();
       });
-    } else if (event is NodeFieldEvent) {
+    } else if (event is FlNodeFieldEvent) {
       if (event.nodeId == widget.node.id &&
-          (event.eventType == FieldEventType.submit ||
-              event.eventType == FieldEventType.cancel)) {
+          (event.eventType == FlFieldEventType.submit ||
+              event.eventType == FlFieldEventType.cancel)) {
         setState(() {});
       }
-    } else if (event is AddNodeEvent) {
+    } else if (event is FlAddNodeEvent) {
       if (event.node.id == widget.node.id) setState(() {});
-    } else if (event is ConfigurationChangeEvent ||
-        event is StyleChangeEvent ||
-        event is LocaleChangeEvent) {
+    } else if (event is FlConfigurationChangeEvent ||
+        event is FlStyleChangeEvent ||
+        event is FlLocaleChangeEvent) {
       _updatePortsAndFields();
       _updateStyleCache();
 
@@ -218,7 +218,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     final absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
-      port.style.linkStyleBuilder(LinkState()),
+      port.style.linkStyleBuilder(FlLinkState()),
       absolutePortOffset,
       worldPosition!,
     );
@@ -485,7 +485,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
   List<ContextMenuEntry> _createSubmenuEntries(Offset position) {
     final fromLink = _tempLink != null;
-    final List<MapEntry<String, NodePrototype>> compatiblePrototypes = [];
+    final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
 
     if (fromLink) {
       final startPort =
@@ -653,10 +653,10 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void _updatePortsAndFields() {
     setState(() {
       inPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == PortDirection.input)
+          .where((port) => port.prototype.direction == FlPortDirection.input)
           .toList();
       outPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == PortDirection.output)
+          .where((port) => port.prototype.direction == FlPortDirection.output)
           .toList();
 
       fields = widget.node.fields.values.toList();
@@ -688,7 +688,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
       // Set port offset based on direction
       port.offset = Offset(
-        port.prototype.direction == PortDirection.input
+        port.prototype.direction == FlPortDirection.input
             ? 0
             : renderBoxSize.width,
         relativeY + portBox.size.height / 2,
@@ -699,7 +699,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
 class _NodeHeaderWidget extends StatelessWidget {
   final FlNodeEditorController controller;
-  final NodeInstance node;
+  final FlNodeInstance node;
 
   const _NodeHeaderWidget({
     required this.controller,
@@ -741,9 +741,9 @@ class _NodeHeaderWidget extends StatelessWidget {
 }
 
 class _PortWidget extends StatelessWidget {
-  final NodeInstance node;
-  final PortInstance port;
-  final FlNodePortBuilder? portBuilder;
+  final FlNodeInstance node;
+  final FlPortInstance port;
+  final NodePortBuilder? portBuilder;
 
   const _PortWidget({
     required this.node,
@@ -761,7 +761,7 @@ class _PortWidget extends StatelessWidget {
       return portBuilder!(context, port, node.builtStyle);
     }
 
-    final isInput = port.prototype.direction == PortDirection.input;
+    final isInput = port.prototype.direction == FlPortDirection.input;
 
     return Row(
       mainAxisAlignment:
@@ -784,9 +784,9 @@ class _PortWidget extends StatelessWidget {
 
 class _FieldWidget extends StatelessWidget {
   final FlNodeEditorController controller;
-  final NodeInstance node;
-  final FieldInstance field;
-  final FlNodeFieldBuilder? fieldBuilder;
+  final FlNodeInstance node;
+  final FlFieldInstance field;
+  final NodeFieldBuilder? fieldBuilder;
 
   const _FieldWidget({
     required this.controller,
@@ -818,7 +818,7 @@ class _FieldWidget extends StatelessWidget {
                   context,
                   () => overlayEntry?.remove(),
                   field.data,
-                  (dynamic data, {required FieldEventType eventType}) {
+                  (dynamic data, {required FlFieldEventType eventType}) {
                     controller.setFieldData(
                       node.id,
                       field.prototype.idName,
@@ -878,7 +878,7 @@ class _FieldWidget extends StatelessWidget {
                 node.id,
                 field.prototype.idName,
                 data: data,
-                eventType: FieldEventType.submit,
+                eventType: FlFieldEventType.submit,
               );
             });
           } else {

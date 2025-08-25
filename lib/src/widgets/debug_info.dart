@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:fl_nodes/fl_nodes.dart';
+import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
 
 class DebugInfoWidget extends StatelessWidget {
@@ -40,12 +40,12 @@ class DebugInfoWidget extends StatelessWidget {
           StreamBuilder(
             stream: controller.eventBus.events.where(
               (event) =>
-                  event is AddNodeEvent ||
-                  event is RemoveNodeEvent ||
-                  event is AddLinkEvent ||
-                  event is RemoveLinkEvent ||
-                  event is NodeSelectionEvent ||
-                  event is NodeDeselectionEvent,
+                  event is FlAddNodeEvent ||
+                  event is FlRemoveNodeEvent ||
+                  event is FlAddLinkEvent ||
+                  event is FlRemoveLinkEvent ||
+                  event is FlNodeSelectionEvent ||
+                  event is FlNodeDeselectionEvent,
             ),
             builder: (context, snapshot) {
               return Column(

@@ -1,6 +1,7 @@
-import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:fl_nodes/fl_nodes.dart';
 
 class HierarchyWidget extends StatefulWidget {
   final FlNodeEditorController controller;
@@ -25,10 +26,10 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
 
   void _subscribeToControllerEvents() {
     widget.controller.eventBus.events.listen((event) {
-      if (event is NodeSelectionEvent ||
-          event is DragSelectionEvent ||
-          event is AddNodeEvent ||
-          event is RemoveNodeEvent) {
+      if (event is FlNodeSelectionEvent ||
+          event is FlDragSelectionEvent ||
+          event is FlAddNodeEvent ||
+          event is FlRemoveNodeEvent) {
         if (mounted) {
           setState(() {});
         }
@@ -36,7 +37,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
     });
   }
 
-  void _onNodeTap(NodeInstance node) {
+  void _onNodeTap(FlNodeInstance node) {
     widget.controller.selectNodesById(
       {node.id},
       holdSelection: HardwareKeyboard.instance.isControlPressed,

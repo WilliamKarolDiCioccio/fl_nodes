@@ -1,22 +1,11 @@
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/controller/project.dart';
+import 'package:fl_nodes/src/core/models/entities.dart';
+import 'package:fl_nodes/src/core/models/styles.dart';
 import 'package:flutter/material.dart';
 
-import 'package:fl_nodes/src/core/controller/project.dart';
-import 'package:fl_nodes/src/core/models/config.dart';
-import 'package:fl_nodes/src/core/models/styles.dart';
+import '../models/config.dart';
 
-import '../controller/core.dart';
-
-import 'entities.dart';
-
-/// Events are used to communicate between the [FlNodeEditorController] and the Widgets composing the Node Editor.
-/// Events can (where applicable) carry data to be used by the Widgets to update their state.
-/// Events can be used to trigger animations, or to update the state of the Widgets.
-/// Events can be handled by the Widgets to prevent the event from bubbling up to the parent Widgets.
-/// Event can be discarded using the [isHandled] flag to group Widgets rebuilds.
-/// There is no one to one match between controller emthods and events, the latter only exist
-/// if there is data to be passed or rebuilds to be triggered.
-
-/// Event base class for the [FlNodeEditorController] events bus.
 ///
 /// It includes an [id] to identify the event, a [isHandled] flag to indicate if the event has been handled,
 /// and an [isUndoable] flag to indicate if the event can be undone.
@@ -39,12 +28,16 @@ abstract base class NodeEditorEvent {
       };
 }
 
+////////////////////////////////////////////////////////////////////////
+/// Viewport events.
+////////////////////////////////////////////////////////////////////////
+
 /// Event produced when the viewport offset changes.
-final class ViewportOffsetEvent extends NodeEditorEvent {
+final class FlViewportOffsetEvent extends NodeEditorEvent {
   final Offset offset;
   final bool animate;
 
-  const ViewportOffsetEvent(
+  const FlViewportOffsetEvent(
     this.offset, {
     this.animate = true,
     required super.id,
@@ -53,11 +46,11 @@ final class ViewportOffsetEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the viewport zoom level changes.
-final class ViewportZoomEvent extends NodeEditorEvent {
+final class FlViewportZoomEvent extends NodeEditorEvent {
   final double zoom;
   final bool animate;
 
-  const ViewportZoomEvent(
+  const FlViewportZoomEvent(
     this.zoom, {
     this.animate = true,
     required super.id,
@@ -65,37 +58,38 @@ final class ViewportZoomEvent extends NodeEditorEvent {
   });
 }
 
+////////////////////////////////////////////////////////////////////////
+/// Selection events.
+////////////////////////////////////////////////////////////////////////
+
 /// Event produced when nodes are selected.
-final class NodeSelectionEvent extends NodeEditorEvent {
+final class FlNodeSelectionEvent extends NodeEditorEvent {
   final Set<String> nodeIds;
 
-  const NodeSelectionEvent(this.nodeIds, {required super.id, super.isHandled});
-}
-
-/// Event produced when nodes are deselected.
-final class NodeDeselectionEvent extends NodeEditorEvent {
-  final Set<String> nodeIds;
-
-  const NodeDeselectionEvent(
+  const FlNodeSelectionEvent(
     this.nodeIds, {
     required super.id,
     super.isHandled,
   });
 }
 
-/// Event produced when an area is highlighted in the editor viewport (leads to selection).
-final class AreaHighlightEvent extends NodeEditorEvent {
-  final Rect? area;
+/// Event produced when nodes are deselected.
+final class FlNodeDeselectionEvent extends NodeEditorEvent {
+  final Set<String> nodeIds;
 
-  const AreaHighlightEvent(this.area, {required super.id, super.isHandled});
+  const FlNodeDeselectionEvent(
+    this.nodeIds, {
+    required super.id,
+    super.isHandled,
+  });
 }
 
 /// Event produced when the user starts dragging a group of selected nodes.
-final class DragSelectionStartEvent extends NodeEditorEvent {
+final class FlDragSelectionStartEvent extends NodeEditorEvent {
   final Set<String> nodeIds;
   final Offset position;
 
-  const DragSelectionStartEvent(
+  const FlDragSelectionStartEvent(
     this.nodeIds,
     this.position, {
     required super.id,
@@ -109,8 +103,8 @@ final class DragSelectionStartEvent extends NodeEditorEvent {
         'position': [position.dx, position.dy],
       };
 
-  factory DragSelectionStartEvent.fromJson(Map<String, dynamic> json) {
-    return DragSelectionStartEvent(
+  factory FlDragSelectionStartEvent.fromJson(Map<String, dynamic> json) {
+    return FlDragSelectionStartEvent(
       (json['nodeIds'] as List).cast<String>().toSet(),
       Offset(json['position'][0], json['position'][1]),
       id: json['id'] as String,
@@ -120,11 +114,11 @@ final class DragSelectionStartEvent extends NodeEditorEvent {
 }
 
 /// Event produced to update the position of a group of selected nodes while dragging.
-final class DragSelectionEvent extends NodeEditorEvent {
+final class FlDragSelectionEvent extends NodeEditorEvent {
   final Set<String> nodeIds;
   final Offset delta;
 
-  const DragSelectionEvent(
+  const FlDragSelectionEvent(
     this.nodeIds,
     this.delta, {
     required super.id,
@@ -138,8 +132,8 @@ final class DragSelectionEvent extends NodeEditorEvent {
         'delta': [delta.dx, delta.dy],
       };
 
-  factory DragSelectionEvent.fromJson(Map<String, dynamic> json) {
-    return DragSelectionEvent(
+  factory FlDragSelectionEvent.fromJson(Map<String, dynamic> json) {
+    return FlDragSelectionEvent(
       (json['nodeIds'] as List).cast<String>().toSet(),
       Offset(json['delta'][0], json['delta'][1]),
       id: json['id'] as String,
@@ -149,11 +143,11 @@ final class DragSelectionEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the user stops dragging a group of selected nodes.
-final class DragSelectionEndEvent extends NodeEditorEvent {
+final class FlDragSelectionEndEvent extends NodeEditorEvent {
   final Offset position;
   final Set<String> nodeIds;
 
-  const DragSelectionEndEvent(
+  const FlDragSelectionEndEvent(
     this.position,
     this.nodeIds, {
     required super.id,
@@ -167,8 +161,8 @@ final class DragSelectionEndEvent extends NodeEditorEvent {
         'nodeIds': nodeIds.toList(),
       };
 
-  factory DragSelectionEndEvent.fromJson(Map<String, dynamic> json) {
-    return DragSelectionEndEvent(
+  factory FlDragSelectionEndEvent.fromJson(Map<String, dynamic> json) {
+    return FlDragSelectionEndEvent(
       Offset(json['position'][0], json['position'][1]),
       (json['nodeIds'] as List).cast<String>().toSet(),
       id: json['id'] as String,
@@ -178,28 +172,71 @@ final class DragSelectionEndEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the user selects a group of links (one or more).
-final class LinkSelectionEvent extends NodeEditorEvent {
+final class FlLinkSelectionEvent extends NodeEditorEvent {
   final Set<String> linkIds;
 
-  const LinkSelectionEvent(this.linkIds, {required super.id, super.isHandled});
-}
-
-/// Event produced when the user deselects a group of links (one or more).
-final class LinkDeselectionEvent extends NodeEditorEvent {
-  final Set<String> linkIds;
-
-  const LinkDeselectionEvent(
+  const FlLinkSelectionEvent(
     this.linkIds, {
     required super.id,
     super.isHandled,
   });
 }
 
-/// Event produced when the user creates a new node.
-final class AddNodeEvent extends NodeEditorEvent {
-  final NodeInstance node;
+/// Event produced when the user deselects a group of links (one or more).
+final class FlLinkDeselectionEvent extends NodeEditorEvent {
+  final Set<String> linkIds;
 
-  const AddNodeEvent(
+  const FlLinkDeselectionEvent(
+    this.linkIds, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when the user copies a selection to the clipboard (Ctrl+C).
+final class FlCopySelectionEvent extends NodeEditorEvent {
+  final String clipboardContent;
+
+  const FlCopySelectionEvent(
+    this.clipboardContent, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
+}
+
+/// Event produced when the user pastes a selection from the clipboard (Ctrl+V).
+final class FlPasteSelectionEvent extends NodeEditorEvent {
+  final Offset position;
+  final String clipboardContent;
+
+  const FlPasteSelectionEvent(
+    this.position,
+    this.clipboardContent, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when the user cuts a selection to the clipboard (Ctrl+X).
+final class FlCutSelectionEvent extends NodeEditorEvent {
+  final String clipboardContent;
+
+  const FlCutSelectionEvent(
+    this.clipboardContent, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+////////////////////////////////////////////////////////////////////////
+/// Nodes, groups and links management events.
+////////////////////////////////////////////////////////////////////////
+
+/// Event produced when the user creates a new node.
+final class FlAddNodeEvent extends NodeEditorEvent {
+  final FlNodeInstance node;
+
+  const FlAddNodeEvent(
     this.node, {
     required super.id,
     super.isHandled,
@@ -211,12 +248,12 @@ final class AddNodeEvent extends NodeEditorEvent {
         'node': node.toJson(dataHandlers),
       };
 
-  factory AddNodeEvent.fromJson(
+  factory FlAddNodeEvent.fromJson(
     Map<String, dynamic> json, {
     required FlNodeEditorController controller,
   }) {
-    return AddNodeEvent(
-      NodeInstance.fromJson(
+    return FlAddNodeEvent(
+      FlNodeInstance.fromJson(
         json['node'] as Map<String, dynamic>,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -228,10 +265,10 @@ final class AddNodeEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the user removes a node.
-final class RemoveNodeEvent extends NodeEditorEvent {
-  final NodeInstance node;
+final class FlRemoveNodeEvent extends NodeEditorEvent {
+  final FlNodeInstance node;
 
-  const RemoveNodeEvent(this.node, {required super.id, super.isHandled})
+  const FlRemoveNodeEvent(this.node, {required super.id, super.isHandled})
       : super(isUndoable: true);
 
   @override
@@ -240,12 +277,12 @@ final class RemoveNodeEvent extends NodeEditorEvent {
         'node': node.toJson(dataHandlers),
       };
 
-  factory RemoveNodeEvent.fromJson(
+  factory FlRemoveNodeEvent.fromJson(
     Map<String, dynamic> json, {
     required FlNodeEditorController controller,
   }) {
-    return RemoveNodeEvent(
-      NodeInstance.fromJson(
+    return FlRemoveNodeEvent(
+      FlNodeInstance.fromJson(
         json['node'] as Map<String, dynamic>,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -257,10 +294,10 @@ final class RemoveNodeEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the creates a new link between two nodes.
-final class AddLinkEvent extends NodeEditorEvent {
-  final Link link;
+final class FlAddLinkEvent extends NodeEditorEvent {
+  final FlLink link;
 
-  const AddLinkEvent(
+  const FlAddLinkEvent(
     this.link, {
     required super.id,
     super.isHandled,
@@ -272,9 +309,9 @@ final class AddLinkEvent extends NodeEditorEvent {
         'link': link.toJson(),
       };
 
-  factory AddLinkEvent.fromJson(Map<String, dynamic> json) {
-    return AddLinkEvent(
-      Link.fromJson(json['link'] as Map<String, dynamic>),
+  factory FlAddLinkEvent.fromJson(Map<String, dynamic> json) {
+    return FlAddLinkEvent(
+      FlLink.fromJson(json['link'] as Map<String, dynamic>),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -282,10 +319,10 @@ final class AddLinkEvent extends NodeEditorEvent {
 }
 
 /// Event produced when the user removes a link between two nodes.
-final class RemoveLinkEvent extends NodeEditorEvent {
-  final Link link;
+final class FlRemoveLinkEvent extends NodeEditorEvent {
+  final FlLink link;
 
-  const RemoveLinkEvent(this.link, {required super.id, super.isHandled})
+  const FlRemoveLinkEvent(this.link, {required super.id, super.isHandled})
       : super(isUndoable: true);
 
   @override
@@ -294,34 +331,21 @@ final class RemoveLinkEvent extends NodeEditorEvent {
         'link': link.toJson(),
       };
 
-  factory RemoveLinkEvent.fromJson(Map<String, dynamic> json) {
-    return RemoveLinkEvent(
-      Link.fromJson(json['link'] as Map<String, dynamic>),
+  factory FlRemoveLinkEvent.fromJson(Map<String, dynamic> json) {
+    return FlRemoveLinkEvent(
+      FlLink.fromJson(json['link'] as Map<String, dynamic>),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
   }
 }
 
-/// Event produced to update the path of the link being drawn when the user drags from a port to create a new link.
-final class DrawTempLinkEvent extends NodeEditorEvent {
-  final Offset from;
-  final Offset to;
-
-  const DrawTempLinkEvent(
-    this.from,
-    this.to, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
 /// Event produced when the user collapses or expands a group of nodes (can be used for any widget changes that require layout updates).
-final class CollapseEvent extends NodeEditorEvent {
+final class FlCollapseNodeEvent extends NodeEditorEvent {
   final bool collpased;
   final Set<String> nodeIds;
 
-  const CollapseEvent(
+  const FlCollapseNodeEvent(
     this.collpased,
     this.nodeIds, {
     required super.id,
@@ -329,54 +353,19 @@ final class CollapseEvent extends NodeEditorEvent {
   });
 }
 
-/// Event produced when the user copies a selection to the clipboard (Ctrl+C).
-final class CopySelectionEvent extends NodeEditorEvent {
-  final String clipboardContent;
-
-  const CopySelectionEvent(
-    this.clipboardContent, {
-    required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
-}
-
-/// Event produced when the user pastes a selection from the clipboard (Ctrl+V).
-final class PasteSelectionEvent extends NodeEditorEvent {
-  final Offset position;
-  final String clipboardContent;
-
-  const PasteSelectionEvent(
-    this.position,
-    this.clipboardContent, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
-/// Event produced when the user cuts a selection to the clipboard (Ctrl+X).
-final class CutSelectionEvent extends NodeEditorEvent {
-  final String clipboardContent;
-
-  const CutSelectionEvent(
-    this.clipboardContent, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
-enum FieldEventType {
+enum FlFieldEventType {
   change,
   submit,
   cancel,
 }
 
 /// Event produced when the user changes a field value in a node.
-final class NodeFieldEvent extends NodeEditorEvent {
+final class FlNodeFieldEvent extends NodeEditorEvent {
   final String nodeId;
   final dynamic value;
-  final FieldEventType eventType;
+  final FlFieldEventType eventType;
 
-  const NodeFieldEvent(
+  const FlNodeFieldEvent(
     this.nodeId,
     this.value,
     this.eventType, {
@@ -385,38 +374,66 @@ final class NodeFieldEvent extends NodeEditorEvent {
   });
 }
 
-/// Event produced when the user changes the configuration of the node editor.
-final class ConfigurationChangeEvent extends NodeEditorEvent {
-  final FlNodeEditorConfig config;
-
-  const ConfigurationChangeEvent(this.config, {required super.id});
-}
-
-/// Event produced when the user changes the style of the node editor.
-final class StyleChangeEvent extends NodeEditorEvent {
-  final FlNodeEditorStyle style;
-
-  const StyleChangeEvent(this.style, {required super.id});
-}
-
-/// Event produced when the user changes the locale of the node editor.
-final class LocaleChangeEvent extends NodeEditorEvent {
-  final Locale locale;
-
-  const LocaleChangeEvent(this.locale, {required super.id});
-}
+////////////////////////////////////////////////////////////////////////
+/// Project management events.
+////////////////////////////////////////////////////////////////////////
 
 /// Event produced when the user saves the current project (Ctrl+S).
-final class SaveProjectEvent extends NodeEditorEvent {
-  const SaveProjectEvent({required super.id});
+final class FlSaveProjectEvent extends NodeEditorEvent {
+  const FlSaveProjectEvent({required super.id});
 }
 
 /// Event produced when the user loads a project (Ctrl+O).
-final class LoadProjectEvent extends NodeEditorEvent {
-  const LoadProjectEvent({required super.id});
+final class FlLoadProjectEvent extends NodeEditorEvent {
+  const FlLoadProjectEvent({required super.id});
 }
 
 /// Event produced when the user creates a new project (Ctrl+Shift+N).
-final class NewProjectEvent extends NodeEditorEvent {
-  const NewProjectEvent({required super.id});
+final class FlNewProjectEvent extends NodeEditorEvent {
+  const FlNewProjectEvent({required super.id});
+}
+
+////////////////////////////////////////////////////////////////////////
+/// Temporary drawing events.
+////////////////////////////////////////////////////////////////////////
+
+/// Event produced to update the path of the link being drawn when the user drags from a port to create a new link.
+final class FlDrawTempLinkEvent extends NodeEditorEvent {
+  final Offset from;
+  final Offset to;
+
+  const FlDrawTempLinkEvent(
+    this.from,
+    this.to, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when an area is highlighted in the editor viewport (leads to selection).
+final class FlAreaHighlightEvent extends NodeEditorEvent {
+  final Rect? area;
+
+  const FlAreaHighlightEvent(this.area, {required super.id, super.isHandled});
+}
+
+/// Event produced when the user changes the configuration of the node editor.
+final class FlConfigurationChangeEvent extends NodeEditorEvent {
+  final FlNodeEditorConfig config;
+
+  const FlConfigurationChangeEvent(this.config, {required super.id});
+}
+
+/// Event produced when the user changes the style of the node editor.
+final class FlStyleChangeEvent extends NodeEditorEvent {
+  final FlNodeEditorStyle style;
+
+  const FlStyleChangeEvent(this.style, {required super.id});
+}
+
+/// Event produced when the user changes the locale of the node editor.
+final class FlLocaleChangeEvent extends NodeEditorEvent {
+  final Locale locale;
+
+  const FlLocaleChangeEvent(this.locale, {required super.id});
 }

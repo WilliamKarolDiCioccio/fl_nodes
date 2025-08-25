@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:fl_nodes/src/core/models/styles.dart';
 import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:flutter/material.dart';
@@ -33,9 +33,9 @@ class FlNodeEditorController with ChangeNotifier {
   FlNodeEditorController({
     this.config = const FlNodeEditorConfig(),
     this.style = const FlNodeEditorStyle(),
-    FlProjectSaver? projectSaver,
-    FlProjectLoader? projectLoader,
-    FlProjectCreator? projectCreator,
+    ProjectSaver? projectSaver,
+    ProjectLoader? projectLoader,
+    ProjectCreator? projectCreator,
     this.onCallback,
   }) {
     clipboard = FlNodeEditorClipboard(this);
@@ -101,7 +101,7 @@ class FlNodeEditorController with ChangeNotifier {
     viewportOffsetNotifier.value = offset;
 
     eventBus.emit(
-      ViewportOffsetEvent(
+      FlViewportOffsetEvent(
         id: const Uuid().v4(),
         viewportOffsetNotifier.value,
         animate: false,
@@ -117,7 +117,7 @@ class FlNodeEditorController with ChangeNotifier {
     viewportZoomNotifier.value = zoom;
 
     eventBus.emit(
-      ViewportZoomEvent(
+      FlViewportZoomEvent(
         id: const Uuid().v4(),
         viewportZoom,
         animate: false,
@@ -140,7 +140,7 @@ class FlNodeEditorController with ChangeNotifier {
     bool isHandled = false,
   }) {
     eventBus.emit(
-      ViewportOffsetEvent(
+      FlViewportOffsetEvent(
         id: const Uuid().v4(),
         absolute ? offset : viewportOffset + offset,
         animate: animate,
@@ -160,7 +160,7 @@ class FlNodeEditorController with ChangeNotifier {
     bool isHandled = false,
   }) {
     eventBus.emit(
-      ViewportZoomEvent(
+      FlViewportZoomEvent(
         id: const Uuid().v4(),
         zoom,
         animate: animate,
@@ -214,7 +214,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      ConfigurationChangeEvent(
+      FlConfigurationChangeEvent(
         config,
         id: const Uuid().v4(),
       ),
@@ -268,7 +268,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      StyleChangeEvent(
+      FlStyleChangeEvent(
         style,
         id: const Uuid().v4(),
       ),
@@ -291,13 +291,13 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      LocaleChangeEvent(
+      FlLocaleChangeEvent(
         locale,
         id: const Uuid().v4(),
       ),
     );
     eventBus.emit(
-      LocaleChangeEvent(
+      FlLocaleChangeEvent(
         locale,
         id: const Uuid().v4(),
       ),
@@ -308,12 +308,12 @@ class FlNodeEditorController with ChangeNotifier {
   /// Nodes and links management.
   ////////////////////////////////////////////////////////////////////////
 
-  final Map<String, NodePrototype> nodePrototypes = {};
-  final Map<String, NodeInstance> nodes = {};
+  final Map<String, FlNodePrototype> nodePrototypes = {};
+  final Map<String, FlNodeInstance> nodes = {};
 
-  List<NodePrototype> get nodePrototypesAsList =>
+  List<FlNodePrototype> get nodePrototypesAsList =>
       nodePrototypes.values.map((e) => e).toList();
-  List<NodeInstance> get nodesAsList => nodes.values.toList();
+  List<FlNodeInstance> get nodesAsList => nodes.values.toList();
 
   final SpatialHashGrid spatialHashGrid = SpatialHashGrid();
 
@@ -323,7 +323,7 @@ class FlNodeEditorController with ChangeNotifier {
   /// This method is used to register a node prototype with the node editor.
   ///
   /// NOTE: node prototypes are identified by human-readable strings instead of UUIDs.
-  void registerNodePrototype(NodePrototype prototype) {
+  void registerNodePrototype(FlNodePrototype prototype) {
     nodePrototypes.putIfAbsent(
       prototype.idName,
       () => prototype,
@@ -341,7 +341,7 @@ class FlNodeEditorController with ChangeNotifier {
     }
   }
 
-  /// This method is used to add a [NodeInstance] to the node editor by its prototype name.
+  /// This method is used to add a [FlNodeInstance] to the node editor by its prototype name.
   ///
   /// The method takes the name of the node prototype and creates an instance of the node
   /// based on the prototype. The method also takes an optional offset parameter to set the
@@ -350,8 +350,8 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// See [SpatialHashGrid] and [selectNodesByArea].
   ///
-  /// Emits an [AddNodeEvent] event.
-  NodeInstance addNode(String name, {Offset offset = Offset.zero}) {
+  /// Emits an [FlAddNodeEvent] event.
+  FlNodeInstance addNode(String name, {Offset offset = Offset.zero}) {
     if (!nodePrototypes.containsKey(name)) {
       throw Exception('Node prototype $name does not exist.');
     }
@@ -375,7 +375,7 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      AddNodeEvent(id: const Uuid().v4(), instance),
+      FlAddNodeEvent(id: const Uuid().v4(), instance),
     );
 
     return instance;
@@ -386,9 +386,9 @@ class FlNodeEditorController with ChangeNotifier {
   /// This method is used when loading a project from a file or in copy/paste operations
   /// and preserves all properties of the node object.
   ///
-  /// Emits an [AddNodeEvent] event.
+  /// Emits an [FlAddNodeEvent] event.
   void addNodeFromExisting(
-    NodeInstance node, {
+    FlNodeInstance node, {
     bool isHandled = false,
     String? eventId,
   }) {
@@ -412,7 +412,7 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      AddNodeEvent(
+      FlAddNodeEvent(
         id: eventId ?? const Uuid().v4(),
         node,
         isHandled: isHandled,
@@ -428,7 +428,7 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// This method is used to remove a node by its ID.
   ///
-  /// Emits a [RemoveNodeEvent] event.
+  /// Emits a [FlRemoveNodeEvent] event.
   void removeNodeById(
     String id, {
     String? eventId,
@@ -455,7 +455,7 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      RemoveNodeEvent(
+      FlRemoveNodeEvent(
         id: eventId ?? const Uuid().v4(),
         node,
         isHandled: isHandled,
@@ -471,8 +471,8 @@ class FlNodeEditorController with ChangeNotifier {
   /// direction of the link based on the port types, i.e., an output port can only be
   /// connected to an input port guaranteeing that the graph is directed the right way.
   ///
-  /// Emits an [AddLinkEvent] event.
-  Link? addLink(
+  /// Emits an [FlAddLinkEvent] event.
+  FlLink? addLink(
     String node1Id,
     String port1IdName,
     String node2Id,
@@ -487,7 +487,7 @@ class FlNodeEditorController with ChangeNotifier {
     final node2 = nodes[node2Id]!;
     final port2 = node2.ports[port2IdName]!;
 
-    String getErrorMessage(PortPrototype port1, PortPrototype port2) {
+    String getErrorMessage(FlPortPrototype port1, FlPortPrototype port2) {
       // display a specific message if they're incompatible because of different types (e.g. control vs data ports)
       if (port1.type != port2.type) {
         return 'Cannot connect a ${port1.type.name} port to a ${port2.type.name} port';
@@ -529,7 +529,7 @@ class FlNodeEditorController with ChangeNotifier {
     late FromTo fromTo;
 
     // Determine the order to insert the node references in the link based on the port direction.
-    if (port1.prototype.direction == PortDirection.output) {
+    if (port1.prototype.direction == FlPortDirection.output) {
       fromTo = (
         from: node1Id,
         to: port1IdName,
@@ -545,10 +545,10 @@ class FlNodeEditorController with ChangeNotifier {
       );
     }
 
-    final link = Link(
+    final link = FlLink(
       id: const Uuid().v4(),
       fromTo: fromTo,
-      state: LinkState(),
+      state: FlLinkState(),
     );
 
     port1.links.add(link);
@@ -562,7 +562,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      AddLinkEvent(id: eventId ?? const Uuid().v4(), link),
+      FlAddLinkEvent(id: eventId ?? const Uuid().v4(), link),
     );
 
     return link;
@@ -573,9 +573,9 @@ class FlNodeEditorController with ChangeNotifier {
   /// This method is used when loading a project from a file or in copy/paste operations
   /// and preserves all properties of the link object.
   ///
-  /// Emits an [AddLinkEvent] event.
+  /// Emits an [FlAddLinkEvent] event.
   void addLinkFromExisting(
-    Link link, {
+    FlLink link, {
     String? eventId,
     bool isHandled = false,
   }) {
@@ -608,7 +608,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      AddLinkEvent(
+      FlAddLinkEvent(
         id: eventId ?? const Uuid().v4(),
         link,
         isHandled: isHandled,
@@ -616,12 +616,12 @@ class FlNodeEditorController with ChangeNotifier {
     );
   }
 
-  final Map<String, Link> _linksById = {};
-  Map<String, Link> get linksById => _linksById;
+  final Map<String, FlLink> _linksById = {};
+  Map<String, FlLink> get linksById => _linksById;
 
   /// This method is used to remove a link by its ID.
   ///
-  /// Emits a [RemoveLinkEvent] event.
+  /// Emits a [FlRemoveLinkEvent] event.
   void removeLinkById(
     String id, {
     String? eventId,
@@ -645,7 +645,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      RemoveLinkEvent(
+      FlRemoveLinkEvent(
         id: eventId ?? const Uuid().v4(),
         link,
         isHandled: isHandled,
@@ -661,31 +661,31 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// Usually, this method is called when the user is dragging a link from a port to another port.
   ///
-  /// Emits a [DrawTempLinkEvent] event.
+  /// Emits a [FlDrawTempLinkEvent] event.
   void drawTempLink(FlLinkStyle style, Offset from, Offset to) {
     _tempLink = TempLink(style: style, from: from, to: to);
 
     // The temp link is treated differently from regular links, so we don't need to mark the links data as dirty.
 
-    eventBus.emit(DrawTempLinkEvent(id: const Uuid().v4(), from, to));
+    eventBus.emit(FlDrawTempLinkEvent(id: const Uuid().v4(), from, to));
   }
 
   /// This method is used to clear the temporary link from the node editor.
   ///
-  /// Emits a [DrawTempLinkEvent] event.
+  /// Emits a [FlDrawTempLinkEvent] event.
   void clearTempLink() {
     _tempLink = null;
 
     // The temp link is treated differently from regular links, so we don't need to mark the links data as dirty.
 
     eventBus.emit(
-      DrawTempLinkEvent(id: const Uuid().v4(), Offset.zero, Offset.zero),
+      FlDrawTempLinkEvent(id: const Uuid().v4(), Offset.zero, Offset.zero),
     );
   }
 
   /// This method is used to break all links associated with a port.
   ///
-  /// Emits a [RemoveLinkEvent] event for each link that is removed.
+  /// Emits a [FlRemoveLinkEvent] event for each link that is removed.
   void breakPortLinks(String nodeId, String portId, {bool isHandled = false}) {
     if (!nodes.containsKey(nodeId)) return;
     if (!nodes[nodeId]!.ports.containsKey(portId)) return;
@@ -702,21 +702,21 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// This method is used to set the data of a field in a node.
   ///
-  /// Emits a [NodeFieldEvent] event.
+  /// Emits a [FlNodeFieldEvent] event.
   void setFieldData(
     String nodeId,
     String fieldId, {
     dynamic data,
-    required FieldEventType eventType,
+    required FlFieldEventType eventType,
   }) {
-    if (eventType == FieldEventType.change) return;
+    if (eventType == FlFieldEventType.change) return;
 
     final node = nodes[nodeId]!;
     final field = node.fields[fieldId]!;
     field.data = data;
 
     eventBus.emit(
-      NodeFieldEvent(
+      FlNodeFieldEvent(
         id: const Uuid().v4(),
         nodeId,
         data,
@@ -738,7 +738,7 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      CollapseEvent(id: const Uuid().v4(), collapse, selectedNodeIds),
+      FlCollapseNodeEvent(id: const Uuid().v4(), collapse, selectedNodeIds),
     );
   }
 
@@ -754,7 +754,7 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// This method is used to drag the selected nodes by a given delta affecting their offsets.
   ///
-  /// Emits a [DragSelectionEvent] event.
+  /// Emits a [FlDragSelectionEvent] event.
   void dragSelection(
     Offset delta, {
     String? eventId,
@@ -801,7 +801,7 @@ class FlNodeEditorController with ChangeNotifier {
 
     // Emit a DragSelectionEvent with the effective delta (in world coordinates).
     eventBus.emit(
-      DragSelectionEvent(
+      FlDragSelectionEvent(
         id: eventId ?? const Uuid().v4(),
         selectedNodeIds.toSet(),
         effectiveDelta,
@@ -816,12 +816,12 @@ class FlNodeEditorController with ChangeNotifier {
   /// Emits a [highlightAreaEvent] event.
   void setHighlightArea(Rect? area) {
     _highlightArea = area;
-    eventBus.emit(AreaHighlightEvent(id: const Uuid().v4(), area));
+    eventBus.emit(FlAreaHighlightEvent(id: const Uuid().v4(), area));
   }
 
   /// This method is used to select nodes by their IDs.
   ///
-  /// Emits a [NodeSelectionEvent] event.
+  /// Emits a [FlNodeSelectionEvent] event.
   void selectNodesById(
     Set<String> ids, {
     bool holdSelection = false,
@@ -841,7 +841,7 @@ class FlNodeEditorController with ChangeNotifier {
     }
 
     eventBus.emit(
-      NodeSelectionEvent(
+      FlNodeSelectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
         isHandled: isHandled,
@@ -873,7 +873,7 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// This method is used to select a link by its ID.
   ///
-  /// Emits a [NodeSelectionEvent] event.
+  /// Emits a [FlNodeSelectionEvent] event.
   void selectLinkById(
     String id, {
     bool holdSelection = false,
@@ -895,7 +895,7 @@ class FlNodeEditorController with ChangeNotifier {
     linksDataDirty = true;
 
     eventBus.emit(
-      LinkSelectionEvent(
+      FlLinkSelectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
         isHandled: isHandled,
@@ -919,7 +919,7 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      NodeDeselectionEvent(
+      FlNodeDeselectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
         isHandled: isHandled,
@@ -927,7 +927,7 @@ class FlNodeEditorController with ChangeNotifier {
     );
 
     eventBus.emit(
-      LinkDeselectionEvent(
+      FlLinkDeselectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
         isHandled: isHandled,

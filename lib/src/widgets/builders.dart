@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../../fl_nodes.dart';
@@ -9,9 +8,9 @@ import '../../fl_nodes.dart';
 /// The style of the node header.
 ///
 /// The header is the top part of the node that contains the title and the collapse button.
-typedef FlNodeHeaderBuilder = Widget Function(
+typedef NodeHeaderBuilder = Widget Function(
   BuildContext context,
-  NodeInstance node,
+  FlNodeInstance node,
   FlNodeStyle style,
   VoidCallback onToggleCollapse,
 );
@@ -19,27 +18,27 @@ typedef FlNodeHeaderBuilder = Widget Function(
 /// The style of the node fields.
 ///
 /// The fields are the widgets that display and allow to edit the data of the node.
-typedef FlNodeFieldBuilder = Widget Function(
+typedef NodeFieldBuilder = Widget Function(
   BuildContext context,
-  FieldInstance field,
+  FlFieldInstance field,
   FlNodeStyle style,
 );
 
 /// The style of the node ports.
 ///
 /// The ports are the origin and destination points of the links.
-typedef FlNodePortBuilder = Widget Function(
+typedef NodePortBuilder = Widget Function(
   BuildContext context,
-  PortInstance port,
+  FlPortInstance port,
   FlNodeStyle style,
 );
 
 /// The content of the node context menu.
 ///
 /// The context menu is the menu that appears when the user right-clicks (content depends on the entity being clicked).
-typedef FlNodeContextMenuBuilder = List<ContextMenuEntry> Function(
+typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
   BuildContext context,
-  NodeInstance node,
+  FlNodeInstance node,
 );
 
 /// The style of the node.
@@ -47,7 +46,7 @@ typedef FlNodeContextMenuBuilder = List<ContextMenuEntry> Function(
 /// The node is the widget that contains the header, the fields and the ports.
 ///
 /// WARNING: Only use this builder if you want to fully customize the look of the node.
-typedef FlNodeBuilder = Widget Function(
+typedef NodeBuilder = Widget Function(
   BuildContext context,
-  NodeInstance node,
+  FlNodeInstance node,
 );

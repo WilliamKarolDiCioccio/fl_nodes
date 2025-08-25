@@ -1,10 +1,8 @@
+import 'package:fl_nodes/src/widgets/debug_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:fl_nodes/src/widgets/debug_info.dart';
-
 import '../core/controller/core.dart';
-
 import 'builders.dart';
 import 'node_editor_data_layer.dart';
 
@@ -15,11 +13,11 @@ class FlNodeEditorWidget extends StatelessWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
-  final FlNodeHeaderBuilder? headerBuilder;
-  final FlNodeFieldBuilder? fieldBuilder;
-  final FlNodePortBuilder? portBuilder;
-  final FlNodeContextMenuBuilder? contextMenuBuilder;
-  final FlNodeBuilder? nodeBuilder;
+  final NodeHeaderBuilder? headerBuilder;
+  final NodeFieldBuilder? fieldBuilder;
+  final NodePortBuilder? portBuilder;
+  final NodeContextMenuBuilder? contextMenuBuilder;
+  final NodeBuilder? nodeBuilder;
 
   const FlNodeEditorWidget({
     super.key,

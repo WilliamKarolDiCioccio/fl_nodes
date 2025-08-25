@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes/src/core/models/entities.dart';
+import 'package:flutter/material.dart';
 
 enum FlLineDrawMode {
   solid,
@@ -18,14 +17,36 @@ class FlGridStyle {
   final bool showGrid;
 
   const FlGridStyle({
-    this.gridSpacingX = 64.0,
-    this.gridSpacingY = 64.0,
-    this.lineWidth = 1.0,
-    this.lineColor = const Color.fromARGB(64, 100, 100, 100),
-    this.intersectionColor = const Color.fromARGB(128, 150, 150, 150),
-    this.intersectionRadius = 2,
-    this.showGrid = true,
+    required this.gridSpacingX,
+    required this.gridSpacingY,
+    required this.lineWidth,
+    required this.lineColor,
+    required this.intersectionColor,
+    required this.intersectionRadius,
+    required this.showGrid,
   });
+
+  const factory FlGridStyle.basic() = FlGridStyle._constBasic;
+
+  const FlGridStyle._constBasic()
+      : gridSpacingX = 64.0,
+        gridSpacingY = 64.0,
+        lineWidth = 1.0,
+        lineColor = const Color.fromARGB(64, 100, 100, 100),
+        intersectionColor = const Color.fromARGB(128, 150, 150, 150),
+        intersectionRadius = 2,
+        showGrid = true;
+
+  const factory FlGridStyle.dense() = FlGridStyle._constDense;
+
+  const FlGridStyle._constDense()
+      : gridSpacingX = 32.0,
+        gridSpacingY = 32.0,
+        lineWidth = 0.5,
+        lineColor = const Color.fromARGB(64, 120, 120, 120),
+        intersectionColor = const Color.fromARGB(128, 180, 180, 180),
+        intersectionRadius = 1,
+        showGrid = true;
 
   FlGridStyle copyWith({
     double? gridSpacingX,
@@ -55,11 +76,19 @@ class FlHighlightAreaStyle {
   final FlLineDrawMode borderDrawMode;
 
   const FlHighlightAreaStyle({
-    this.color = const Color.fromARGB(25, 33, 150, 243),
-    this.borderWidth = 1.0,
-    this.borderColor = const Color.fromARGB(255, 33, 150, 243),
-    this.borderDrawMode = FlLineDrawMode.solid,
+    required this.color,
+    required this.borderWidth,
+    required this.borderColor,
+    required this.borderDrawMode,
   });
+
+  const factory FlHighlightAreaStyle.basic() = FlHighlightAreaStyle._constBasic;
+
+  const FlHighlightAreaStyle._constBasic()
+      : color = const Color.fromARGB(25, 33, 150, 243),
+        borderWidth = 1.0,
+        borderColor = const Color.fromARGB(255, 33, 150, 243),
+        borderDrawMode = FlLineDrawMode.solid;
 
   FlHighlightAreaStyle copyWith({
     Color? color,
@@ -90,11 +119,21 @@ class FlLinkStyle {
   final FlLinkCurveType curveType;
 
   const FlLinkStyle({
-    required this.color,
+    this.color,
+    this.gradient,
     required this.lineWidth,
     required this.drawMode,
     required this.curveType,
-  }) : gradient = null;
+  });
+
+  const factory FlLinkStyle.basic() = FlLinkStyle._constBasic;
+
+  const FlLinkStyle._constBasic()
+      : color = Colors.blue,
+        lineWidth = 2.0,
+        drawMode = FlLineDrawMode.solid,
+        gradient = null,
+        curveType = FlLinkCurveType.bezier;
 
   const FlLinkStyle.gradient({
     required this.gradient,
@@ -151,16 +190,10 @@ class FlLinkStyle {
       curveType.hashCode;
 }
 
-typedef FlLinkStyleBuilder = FlLinkStyle Function(LinkState style);
+typedef LinkStyleBuilder = FlLinkStyle Function(FlLinkState style);
 
-FlLinkStyle defaultLinkStyle(LinkState state) {
-  return const FlLinkStyle(
-    color: Colors.blue,
-    lineWidth: 2.0,
-    drawMode: FlLineDrawMode.solid,
-    curveType: FlLinkCurveType.bezier,
-  );
-}
+FlLinkStyle flDefaultLinkStyleBuilder(FlLinkState state) =>
+    const FlLinkStyle.basic();
 
 enum FlPortShape {
   circle,
@@ -171,19 +204,27 @@ class FlPortStyle {
   final FlPortShape shape;
   final Color color;
   final double radius;
-  final FlLinkStyleBuilder linkStyleBuilder;
+  final LinkStyleBuilder linkStyleBuilder;
 
   const FlPortStyle({
-    this.shape = FlPortShape.circle,
-    this.color = Colors.blue,
-    this.radius = 4,
-    this.linkStyleBuilder = defaultLinkStyle,
+    required this.shape,
+    required this.color,
+    required this.radius,
+    required this.linkStyleBuilder,
   });
+
+  const factory FlPortStyle.basic() = FlPortStyle._constBasic;
+
+  const FlPortStyle._constBasic()
+      : shape = FlPortShape.circle,
+        color = Colors.blue,
+        radius = 4,
+        linkStyleBuilder = flDefaultLinkStyleBuilder;
 
   FlPortStyle copyWith({
     FlPortShape? shape,
     Color? color,
-    FlLinkStyleBuilder? linkStyleBuilder,
+    LinkStyleBuilder? linkStyleBuilder,
     double? radius,
   }) {
     return FlPortStyle(
@@ -195,28 +236,28 @@ class FlPortStyle {
   }
 }
 
-typedef FlPortStyleBuilder = FlPortStyle Function(PortState style);
+typedef PortStyleBuilder = FlPortStyle Function(FlPortState style);
 
-FlPortStyle defaultPortStyle(PortState state) {
-  return FlPortStyle(
-    shape: FlPortShape.circle,
-    color: state.isHovered ? Colors.red : Colors.blue,
-    radius: 4,
-    linkStyleBuilder: defaultLinkStyle,
-  );
-}
+FlPortStyle flDefaultPortStyleBuilder(FlPortState state) =>
+    const FlPortStyle.basic();
 
 class FlFieldStyle {
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
 
   const FlFieldStyle({
-    this.decoration = const BoxDecoration(
-      color: Color(0xFF424242),
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-    ),
-    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    required this.decoration,
+    required this.padding,
   });
+
+  const factory FlFieldStyle.basic() = FlFieldStyle._constBasic;
+
+  const FlFieldStyle._constBasic()
+      : decoration = const BoxDecoration(
+          color: Color(0xFF424242),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
 
   FlFieldStyle copyWith({
     BoxDecoration? decoration,
@@ -242,6 +283,24 @@ class FlNodeHeaderStyle {
     required this.icon,
   });
 
+  const factory FlNodeHeaderStyle.basic() = FlNodeHeaderStyle._constBasic;
+
+  const FlNodeHeaderStyle._constBasic()
+      : padding = EdgeInsets.zero,
+        decoration = const BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(7),
+            topRight: Radius.circular(7),
+          ),
+        ),
+        textStyle = const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        icon = Icons.expand_more;
+
   FlNodeHeaderStyle copyWith({
     EdgeInsets? padding,
     BoxDecoration? decoration,
@@ -257,26 +316,12 @@ class FlNodeHeaderStyle {
   }
 }
 
-typedef FlNodeHeaderStyleBuilder = FlNodeHeaderStyle Function(NodeState style);
+typedef NodeHeaderStyleBuilder = FlNodeHeaderStyle Function(
+  FlNodeState style,
+);
 
-FlNodeHeaderStyle defaultNodeHeaderStyle(NodeState state) {
-  return FlNodeHeaderStyle(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    decoration: const BoxDecoration(
-      color: Colors.blue,
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(7),
-        topRight: Radius.circular(7),
-      ),
-    ),
-    textStyle: const TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-      fontWeight: FontWeight.bold,
-    ),
-    icon: state.isCollapsed ? Icons.expand_more : Icons.expand_less,
-  );
-}
+FlNodeHeaderStyle flDefaultNodeHeaderStyleBuilder(FlNodeState state) =>
+    const FlNodeHeaderStyle.basic();
 
 class FlNodeStyle {
   final BoxDecoration decoration;
@@ -284,6 +329,22 @@ class FlNodeStyle {
   const FlNodeStyle({
     required this.decoration,
   });
+
+  const factory FlNodeStyle.basic() = FlNodeStyle._constBasic;
+
+  const FlNodeStyle._constBasic()
+      : decoration = const BoxDecoration(
+          color: Color(0xFF424242),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        );
+
+  const factory FlNodeStyle.selected() = FlNodeStyle._constSelected;
+
+  const FlNodeStyle._constSelected()
+      : decoration = const BoxDecoration(
+          color: Color(0xFF616161),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        );
 
   FlNodeStyle copyWith({
     BoxDecoration? decoration,
@@ -294,20 +355,12 @@ class FlNodeStyle {
   }
 }
 
-typedef FlNodeStyleBuilder = FlNodeStyle Function(NodeState style);
+typedef NodeStyleBuilder = FlNodeStyle Function(FlNodeState style);
 
-FlNodeStyle defaultNodeStyle(NodeState state) {
-  return FlNodeStyle(
-    decoration: state.isSelected
-        ? const BoxDecoration(
-            color: Color(0xC7616161),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          )
-        : const BoxDecoration(
-            color: Color(0xC8424242),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-  );
+FlNodeStyle flDefaultNodeStyleBuilder(FlNodeState state) {
+  return state.isSelected
+      ? const FlNodeStyle.selected()
+      : const FlNodeStyle.basic();
 }
 
 class FlNodeEditorStyle {
@@ -321,8 +374,8 @@ class FlNodeEditorStyle {
       color: Colors.black12,
     ),
     this.padding = const EdgeInsets.all(8.0),
-    this.gridStyle = const FlGridStyle(),
-    this.highlightAreaStyle = const FlHighlightAreaStyle(),
+    this.gridStyle = const FlGridStyle.basic(),
+    this.highlightAreaStyle = const FlHighlightAreaStyle.basic(),
   });
 
   FlNodeEditorStyle copyWith({

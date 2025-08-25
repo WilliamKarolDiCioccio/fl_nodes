@@ -9,9 +9,9 @@ import '../models/entities.dart';
 import '../models/events.dart';
 import 'core.dart';
 
-typedef FlProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
-typedef FlProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
-typedef FlProjectCreator = Future<bool> Function(bool isSaved);
+typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
+typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
+typedef ProjectCreator = Future<bool> Function(bool isSaved);
 
 /// A class that allows to specify serialization and deserialization logic for custom data types.
 class DataHandler {
@@ -119,20 +119,20 @@ class FlNodeEditorProject {
 
   /// Handles project related events.
   ///
-  /// - [SaveProjectEvent]: Sets the project as saved.
-  /// - [LoadProjectEvent]: Sets the project as saved and clears the history.
-  /// - [NewProjectEvent]: Clears the project.
+  /// - [FlSaveProjectEvent]: Sets the project as saved.
+  /// - [FlLoadProjectEvent]: Sets the project as saved and clears the history.
+  /// - [FlNewProjectEvent]: Clears the project.
   ///
   /// If the event is undoable, the project is set as unsaved.
   void _handleProjectEvents(NodeEditorEvent event) {
     if (event.isUndoable) _isSaved = false;
 
-    if (event is SaveProjectEvent) {
+    if (event is FlSaveProjectEvent) {
       _isSaved = true;
-    } else if (event is LoadProjectEvent) {
+    } else if (event is FlLoadProjectEvent) {
       _isSaved = true;
       controller.history.clear();
-    } else if (event is NewProjectEvent) {
+    } else if (event is FlNewProjectEvent) {
       _isSaved = true;
       controller.clear();
     }
@@ -160,7 +160,7 @@ class FlNodeEditorProject {
   ///
   /// Even doe counterintuitive, this method is the one actually responsible for loading the project data other than deserializing the JSON data.
   /// This choice was made to avoid redundancy and to keep the project data loading logic in one place.
-  (Offset, double, Set<NodeInstance>)? _fromJson(Map<String, dynamic> json) {
+  (Offset, double, Set<FlNodeInstance>)? _fromJson(Map<String, dynamic> json) {
     if (json.isEmpty) return null;
 
     final viewportJson = json['viewport'] as Map<String, dynamic>;
@@ -178,7 +178,7 @@ class FlNodeEditorProject {
     final nodesJson = json['nodes'] as List<dynamic>;
 
     final nodes = nodesJson.map((node) {
-      return NodeInstance.fromJson(
+      return FlNodeInstance.fromJson(
         node,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: dataHandlers,
@@ -219,7 +219,7 @@ class FlNodeEditorProject {
 
     _isSaved = true;
 
-    controller.eventBus.emit(SaveProjectEvent(id: const Uuid().v4()));
+    controller.eventBus.emit(FlSaveProjectEvent(id: const Uuid().v4()));
 
     controller.onCallback?.call(
       FlCallbackType.success,
@@ -263,7 +263,7 @@ class FlNodeEditorProject {
       return;
     }
 
-    controller.eventBus.emit(LoadProjectEvent(id: const Uuid().v4()));
+    controller.eventBus.emit(FlLoadProjectEvent(id: const Uuid().v4()));
 
     controller.onCallback?.call(
       FlCallbackType.success,
@@ -283,7 +283,7 @@ class FlNodeEditorProject {
 
     if (shouldProceed == false) return;
 
-    controller.eventBus.emit(NewProjectEvent(id: const Uuid().v4()));
+    controller.eventBus.emit(FlNewProjectEvent(id: const Uuid().v4()));
 
     controller.onCallback?.call(
       FlCallbackType.success,
