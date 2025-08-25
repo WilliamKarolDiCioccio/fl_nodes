@@ -67,3 +67,8 @@ Special thanks to [Blokyk](https://github.com/Blokyk) for many of these improvem
 - **State Management Overhaul**:
 
   - Completely redesigned state system for smoother interactions and peak performance across devices.
+
+## 0.4.0+1
+
+- **Fix Layout Errors**: Fixed text layout errors from nodes beyond viewport when swithcing locale.
+  ([#90](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/90))
