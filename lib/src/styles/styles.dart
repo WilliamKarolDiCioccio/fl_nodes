@@ -1,5 +1,6 @@
-import 'package:fl_nodes/src/core/models/entities.dart';
 import 'package:flutter/material.dart';
+
+import 'package:fl_nodes/src/core/models/data.dart';
 
 enum FlLineDrawMode {
   solid,
@@ -286,7 +287,7 @@ class FlNodeHeaderStyle {
   const factory FlNodeHeaderStyle.basic() = FlNodeHeaderStyle._constBasic;
 
   const FlNodeHeaderStyle._constBasic()
-      : padding = EdgeInsets.zero,
+      : padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration = const BoxDecoration(
           color: Colors.blue,
           borderRadius: BorderRadius.only(
@@ -334,7 +335,7 @@ class FlNodeStyle {
 
   const FlNodeStyle._constBasic()
       : decoration = const BoxDecoration(
-          color: Color(0xFF424242),
+          color: Color(0xC8424242),
           borderRadius: BorderRadius.all(Radius.circular(8)),
         );
 
@@ -342,7 +343,7 @@ class FlNodeStyle {
 
   const FlNodeStyle._constSelected()
       : decoration = const BoxDecoration(
-          color: Color(0xFF616161),
+          color: Color(0xC7616161),
           borderRadius: BorderRadius.all(Radius.circular(8)),
         );
 

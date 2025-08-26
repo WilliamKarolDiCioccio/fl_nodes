@@ -37,7 +37,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
     });
   }
 
-  void _onNodeTap(FlNodeInstance node) {
+  void _onNodeTap(FlNodeDataModel node) {
     widget.controller.selectNodesById(
       {node.id},
       holdSelection: HardwareKeyboard.instance.isControlPressed,

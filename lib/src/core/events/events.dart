@@ -1,10 +1,10 @@
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
-import 'package:fl_nodes/src/core/models/entities.dart';
-import 'package:fl_nodes/src/core/models/styles.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:flutter/material.dart';
 
-import '../models/config.dart';
+import '../controller/config.dart';
 
 ///
 /// It includes an [id] to identify the event, a [isHandled] flag to indicate if the event has been handled,
@@ -234,7 +234,7 @@ final class FlCutSelectionEvent extends NodeEditorEvent {
 
 /// Event produced when the user creates a new node.
 final class FlAddNodeEvent extends NodeEditorEvent {
-  final FlNodeInstance node;
+  final FlNodeDataModel node;
 
   const FlAddNodeEvent(
     this.node, {
@@ -253,7 +253,7 @@ final class FlAddNodeEvent extends NodeEditorEvent {
     required FlNodeEditorController controller,
   }) {
     return FlAddNodeEvent(
-      FlNodeInstance.fromJson(
+      FlNodeDataModel.fromJson(
         json['node'] as Map<String, dynamic>,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -266,7 +266,7 @@ final class FlAddNodeEvent extends NodeEditorEvent {
 
 /// Event produced when the user removes a node.
 final class FlRemoveNodeEvent extends NodeEditorEvent {
-  final FlNodeInstance node;
+  final FlNodeDataModel node;
 
   const FlRemoveNodeEvent(this.node, {required super.id, super.isHandled})
       : super(isUndoable: true);
@@ -282,7 +282,7 @@ final class FlRemoveNodeEvent extends NodeEditorEvent {
     required FlNodeEditorController controller,
   }) {
     return FlRemoveNodeEvent(
-      FlNodeInstance.fromJson(
+      FlNodeDataModel.fromJson(
         json['node'] as Map<String, dynamic>,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -295,7 +295,7 @@ final class FlRemoveNodeEvent extends NodeEditorEvent {
 
 /// Event produced when the creates a new link between two nodes.
 final class FlAddLinkEvent extends NodeEditorEvent {
-  final FlLink link;
+  final FlLinkDataModel link;
 
   const FlAddLinkEvent(
     this.link, {
@@ -311,7 +311,7 @@ final class FlAddLinkEvent extends NodeEditorEvent {
 
   factory FlAddLinkEvent.fromJson(Map<String, dynamic> json) {
     return FlAddLinkEvent(
-      FlLink.fromJson(json['link'] as Map<String, dynamic>),
+      FlLinkDataModel.fromJson(json['link'] as Map<String, dynamic>),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -320,7 +320,7 @@ final class FlAddLinkEvent extends NodeEditorEvent {
 
 /// Event produced when the user removes a link between two nodes.
 final class FlRemoveLinkEvent extends NodeEditorEvent {
-  final FlLink link;
+  final FlLinkDataModel link;
 
   const FlRemoveLinkEvent(this.link, {required super.id, super.isHandled})
       : super(isUndoable: true);
@@ -333,7 +333,7 @@ final class FlRemoveLinkEvent extends NodeEditorEvent {
 
   factory FlRemoveLinkEvent.fromJson(Map<String, dynamic> json) {
     return FlRemoveLinkEvent(
-      FlLink.fromJson(json['link'] as Map<String, dynamic>),
+      FlLinkDataModel.fromJson(json['link'] as Map<String, dynamic>),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );

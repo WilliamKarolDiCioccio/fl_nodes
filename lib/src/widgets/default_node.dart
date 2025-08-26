@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
@@ -14,7 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../constants.dart';
-import '../core/models/entities.dart';
+import '../core/models/data.dart';
 import 'builders.dart';
 
 typedef _TempLink = ({String nodeId, String portId});
@@ -24,7 +24,7 @@ typedef _TempLink = ({String nodeId, String portId});
 /// still respond to tap events in the same way as before.
 class DefaultNodeWidget extends StatefulWidget {
   final FlNodeEditorController controller;
-  final FlNodeInstance node;
+  final FlNodeDataModel node;
   final NodeHeaderBuilder? headerBuilder;
   final NodeFieldBuilder? fieldBuilder;
   final NodePortBuilder? portBuilder;
@@ -61,9 +61,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
   late Color fakeTransparentColor;
 
-  late List<FlPortInstance> inPorts;
-  late List<FlPortInstance> outPorts;
-  late List<FlFieldInstance> fields;
+  late List<FlPortDataModel> inPorts;
+  late List<FlPortDataModel> outPorts;
+  late List<FlFieldDataModel> fields;
 
   double get viewportZoom => widget.controller.viewportZoom;
   Offset get viewportOffset => widget.controller.viewportOffset;
@@ -147,7 +147,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0;
     final moveAmount = 5.0 / widget.controller.viewportZoom;
-    final editorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
+    final editorBounds =
+        RenderBoxUtils.getEditorBoundsInScreen(kNodeEditorWidgetKey);
     if (editorBounds == null) return;
 
     _edgeTimer?.cancel();
@@ -183,7 +184,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   _TempLink? _isNearPort(Offset position) {
-    final worldPosition = screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition =
+        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
 
     final near = Rect.fromCenter(
       center: worldPosition!,
@@ -191,7 +193,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       height: kSpatialHashingCellSize,
     );
 
-    final nearNodeIds = widget.controller.spatialHashGrid.queryArea(near);
+    final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
       final node = widget.controller.nodes[nodeId]!;
@@ -212,7 +214,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   void _onTmpLinkUpdate(Offset position) {
-    final worldPosition = screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition =
+        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
     final node = widget.controller.nodes[_tempLink!.nodeId]!;
     final port = node.ports[_tempLink!.portId]!;
     final absolutePortOffset = node.offset + port.offset;
@@ -503,7 +506,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       );
     }
 
-    final worldPosition = screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition =
+        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
 
     return compatiblePrototypes.map((entry) {
       return MenuItem(
@@ -699,7 +703,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
 class _NodeHeaderWidget extends StatelessWidget {
   final FlNodeEditorController controller;
-  final FlNodeInstance node;
+  final FlNodeDataModel node;
 
   const _NodeHeaderWidget({
     required this.controller,
@@ -741,8 +745,8 @@ class _NodeHeaderWidget extends StatelessWidget {
 }
 
 class _PortWidget extends StatelessWidget {
-  final FlNodeInstance node;
-  final FlPortInstance port;
+  final FlNodeDataModel node;
+  final FlPortDataModel port;
   final NodePortBuilder? portBuilder;
 
   const _PortWidget({
@@ -784,8 +788,8 @@ class _PortWidget extends StatelessWidget {
 
 class _FieldWidget extends StatelessWidget {
   final FlNodeEditorController controller;
-  final FlNodeInstance node;
-  final FlFieldInstance field;
+  final FlNodeDataModel node;
+  final FlFieldDataModel field;
   final NodeFieldBuilder? fieldBuilder;
 
   const _FieldWidget({

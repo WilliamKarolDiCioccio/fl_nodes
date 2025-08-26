@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 
 /// A class that acts as an event bus for the Node Editor.
 ///

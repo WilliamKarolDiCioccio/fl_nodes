@@ -1,10 +1,12 @@
+import 'package:flutter/material.dart';
+
+import 'package:uuid/uuid.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/core/models/styles.dart';
-import 'package:fl_nodes/src/core/utils/state/single_listener_change_notifier.dart';
-import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/helpers/single_listener_change_notifier.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
 
@@ -33,24 +35,24 @@ class FlLinkState {
 }
 
 /// A link is a connection between two ports.
-final class FlLink {
+final class FlLinkDataModel {
   final String id;
   final FromTo fromTo;
   final FlLinkState state;
 
-  FlLink({
+  FlLinkDataModel({
     required this.id,
     required this.fromTo,
     required this.state,
   });
 
-  FlLink copyWith({
+  FlLinkDataModel copyWith({
     String? id,
     FromTo? fromTo,
     FlLinkState? state,
     List<Offset>? joints,
   }) {
-    return FlLink(
+    return FlLinkDataModel(
       id: id ?? this.id,
       fromTo: fromTo ?? this.fromTo,
       state: state ?? this.state,
@@ -67,8 +69,8 @@ final class FlLink {
     };
   }
 
-  factory FlLink.fromJson(Map<String, dynamic> json) {
-    return FlLink(
+  factory FlLinkDataModel.fromJson(Map<String, dynamic> json) {
+    return FlLinkDataModel(
       id: json['id'],
       fromTo: (
         from: json['from'],
@@ -83,7 +85,7 @@ final class FlLink {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FlLink &&
+      other is FlLinkDataModel &&
           runtimeType == other.runtimeType &&
           id == other.id &&
           fromTo == other.fromTo;
@@ -92,12 +94,12 @@ final class FlLink {
   int get hashCode => id.hashCode ^ fromTo.hashCode;
 }
 
-class TempLink {
+class TempLinkDataModel {
   final FlLinkStyle style;
   final Offset from;
   final Offset to;
 
-  TempLink({
+  TempLinkDataModel({
     required this.style,
     required this.from,
     required this.to,
@@ -236,15 +238,15 @@ class FlPortState with SingleListenerChangeNotifier {
 /// A port is a connection point on a node.
 ///
 /// In addition to the prototype, it holds the data, links, and offset.
-final class FlPortInstance {
+final class FlPortDataModel {
   final FlPortPrototype prototype;
   dynamic data; // Not saved as it is only used during in graph execution
-  Set<FlLink> links = {};
+  Set<FlLinkDataModel> links = {};
   final FlPortState state;
   Offset offset; // Determined by Flutter
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
-  FlPortInstance({
+  FlPortDataModel({
     required this.prototype,
     required this.state,
     this.offset = Offset.zero,
@@ -263,7 +265,7 @@ final class FlPortInstance {
     };
   }
 
-  factory FlPortInstance.fromJson(
+  factory FlPortDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlPortPrototype> portPrototypes,
   ) {
@@ -273,25 +275,25 @@ final class FlPortInstance {
 
     final prototype = portPrototypes[json['idName'].toString()]!;
 
-    final instance = FlPortInstance(
+    final instance = FlPortDataModel(
       prototype: prototype,
       state: FlPortState.fromJson(json['state'] ?? {}),
     );
 
     instance.links = (json['links'] as List<dynamic>)
-        .map((linkJson) => FlLink.fromJson(linkJson))
+        .map((linkJson) => FlLinkDataModel.fromJson(linkJson))
         .toSet();
 
     return instance;
   }
 
-  FlPortInstance copyWith({
+  FlPortDataModel copyWith({
     dynamic data,
-    Set<FlLink>? links,
+    Set<FlLinkDataModel>? links,
     FlPortState? state,
     Offset? offset,
   }) {
-    final instance = FlPortInstance(
+    final instance = FlPortDataModel(
       prototype: prototype,
       // we can't reuse the same instance, since they should only
       // notify the new [PortInstance] object, not the old ones
@@ -346,13 +348,13 @@ class FlFieldPrototype {
 /// A field is a variable that can be used in the onExecute function of a node.
 ///
 /// In addition to the prototype, it holds the data.
-class FlFieldInstance {
+class FlFieldDataModel {
   final FlFieldPrototype prototype;
   final editorOverlayController = OverlayPortalController();
   dynamic data;
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
-  FlFieldInstance({
+  FlFieldDataModel({
     required this.prototype,
     required this.data,
   });
@@ -364,7 +366,7 @@ class FlFieldInstance {
     };
   }
 
-  factory FlFieldInstance.fromJson(
+  factory FlFieldDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlFieldPrototype> fieldPrototypes,
     Map<String, DataHandler> dataHandlers,
@@ -375,7 +377,7 @@ class FlFieldInstance {
 
     final prototype = fieldPrototypes[json['idName'].toString()]!;
 
-    return FlFieldInstance(
+    return FlFieldDataModel(
       prototype: prototype,
       data: json['data'] != 'null'
           ? dataHandlers[prototype.dataType.toString()]?.fromJson(json['data'])
@@ -383,8 +385,8 @@ class FlFieldInstance {
     );
   }
 
-  FlFieldInstance copyWith({dynamic data}) {
-    return FlFieldInstance(prototype: prototype, data: data ?? this.data);
+  FlFieldDataModel copyWith({dynamic data}) {
+    return FlFieldDataModel(prototype: prototype, data: data ?? this.data);
   }
 }
 
@@ -460,7 +462,7 @@ final class FlNodeState {
 /// A node is a component in the node editor.
 ///
 /// It holds the instances of the ports and fields, the offset, the data and the state.
-final class FlNodeInstance {
+final class FlNodeDataModel {
   final String id; // Stored to acceleate lookups
 
   // The resolved style for the node.
@@ -468,13 +470,13 @@ final class FlNodeInstance {
   late FlNodeHeaderStyle builtHeaderStyle;
 
   final FlNodePrototype prototype;
-  final Map<String, FlPortInstance> ports;
-  final Map<String, FlFieldInstance> fields;
+  final Map<String, FlPortDataModel> ports;
+  final Map<String, FlFieldDataModel> fields;
   final FlNodeState state;
   Offset offset; // User or system defined offset
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
-  FlNodeInstance({
+  FlNodeDataModel({
     required this.id,
     required this.prototype,
     required this.ports,
@@ -483,16 +485,16 @@ final class FlNodeInstance {
     this.offset = Offset.zero,
   });
 
-  FlNodeInstance copyWith({
+  FlNodeDataModel copyWith({
     String? id,
     Color? color,
-    Map<String, FlPortInstance>? ports,
-    Map<String, FlFieldInstance>? fields,
+    Map<String, FlPortDataModel>? ports,
+    Map<String, FlFieldDataModel>? fields,
     FlNodeState? state,
-    Function(FlNodeInstance node)? onRendered,
+    Function(FlNodeDataModel node)? onRendered,
     Offset? offset,
   }) {
-    return FlNodeInstance(
+    return FlNodeDataModel(
       id: id ?? this.id,
       prototype: prototype,
       ports: ports ?? this.ports,
@@ -513,7 +515,7 @@ final class FlNodeInstance {
     };
   }
 
-  factory FlNodeInstance.fromJson(
+  factory FlNodeDataModel.fromJson(
     Map<String, dynamic> json, {
     required Map<String, FlNodePrototype> nodePrototypes,
     required Map<String, DataHandler> dataHandlers,
@@ -534,7 +536,7 @@ final class FlNodeInstance {
       (id, portJson) {
         return MapEntry(
           id,
-          FlPortInstance.fromJson(portJson, portPrototypes),
+          FlPortDataModel.fromJson(portJson, portPrototypes),
         );
       },
     );
@@ -549,12 +551,12 @@ final class FlNodeInstance {
       (id, fieldJson) {
         return MapEntry(
           id,
-          FlFieldInstance.fromJson(fieldJson, fieldPrototypes, dataHandlers),
+          FlFieldDataModel.fromJson(fieldJson, fieldPrototypes, dataHandlers),
         );
       },
     );
 
-    final instance = FlNodeInstance(
+    final instance = FlNodeDataModel(
       id: json['id'],
       prototype: prototype,
       ports: ports,
@@ -567,20 +569,20 @@ final class FlNodeInstance {
   }
 }
 
-FlPortInstance createPort(String idName, FlPortPrototype prototype) {
-  return FlPortInstance(prototype: prototype, state: FlPortState());
+FlPortDataModel createPort(String idName, FlPortPrototype prototype) {
+  return FlPortDataModel(prototype: prototype, state: FlPortState());
 }
 
-FlFieldInstance createField(String idName, FlFieldPrototype prototype) {
-  return FlFieldInstance(prototype: prototype, data: prototype.defaultData);
+FlFieldDataModel createField(String idName, FlFieldPrototype prototype) {
+  return FlFieldDataModel(prototype: prototype, data: prototype.defaultData);
 }
 
-FlNodeInstance createNode(
+FlNodeDataModel createNode(
   FlNodePrototype prototype, {
   required FlNodeEditorController controller,
   required Offset offset,
 }) {
-  return FlNodeInstance(
+  return FlNodeDataModel(
     id: const Uuid().v4(),
     prototype: prototype,
     ports: Map.fromEntries(
@@ -598,4 +600,32 @@ FlNodeInstance createNode(
     state: FlNodeState(),
     offset: offset,
   );
+}
+
+final class FlNodeGroup {
+  final String id;
+  final String name;
+  final Set<String> nodeIds;
+
+  FlNodeGroup({
+    required this.id,
+    required this.name,
+    required this.nodeIds,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'nodeIds': nodeIds.toList(),
+    };
+  }
+
+  factory FlNodeGroup.fromJson(Map<String, dynamic> json) {
+    return FlNodeGroup(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      nodeIds: (json['nodeIds'] as List).cast<String>().toSet(),
+    );
+  }
 }

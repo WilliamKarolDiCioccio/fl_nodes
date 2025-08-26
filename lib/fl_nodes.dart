@@ -1,23 +1,6 @@
 export 'package:fl_nodes/src/core/controller/callback.dart' show FlCallbackType;
 export 'package:fl_nodes/src/core/controller/core.dart';
-export 'package:fl_nodes/src/core/localization/delegate.dart';
-export 'package:fl_nodes/src/core/models/entities.dart'
-    show
-        FlLink,
-        FlPortPrototype,
-        FlNodePrototype,
-        FlDataInputPortPrototype,
-        FlDataOutputPortPrototype,
-        FlControlInputPortPrototype,
-        FlControlOutputPortPrototype,
-        FlFieldPrototype,
-        FlPortInstance,
-        FlFieldInstance,
-        FlLinkState,
-        FlPortState,
-        FlNodeState,
-        FlNodeInstance;
-export 'package:fl_nodes/src/core/models/events.dart'
+export 'package:fl_nodes/src/core/events/events.dart'
     show
         FlNodeSelectionEvent,
         FlLinkSelectionEvent,
@@ -29,7 +12,24 @@ export 'package:fl_nodes/src/core/models/events.dart'
         FlRemoveLinkEvent,
         FlNodeFieldEvent,
         FlFieldEventType;
-export 'package:fl_nodes/src/core/models/styles.dart'
+export 'package:fl_nodes/src/core/localization/delegate.dart';
+export 'package:fl_nodes/src/core/models/data.dart'
+    show
+        FlLinkDataModel,
+        FlPortPrototype,
+        FlNodePrototype,
+        FlDataInputPortPrototype,
+        FlDataOutputPortPrototype,
+        FlControlInputPortPrototype,
+        FlControlOutputPortPrototype,
+        FlFieldPrototype,
+        FlPortDataModel,
+        FlFieldDataModel,
+        FlLinkState,
+        FlPortState,
+        FlNodeState,
+        FlNodeDataModel;
+export 'package:fl_nodes/src/styles/styles.dart'
     show
         FlGridStyle,
         FlHighlightAreaStyle,

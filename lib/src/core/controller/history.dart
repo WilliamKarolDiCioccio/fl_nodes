@@ -1,8 +1,9 @@
-import 'package:fl_nodes/src/core/models/entities.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
 
 import '../../constants.dart';
-import '../models/events.dart';
+import '../events/events.dart';
 import '../utils/dsa/stack.dart';
+
 import 'core.dart';
 
 /// A class that manages the undo and redo history of the node editor.

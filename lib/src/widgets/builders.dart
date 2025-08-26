@@ -10,7 +10,7 @@ import '../../fl_nodes.dart';
 /// The header is the top part of the node that contains the title and the collapse button.
 typedef NodeHeaderBuilder = Widget Function(
   BuildContext context,
-  FlNodeInstance node,
+  FlNodeDataModel node,
   FlNodeStyle style,
   VoidCallback onToggleCollapse,
 );
@@ -20,7 +20,7 @@ typedef NodeHeaderBuilder = Widget Function(
 /// The fields are the widgets that display and allow to edit the data of the node.
 typedef NodeFieldBuilder = Widget Function(
   BuildContext context,
-  FlFieldInstance field,
+  FlFieldDataModel field,
   FlNodeStyle style,
 );
 
@@ -29,7 +29,7 @@ typedef NodeFieldBuilder = Widget Function(
 /// The ports are the origin and destination points of the links.
 typedef NodePortBuilder = Widget Function(
   BuildContext context,
-  FlPortInstance port,
+  FlPortDataModel port,
   FlNodeStyle style,
 );
 
@@ -38,7 +38,7 @@ typedef NodePortBuilder = Widget Function(
 /// The context menu is the menu that appears when the user right-clicks (content depends on the entity being clicked).
 typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
   BuildContext context,
-  FlNodeInstance node,
+  FlNodeDataModel node,
 );
 
 /// The style of the node.
@@ -48,5 +48,5 @@ typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
 /// WARNING: Only use this builder if you want to fully customize the look of the node.
 typedef NodeBuilder = Widget Function(
   BuildContext context,
-  FlNodeInstance node,
+  FlNodeDataModel node,
 );

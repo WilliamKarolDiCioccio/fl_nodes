@@ -4,17 +4,17 @@ import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/core/models/styles.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/config.dart';
-import '../models/entities.dart';
+import '../events/bus.dart';
+import '../models/data.dart';
 import 'clipboard.dart';
-import 'event_bus.dart';
+import 'config.dart';
 import 'runner.dart';
 import 'utils.dart';
 
@@ -65,7 +65,7 @@ class FlNodeEditorController with ChangeNotifier {
   /// This method is used to clear the core controller and all of its subsystems.
   void clear() {
     nodes.clear();
-    spatialHashGrid.clear();
+    nodesSpatialHashGrid.clear();
     selectedNodeIds.clear();
     selectedLinkIds.clear();
     _linksById.clear();
@@ -309,13 +309,13 @@ class FlNodeEditorController with ChangeNotifier {
   ////////////////////////////////////////////////////////////////////////
 
   final Map<String, FlNodePrototype> nodePrototypes = {};
-  final Map<String, FlNodeInstance> nodes = {};
+  final Map<String, FlNodeDataModel> nodes = {};
 
   List<FlNodePrototype> get nodePrototypesAsList =>
       nodePrototypes.values.map((e) => e).toList();
-  List<FlNodeInstance> get nodesAsList => nodes.values.toList();
+  List<FlNodeDataModel> get nodesAsList => nodes.values.toList();
 
-  final SpatialHashGrid spatialHashGrid = SpatialHashGrid();
+  final SpatialHashGrid nodesSpatialHashGrid = SpatialHashGrid();
 
   /// This map holds the raw nodes offsets before they are snapped to the grid.
   final Map<String, Offset> _unboundNodeOffsets = {};
@@ -341,7 +341,7 @@ class FlNodeEditorController with ChangeNotifier {
     }
   }
 
-  /// This method is used to add a [FlNodeInstance] to the node editor by its prototype name.
+  /// This method is used to add a [FlNodeDataModel] to the node editor by its prototype name.
   ///
   /// The method takes the name of the node prototype and creates an instance of the node
   /// based on the prototype. The method also takes an optional offset parameter to set the
@@ -351,7 +351,7 @@ class FlNodeEditorController with ChangeNotifier {
   /// See [SpatialHashGrid] and [selectNodesByArea].
   ///
   /// Emits an [FlAddNodeEvent] event.
-  FlNodeInstance addNode(String name, {Offset offset = Offset.zero}) {
+  FlNodeDataModel addNode(String name, {Offset offset = Offset.zero}) {
     if (!nodePrototypes.containsKey(name)) {
       throw Exception('Node prototype $name does not exist.');
     }
@@ -388,7 +388,7 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// Emits an [FlAddNodeEvent] event.
   void addNodeFromExisting(
-    FlNodeInstance node, {
+    FlNodeDataModel node, {
     bool isHandled = false,
     String? eventId,
   }) {
@@ -446,7 +446,7 @@ class FlNodeEditorController with ChangeNotifier {
       }
     }
 
-    spatialHashGrid.remove(id);
+    nodesSpatialHashGrid.remove(id);
     nodes.remove(id);
 
     // selectedNodeIds.remove(id); We don't remove the node from the selected nodes because you might be iterating over them.
@@ -472,7 +472,7 @@ class FlNodeEditorController with ChangeNotifier {
   /// connected to an input port guaranteeing that the graph is directed the right way.
   ///
   /// Emits an [FlAddLinkEvent] event.
-  FlLink? addLink(
+  FlLinkDataModel? addLink(
     String node1Id,
     String port1IdName,
     String node2Id,
@@ -545,7 +545,7 @@ class FlNodeEditorController with ChangeNotifier {
       );
     }
 
-    final link = FlLink(
+    final link = FlLinkDataModel(
       id: const Uuid().v4(),
       fromTo: fromTo,
       state: FlLinkState(),
@@ -575,7 +575,7 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// Emits an [FlAddLinkEvent] event.
   void addLinkFromExisting(
-    FlLink link, {
+    FlLinkDataModel link, {
     String? eventId,
     bool isHandled = false,
   }) {
@@ -616,8 +616,8 @@ class FlNodeEditorController with ChangeNotifier {
     );
   }
 
-  final Map<String, FlLink> _linksById = {};
-  Map<String, FlLink> get linksById => _linksById;
+  final Map<String, FlLinkDataModel> _linksById = {};
+  Map<String, FlLinkDataModel> get linksById => _linksById;
 
   /// This method is used to remove a link by its ID.
   ///
@@ -654,8 +654,8 @@ class FlNodeEditorController with ChangeNotifier {
   }
 
   /// Represents a link in the process of being drawn.
-  TempLink? _tempLink;
-  TempLink? get tempLink => _tempLink;
+  TempLinkDataModel? _tempLink;
+  TempLinkDataModel? get tempLink => _tempLink;
 
   /// This method is used to draw a temporary link between two points in the node editor.
   ///
@@ -663,7 +663,7 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// Emits a [FlDrawTempLinkEvent] event.
   void drawTempLink(FlLinkStyle style, Offset from, Offset to) {
-    _tempLink = TempLink(style: style, from: from, to: to);
+    _tempLink = TempLinkDataModel(style: style, from: from, to: to);
 
     // The temp link is treated differently from regular links, so we don't need to mark the links data as dirty.
 
@@ -861,7 +861,7 @@ class FlNodeEditorController with ChangeNotifier {
       return clearSelection();
     }
 
-    final containedNodes = spatialHashGrid.queryArea(_highlightArea!);
+    final containedNodes = nodesSpatialHashGrid.queryArea(_highlightArea!);
 
     selectNodesById(
       containedNodes,
@@ -950,7 +950,7 @@ class FlNodeEditorController with ChangeNotifier {
   ///
   /// See [calculateEncompassingRect], [selectNodesById], [setViewportOffset], and [setViewportZoom] for more information.
   void focusNodesById(Set<String> ids) {
-    final encompassingRect = calculateEncompassingRect(
+    final encompassingRect = FlNodeEditorUtils.calculateEncompassingRect(
       ids,
       nodes,
       margin: 256,
@@ -958,7 +958,8 @@ class FlNodeEditorController with ChangeNotifier {
 
     selectNodesById(ids, holdSelection: false);
 
-    final nodeEditorSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+    final nodeEditorSize =
+        RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
 
     setViewportOffset(
       -encompassingRect.center,

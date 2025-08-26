@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:fl_nodes/src/core/controller/core.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 
 class DebugInfoWidget extends StatelessWidget {
   final FlNodeEditorController controller;

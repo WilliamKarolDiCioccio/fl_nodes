@@ -7,12 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../constants.dart';
-import '../models/entities.dart';
-import '../models/events.dart';
+import '../events/bus.dart';
+import '../events/events.dart';
+import '../models/data.dart';
 import '../utils/misc/json_extensions.dart';
 import '../utils/rendering/renderbox.dart';
 import 'core.dart';
-import 'event_bus.dart';
 import 'utils.dart';
 
 /// A class that manages the clipboard operations of the node editor.
@@ -25,7 +25,7 @@ class FlNodeEditorClipboard {
   Offset get viewportOffset => controller.viewportOffset;
   double get viewportZoom => controller.viewportZoom;
   Map<String, FlNodePrototype> get nodePrototypes => controller.nodePrototypes;
-  Map<String, FlNodeInstance> get nodes => controller.nodes;
+  Map<String, FlNodeDataModel> get nodes => controller.nodes;
   Set<String> get selectedNodeIds => controller.selectedNodeIds;
 
   FlNodeEditorClipboard(this.controller);
@@ -41,7 +41,8 @@ class FlNodeEditorClipboard {
 
     if (selectedNodeIds.isEmpty) return '';
 
-    final encompassingRect = calculateEncompassingRect(selectedNodeIds, nodes);
+    final encompassingRect =
+        FlNodeEditorUtils.calculateEncompassingRect(selectedNodeIds, nodes);
 
     final selectedNodes = selectedNodeIds.map((id) {
       final nodeCopy = nodes[id]!.copyWith();
@@ -144,7 +145,8 @@ class FlNodeEditorClipboard {
     }
 
     if (position == null) {
-      final viewportSize = getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+      final viewportSize =
+          RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
 
       position = Rect.fromLTWH(
         -viewportOffset.dx -
@@ -160,7 +162,7 @@ class FlNodeEditorClipboard {
 
     // Create instances from the JSON data.
     final instances = nodesJson.map((node) {
-      return FlNodeInstance.fromJson(
+      return FlNodeDataModel.fromJson(
         node,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
@@ -168,7 +170,7 @@ class FlNodeEditorClipboard {
     }).toList();
 
     // Called on each paste, see [FlNodeEditorController._mapToNewIds] for more info.
-    final newIds = await mapToNewIds(instances);
+    final newIds = await FlNodeEditorUtils.mapToNewIds(instances);
 
     final deepCopiedNodes = instances.map((instance) {
       return instance.copyWith(

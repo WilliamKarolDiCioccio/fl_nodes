@@ -1,19 +1,18 @@
 import 'dart:convert';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/entities.dart';
-import '../models/events.dart';
-import 'core.dart';
+import '../models/data.dart';
 
 typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
 typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
 typedef ProjectCreator = Future<bool> Function(bool isSaved);
 
-/// A class that allows to specify serialization and deserialization logic for custom data types.
 class DataHandler {
   final String Function(dynamic data) toJson;
   final dynamic Function(String json) fromJson;
@@ -160,7 +159,7 @@ class FlNodeEditorProject {
   ///
   /// Even doe counterintuitive, this method is the one actually responsible for loading the project data other than deserializing the JSON data.
   /// This choice was made to avoid redundancy and to keep the project data loading logic in one place.
-  (Offset, double, Set<FlNodeInstance>)? _fromJson(Map<String, dynamic> json) {
+  (Offset, double, Set<FlNodeDataModel>)? _fromJson(Map<String, dynamic> json) {
     if (json.isEmpty) return null;
 
     final viewportJson = json['viewport'] as Map<String, dynamic>;
@@ -178,7 +177,7 @@ class FlNodeEditorProject {
     final nodesJson = json['nodes'] as List<dynamic>;
 
     final nodes = nodesJson.map((node) {
-      return FlNodeInstance.fromJson(
+      return FlNodeDataModel.fromJson(
         node,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: dataHandlers,

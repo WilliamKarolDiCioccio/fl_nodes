@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
 import 'package:flutter/material.dart';
 
-import '../models/entities.dart';
+import '../models/data.dart';
 import 'core.dart';
 
 /// A class that manages the execution of the node editor graph.
@@ -13,7 +13,7 @@ import 'core.dart';
 /// NOTE: This class is still in development and there are performance improvements to be made.
 class FlNodeEditorRunner {
   final FlNodeEditorController controller;
-  Map<String, FlNodeInstance> _nodes = {};
+  Map<String, FlNodeDataModel> _nodes = {};
   Map<String, Set<String>> _dataDeps = {};
 
   Set<String> _executedNodes = {};
@@ -119,7 +119,7 @@ class FlNodeEditorRunner {
   }
 
   // Returns the unique IDs of nodes connected to a given port.
-  Set<String> _getConnectedNodeIdsFromPort(FlPortInstance port) {
+  Set<String> _getConnectedNodeIdsFromPort(FlPortDataModel port) {
     final connectedNodeIds = <String>{};
 
     for (final link in port.links) {
@@ -135,7 +135,7 @@ class FlNodeEditorRunner {
 
   /// Returns the unique IDs of nodes connected to a given node's input or output ports.
   Set<String> _getConnectedNodeIdsFromNode(
-    FlNodeInstance node,
+    FlNodeDataModel node,
     FlPortDirection direction,
     FlPortType type,
   ) {
@@ -176,7 +176,7 @@ class FlNodeEditorRunner {
   /// necessary context information and callbacks to forward events and put data.
   /// The method also handles errors and displays them in the node editor.
   Future<void> _executeNode(
-    FlNodeInstance node, {
+    FlNodeDataModel node, {
     BuildContext? context,
   }) async {
     final strings = FlNodeEditorLocalizations.of(context);

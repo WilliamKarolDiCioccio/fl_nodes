@@ -1,25 +1,28 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_nodes/src/core/localization/delegate.dart';
-import 'package:fl_nodes/src/core/models/config.dart';
-import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
-import 'package:fl_nodes/src/widgets/context_menu.dart';
-import 'package:fl_nodes/src/widgets/improved_listener.dart';
-import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 
+import 'package:fl_nodes/src/core/controller/config.dart';
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/localization/delegate.dart';
+import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:fl_nodes/src/widgets/context_menu.dart';
+import 'package:fl_nodes/src/widgets/improved_listener.dart';
+import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
+
 import '../constants.dart';
-import '../core/controller/core.dart';
-import '../core/models/entities.dart';
-import '../core/models/events.dart';
-import '../core/models/styles.dart';
+import '../core/models/data.dart';
+
 import 'builders.dart';
 
 class FlOverlayData {
@@ -174,7 +177,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     if (!widget.controller.config.enableAreaSelection) return;
 
     _isSelecting = true;
-    _selectionStart = screenToWorld(
+    _selectionStart = RenderBoxUtils.screenToWorld(
       position,
       offset,
       zoom,
@@ -185,7 +188,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     widget.controller.setHighlightArea(
       Rect.fromPoints(
         _selectionStart,
-        screenToWorld(
+        RenderBoxUtils.screenToWorld(
           position,
           offset,
           zoom,
@@ -216,7 +219,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   }
 
   _TempLink? _isNearPort(Offset position) {
-    final worldPosition = screenToWorld(
+    final worldPosition = RenderBoxUtils.screenToWorld(
       position,
       offset,
       zoom,
@@ -228,7 +231,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       height: kSpatialHashingCellSize,
     );
 
-    final nearNodeIds = widget.controller.spatialHashGrid.queryArea(near);
+    final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
       final node = widget.controller.nodes[nodeId]!;
@@ -251,7 +254,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   }
 
   void _onLinkUpdate(Offset position) {
-    final worldPosition = screenToWorld(
+    final worldPosition = RenderBoxUtils.screenToWorld(
       position,
       offset,
       zoom,
@@ -506,7 +509,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         );
       }
 
-      final worldPosition = screenToWorld(
+      final worldPosition = RenderBoxUtils.screenToWorld(
         position,
         offset,
         zoom,
@@ -548,7 +551,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     }
 
     List<ContextMenuEntry> editorContextMenuEntries(Offset position) {
-      final worldPosition = screenToWorld(
+      final worldPosition = RenderBoxUtils.screenToWorld(
         position,
         offset,
         zoom,

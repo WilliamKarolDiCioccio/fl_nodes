@@ -1,9 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:fl_nodes/src/core/models/config.dart';
-import 'package:fl_nodes/src/core/models/events.dart';
-import 'package:fl_nodes/src/widgets/default_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +8,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'package:fl_nodes/src/core/controller/config.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/models/paint.dart';
+import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:fl_nodes/src/widgets/default_node.dart';
+
 import '../core/controller/core.dart';
-import '../core/models/entities.dart';
-import '../core/models/styles.dart';
+import '../core/models/data.dart';
+
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -25,34 +29,6 @@ class NodeDiffCheckData {
     required this.id,
     required this.offset,
     required this.state,
-  });
-}
-
-class LinkData {
-  final String id;
-  final Offset outPortOffset;
-  final Offset inPortOffset;
-  final FlLinkStyle linkStyle;
-
-  LinkData({
-    required this.id,
-    required this.outPortOffset,
-    required this.inPortOffset,
-    required this.linkStyle,
-  });
-}
-
-class PortData {
-  final (String, String) locator;
-  final bool isSelected;
-  final Offset offset;
-  final FlPortStyle style;
-
-  PortData({
-    required this.locator,
-    required this.isSelected,
-    required this.offset,
-    required this.style,
   });
 }
 
@@ -251,7 +227,7 @@ class NodeEditorRenderBox extends RenderBox
 
   late Offset _offset;
   late double _zoom;
-  LinkData? _tmpLinkData;
+  LinkPaintModel? _tmpLinkData;
   Rect? _highlightArea;
 
   List<NodeDiffCheckData> _nodesDiffCheckData = [];
@@ -268,12 +244,12 @@ class NodeEditorRenderBox extends RenderBox
         .toList();
   }
 
-  LinkData? _getTmpLinkData() {
+  LinkPaintModel? _getTmpLinkData() {
     if (_controller.tempLink == null) return null;
 
     final link = _controller.tempLink!;
 
-    return LinkData(
+    return LinkPaintModel(
       id: "", // Temporary link doesn't need an ID
       outPortOffset: link.from,
       inPortOffset: link.to,
@@ -417,7 +393,8 @@ class NodeEditorRenderBox extends RenderBox
 
       childParentData.rect = renderBoxRect;
 
-      _controller.spatialHashGrid.update((id: nodeId, rect: renderBoxRect));
+      _controller.nodesSpatialHashGrid
+          .update((id: nodeId, rect: renderBoxRect));
     }
 
     _childrenNotLaidOut.clear();
@@ -449,7 +426,7 @@ class NodeEditorRenderBox extends RenderBox
 
     // Performing the visibility update here ensures all layout operations are done.
 
-    visibleNodes = _controller.spatialHashGrid
+    visibleNodes = _controller.nodesSpatialHashGrid
         .queryArea(
           // Inflate the viewport to include nodes that are close to the edges
           viewport.inflate(300),
@@ -534,7 +511,7 @@ class NodeEditorRenderBox extends RenderBox
         _controller.nodesDataDirty ||
         _transformMatrixDirty ||
         _portsPositionsDirty) {
-      final Set<LinkData> linkData = {};
+      final Set<LinkPaintModel> linkData = {};
 
       // We cannot just reset the paths because the link styles are stateful that change hash code
       _gradientLinks.clear();
@@ -556,7 +533,7 @@ class NodeEditorRenderBox extends RenderBox
 
         // NOTE: The port offset is relative to the node
         linkData.add(
-          LinkData(
+          LinkPaintModel(
             id: link.id,
             outPortOffset: outNode.offset + outPort.offset,
             inPortOffset: inNode.offset + inPort.offset,
@@ -573,13 +550,13 @@ class NodeEditorRenderBox extends RenderBox
 
           switch (data.linkStyle.curveType) {
             case FlLinkCurveType.straight:
-              path = _computeStraightLinkPath(data);
+              path = PathUtils.computeStraightLinkPath(data);
               break;
             case FlLinkCurveType.bezier:
-              path = _computeBezierLinkPath(data);
+              path = PathUtils.computeBezierLinkPath(data);
               break;
             case FlLinkCurveType.ninetyDegree:
-              path = _computeNinetyDegreesLinkPath(data);
+              path = PathUtils.computeNinetyDegreesLinkPath(data);
               break;
           }
 
@@ -611,13 +588,13 @@ class NodeEditorRenderBox extends RenderBox
 
           switch (style.curveType) {
             case FlLinkCurveType.straight:
-              path = _computeStraightLinkPath(data);
+              path = PathUtils.computeStraightLinkPath(data);
               break;
             case FlLinkCurveType.bezier:
-              path = _computeBezierLinkPath(data);
+              path = PathUtils.computeBezierLinkPath(data);
               break;
             case FlLinkCurveType.ninetyDegree:
-              path = _computeNinetyDegreesLinkPath(data);
+              path = PathUtils.computeNinetyDegreesLinkPath(data);
               break;
           }
 
@@ -671,7 +648,7 @@ class NodeEditorRenderBox extends RenderBox
 
       // Acquire new frame data
 
-      final Set<PortData> portData = {};
+      final Set<PortPaintModel> portData = {};
 
       for (final nodeId in visibleNodes) {
         final child = _childrenById[nodeId];
@@ -692,7 +669,7 @@ class NodeEditorRenderBox extends RenderBox
 
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
-              PortData(
+              PortPaintModel(
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
@@ -714,7 +691,7 @@ class NodeEditorRenderBox extends RenderBox
 
           for (final port in _controller.nodes[nodeId]!.ports.values) {
             portData.add(
-              PortData(
+              PortPaintModel(
                 locator: (nodeId, port.prototype.idName),
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
@@ -745,10 +722,10 @@ class NodeEditorRenderBox extends RenderBox
 
         switch (style.shape) {
           case FlPortShape.circle:
-            path = _batchPaintCirclePort(data);
+            path = PathUtils.computeCirclePortPath(data);
             break;
           case FlPortShape.triangle:
-            path = _batchPaintTrianglePort(data);
+            path = PathUtils.computeTrianglePortPath(data);
             break;
         }
 
@@ -822,13 +799,13 @@ class NodeEditorRenderBox extends RenderBox
 
     switch (_tmpLinkData!.linkStyle.curveType) {
       case FlLinkCurveType.straight:
-        path = _computeStraightLinkPath(_tmpLinkData!);
+        path = PathUtils.computeStraightLinkPath(_tmpLinkData!);
         break;
       case FlLinkCurveType.bezier:
-        path = _computeBezierLinkPath(_tmpLinkData!);
+        path = PathUtils.computeBezierLinkPath(_tmpLinkData!);
         break;
       case FlLinkCurveType.ninetyDegree:
-        path = _computeNinetyDegreesLinkPath(_tmpLinkData!);
+        path = PathUtils.computeNinetyDegreesLinkPath(_tmpLinkData!);
         break;
     }
 
@@ -854,83 +831,6 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     canvas.drawPath(path, paint);
-  }
-
-  Path _computeBezierLinkPath(LinkData data) {
-    final Path path = Path()
-      ..moveTo(data.outPortOffset.dx, data.outPortOffset.dy);
-
-    const double defaultOffset = 400.0;
-
-    //  How far the bezier follows the horizontal direction before curving based on the distance between ports
-    final dx = (data.inPortOffset.dx - data.outPortOffset.dx).abs();
-    final controlOffset = dx < defaultOffset * 2 ? dx / 2 : defaultOffset;
-
-    // First control point: a few pixels to the right of the output port.
-    final cp1 = Offset(
-      data.outPortOffset.dx + controlOffset,
-      data.outPortOffset.dy,
-    );
-
-    // Second control point: a few pixels to the left of the input port.
-    final cp2 = Offset(
-      data.inPortOffset.dx - controlOffset,
-      data.inPortOffset.dy,
-    );
-
-    path.cubicTo(
-      cp1.dx,
-      cp1.dy,
-      cp2.dx,
-      cp2.dy,
-      data.inPortOffset.dx,
-      data.inPortOffset.dy,
-    );
-
-    return path;
-  }
-
-  Path _computeStraightLinkPath(LinkData data) {
-    return Path()
-      ..moveTo(data.outPortOffset.dx, data.outPortOffset.dy)
-      ..lineTo(data.inPortOffset.dx, data.inPortOffset.dy);
-  }
-
-  Path _computeNinetyDegreesLinkPath(LinkData data) {
-    final midX = (data.outPortOffset.dx + data.inPortOffset.dx) / 2;
-
-    return Path()
-      ..moveTo(data.outPortOffset.dx, data.outPortOffset.dy)
-      ..lineTo(midX, data.outPortOffset.dy)
-      ..lineTo(midX, data.inPortOffset.dy)
-      ..lineTo(data.inPortOffset.dx, data.inPortOffset.dy);
-  }
-
-  Path _batchPaintCirclePort(PortData data) {
-    return Path()
-      ..addOval(
-        Rect.fromCircle(
-          center: data.offset,
-          radius: data.style.radius,
-        ),
-      );
-  }
-
-  Path _batchPaintTrianglePort(PortData data) {
-    return Path()
-      ..moveTo(
-        data.offset.dx - data.style.radius,
-        data.offset.dy - data.style.radius,
-      ) // Top-left
-      ..lineTo(
-        data.offset.dx + data.style.radius,
-        data.offset.dy,
-      ) // Middle-right (apex)
-      ..lineTo(
-        data.offset.dx - data.style.radius,
-        data.offset.dy + data.style.radius,
-      ) // Bottom-left
-      ..close();
   }
 
   void _paintHighlightArea(Canvas canvas, Rect viewport) {
@@ -990,7 +890,7 @@ class NodeEditorRenderBox extends RenderBox
     final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
-    for (final nodeId in _controller.spatialHashGrid.queryCoords(
+    for (final nodeId in _controller.nodesSpatialHashGrid.queryCoords(
       transformedPosition,
     )) {
       final child = _childrenById[nodeId]!;
@@ -1049,7 +949,7 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     final nodeIds =
-        _controller.spatialHashGrid.queryCoords(transformedPosition);
+        _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
 
     if (nodeIds.isNotEmpty) {
       for (final nodeId in nodeIds) {
