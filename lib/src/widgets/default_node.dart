@@ -649,7 +649,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
       fakeTransparentColor = Color.alphaBlend(
         widget.node.builtStyle.decoration.color!.withAlpha(255),
-        widget.controller.style.decoration.color!,
+        widget.node.builtStyle.decoration.color!,
       );
     });
   }
