@@ -1,3 +1,4 @@
+import 'package:fl_nodes/src/core/models/overlay.dart';
 import 'package:fl_nodes/src/widgets/debug_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,8 +6,6 @@ import 'package:flutter/material.dart';
 import '../core/controller/core.dart';
 import 'builders.dart';
 import 'node_editor_data_layer.dart';
-
-export 'node_editor_data_layer.dart' show FlOverlayData;
 
 class FlNodeEditorWidget extends StatelessWidget {
   final FlNodeEditorController controller;

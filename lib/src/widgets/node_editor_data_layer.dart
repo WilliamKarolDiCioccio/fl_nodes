@@ -14,6 +14,7 @@ import 'package:fl_nodes/src/core/controller/config.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
+import 'package:fl_nodes/src/core/models/overlay.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
@@ -24,22 +25,6 @@ import '../constants.dart';
 import '../core/models/data.dart';
 
 import 'builders.dart';
-
-class FlOverlayData {
-  final Widget child;
-  final double? top;
-  final double? left;
-  final double? bottom;
-  final double? right;
-
-  FlOverlayData({
-    required this.child,
-    this.top,
-    this.left,
-    this.bottom,
-    this.right,
-  });
-}
 
 class NodeEditorDataLayer extends StatefulWidget {
   final FlNodeEditorController controller;
