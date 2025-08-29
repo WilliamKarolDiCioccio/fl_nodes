@@ -293,12 +293,6 @@ class FlNodeEditorController with ChangeNotifier {
         id: const Uuid().v4(),
       ),
     );
-    eventBus.emit(
-      FlLocaleChangeEvent(
-        locale,
-        id: const Uuid().v4(),
-      ),
-    );
   }
 
   ////////////////////////////////////////////////////////////////////////
