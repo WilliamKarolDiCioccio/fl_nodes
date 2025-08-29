@@ -949,21 +949,25 @@ class FlNodeEditorController with ChangeNotifier {
   /// calculates the zoom level required to fit all the nodes in the viewport.
   ///
   /// See [calculateEncompassingRect], [selectNodesById], [setViewportOffset], and [setViewportZoom] for more information.
-  void focusNodesById(Set<String> ids) {
+  void focusNodesById(
+    Set<String> ids, {
+    bool holdSelection = false,
+    bool animate = true,
+  }) {
     final encompassingRect = FlNodeEditorUtils.calculateEncompassingRect(
       ids,
       nodes,
       margin: 256,
     );
 
-    selectNodesById(ids, holdSelection: false);
+    selectNodesById(ids, holdSelection: holdSelection);
 
     final nodeEditorSize =
         RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
 
     setViewportOffset(
       -encompassingRect.center,
-      animate: true,
+      animate: animate,
       absolute: true,
     );
 
@@ -972,7 +976,7 @@ class FlNodeEditorController with ChangeNotifier {
       nodeEditorSize.height / encompassingRect.height,
     );
 
-    setViewportZoom(fitZoom, animate: true);
+    setViewportZoom(fitZoom, animate: animate);
   }
 
   /// This method is used to find all nodes with the specified display name.
