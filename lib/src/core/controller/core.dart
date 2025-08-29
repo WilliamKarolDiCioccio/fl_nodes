@@ -225,8 +225,6 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// Enable or disable zooming in the node editor.
   void enableSnapToGrid(bool enable) async {
-    setConfig(config.copyWith(enableSnapToGrid: enable));
-
     if (!enable) {
       for (final node in nodes.values) {
         node.offset = _unboundNodeOffsets[node.id]!;
@@ -244,8 +242,7 @@ class FlNodeEditorController with ChangeNotifier {
       }
     }
 
-    nodesDataDirty = true;
-    linksDataDirty = true;
+    setConfig(config.copyWith(enableSnapToGrid: enable));
   }
 
   /// Set the size of the grid to snap to in the node editor.
