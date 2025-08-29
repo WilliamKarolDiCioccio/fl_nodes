@@ -728,153 +728,100 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
               },
               child: child,
             )
-          : CallbackShortcuts(
-              bindings: <ShortcutActivator, VoidCallback>{
-                const SingleActivator(LogicalKeyboardKey.delete): () {
-                  for (final nodeId in widget.controller.selectedNodeIds) {
-                    widget.controller.removeNodeById(
-                      nodeId,
-                      isHandled:
-                          nodeId != widget.controller.selectedNodeIds.last,
-                    );
-                  }
-                  for (final link in widget.controller.selectedLinkIds) {
-                    widget.controller.removeLinkById(link);
-                  }
-                  widget.controller.clearSelection();
-                },
-                const SingleActivator(LogicalKeyboardKey.backspace): () {
-                  for (final nodeId in widget.controller.selectedNodeIds) {
-                    widget.controller.removeNodeById(
-                      nodeId,
-                      isHandled:
-                          nodeId != widget.controller.selectedNodeIds.last,
-                    );
-                  }
-                  for (final link in widget.controller.selectedLinkIds) {
-                    widget.controller.removeLinkById(link);
-                  }
-                  widget.controller.clearSelection();
-                },
-                const SingleActivator(LogicalKeyboardKey.keyC, control: true):
-                    () => widget.controller.clipboard
-                        .copySelection(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyV, control: true):
-                    () => widget.controller.clipboard
-                        .pasteSelection(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyX, control: true):
-                    () => widget.controller.clipboard
-                        .cutSelection(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyS, control: true):
-                    () => widget.controller.project.save(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyO, control: true):
-                    () => widget.controller.project.load(context: context),
-                SingleActivator(
-                  LogicalKeyboardKey.keyN,
-                  control: defaultTargetPlatform != TargetPlatform.macOS,
-                  meta: defaultTargetPlatform == TargetPlatform.macOS,
-                  shift: true,
-                ): () => widget.controller.project.create(context: context),
-                const SingleActivator(LogicalKeyboardKey.keyZ, control: true):
-                    () => widget.controller.history.undo(),
-                const SingleActivator(LogicalKeyboardKey.keyY, control: true):
-                    () => widget.controller.history.redo(),
-              },
-              child: Focus(
-                autofocus: true,
-                child: ImprovedListener(
-                  onDoubleClick: () => widget.controller.clearSelection(),
-                  onPointerPressed: (event) {
-                    _isLinking = false;
-                    _tempLink = null;
-                    _isSelecting = false;
+          : Focus(
+              autofocus: true,
+              child: ImprovedListener(
+                onDoubleClick: () => widget.controller.clearSelection(),
+                onPointerPressed: (event) {
+                  _isLinking = false;
+                  _tempLink = null;
+                  _isSelecting = false;
 
-                    final locator = _isNearPort(event.position);
+                  final locator = _isNearPort(event.position);
 
-                    if (event.buttons == kMiddleMouseButton) {
-                      _onDragStart();
-                    } else if (event.buttons == kPrimaryMouseButton) {
-                      if (locator != null && !_isLinking && _tempLink == null) {
-                        _onLinkStart(locator);
-                      } else {
-                        _onHighlightStart(event.position);
-                      }
-                    } else if (event.buttons == kSecondaryMouseButton) {
-                      if (locator != null &&
-                          !widget.controller.nodes[locator.nodeId]!.state
-                              .isCollapsed) {
-                        /// If a port is near the cursor, show the port context menu
-                        createAndShowContextMenu(
-                          context,
-                          entries: portContextMenuEntries(
-                            event.position,
-                            locator: locator,
-                          ),
-                          position: event.position,
-                        );
-                      } else if (!isContextMenuVisible) {
-                        // Else show the editor context menu
-                        createAndShowContextMenu(
-                          context,
-                          entries: editorContextMenuEntries(event.position),
-                          position: event.position,
-                        );
-                      }
+                  if (event.buttons == kMiddleMouseButton) {
+                    _onDragStart();
+                  } else if (event.buttons == kPrimaryMouseButton) {
+                    if (locator != null && !_isLinking && _tempLink == null) {
+                      _onLinkStart(locator);
+                    } else {
+                      _onHighlightStart(event.position);
                     }
-                  },
-                  onPointerMoved: (event) {
-                    if (_isDragging && widget.controller.config.enablePan) {
-                      _onDragUpdate(event.localDelta);
-                    } else if (_isLinking) {
-                      _onLinkUpdate(event.position);
-                    } else if (_isSelecting) {
-                      _onHighlightUpdate(event.position);
-                    }
-                  },
-                  onPointerReleased: (event) {
-                    if (_isDragging) {
-                      _onDragEnd();
-                    } else if (_isLinking) {
-                      final locator = _isNearPort(event.position);
-
-                      if (locator != null) {
-                        _onLinkEnd(locator);
-                      } else if (!isContextMenuVisible) {
-                        // Show the create submenu if no port is near the cursor
-                        createAndShowContextMenu(
-                          context,
-                          entries: createSubmenuEntries(event.position),
-                          position: event.position,
-                          onDismiss: (value) => _onLinkCancel(),
-                        );
-                      }
-                    } else if (_isSelecting) {
-                      _onHighlightEnd();
-                    }
-                  },
-                  onPointerSignalReceived: (event) {
-                    if (event is PointerScrollEvent &&
-                        widget.controller.config.enablePan &&
-                        event.scrollDelta != const Offset(10, 10)) {
-                      _setZoomFromRawInput(
-                        event.scrollDelta.dy,
-                        event.position,
+                  } else if (event.buttons == kSecondaryMouseButton) {
+                    if (locator != null &&
+                        !widget.controller.nodes[locator.nodeId]!.state
+                            .isCollapsed) {
+                      /// If a port is near the cursor, show the port context menu
+                      createAndShowContextMenu(
+                        context,
+                        entries: portContextMenuEntries(
+                          event.position,
+                          locator: locator,
+                        ),
+                        position: event.position,
+                      );
+                    } else if (!isContextMenuVisible) {
+                      // Else show the editor context menu
+                      createAndShowContextMenu(
+                        context,
+                        entries: editorContextMenuEntries(event.position),
+                        position: event.position,
                       );
                     }
-                    if (event is PointerScaleEvent) {
-                      if (kIsWeb) {
-                        _setZoomFromRawInput(
-                          event.scale,
-                          event.position,
-                          isTrackpadInput: true,
-                        );
-                      }
+                  }
+                },
+                onPointerMoved: (event) {
+                  if (_isDragging && widget.controller.config.enablePan) {
+                    _onDragUpdate(event.localDelta);
+                  } else if (_isLinking) {
+                    _onLinkUpdate(event.position);
+                  } else if (_isSelecting) {
+                    _onHighlightUpdate(event.position);
+                  }
+                },
+                onPointerReleased: (event) {
+                  if (_isDragging) {
+                    _onDragEnd();
+                  } else if (_isLinking) {
+                    final locator = _isNearPort(event.position);
+
+                    if (locator != null) {
+                      _onLinkEnd(locator);
+                    } else if (!isContextMenuVisible) {
+                      // Show the create submenu if no port is near the cursor
+                      createAndShowContextMenu(
+                        context,
+                        entries: createSubmenuEntries(event.position),
+                        position: event.position,
+                        onDismiss: (value) => _onLinkCancel(),
+                      );
                     }
-                  },
-                  onPointerPanZoomStart:
-                      _trackpadGestureRecognizer.addPointerPanZoom,
-                  child: child,
-                ),
+                  } else if (_isSelecting) {
+                    _onHighlightEnd();
+                  }
+                },
+                onPointerSignalReceived: (event) {
+                  if (event is PointerScrollEvent &&
+                      widget.controller.config.enablePan &&
+                      event.scrollDelta != const Offset(10, 10)) {
+                    _setZoomFromRawInput(
+                      event.scrollDelta.dy,
+                      event.position,
+                    );
+                  }
+                  if (event is PointerScaleEvent) {
+                    if (kIsWeb) {
+                      _setZoomFromRawInput(
+                        event.scale,
+                        event.position,
+                        isTrackpadInput: true,
+                      );
+                    }
+                  }
+                },
+                onPointerPanZoomStart:
+                    _trackpadGestureRecognizer.addPointerPanZoom,
+                child: child,
               ),
             );
     }

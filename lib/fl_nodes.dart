@@ -67,3 +67,4 @@ export 'package:fl_nodes/src/styles/styles.dart'
         flDefaultNodeHeaderStyleBuilder,
         flDefaultNodeStyleBuilder;
 export 'package:fl_nodes/src/widgets/node_editor.dart';
+export 'package:fl_nodes/src/widgets/node_editor_shortcuts.dart';
