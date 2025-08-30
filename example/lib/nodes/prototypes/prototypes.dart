@@ -2,58 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:example/l10n/app_localizations.dart';
+import 'package:example/nodes/data/types.dart';
+import 'package:example/nodes/styles/headers.dart';
+import 'package:example/nodes/styles/ports.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-enum Operator { add, subtract, multiply, divide }
-
-enum Comparator { equal, notEqual, greater, greaterEqual, less, lessEqual }
-
-FlPortStyle outputDataPortStyle(FlPortState state) => FlPortStyle(
-      color: state.isHovered ? Colors.limeAccent : Colors.deepOrange,
-      shape: FlPortShape.circle,
-      radius: 4,
-      linkStyleBuilder: (state) => FlLinkStyle(
-        color: state.isSelected
-            ? Colors.orangeAccent
-            : state.isHovered
-                ? Colors.limeAccent
-                : Colors.deepOrange,
-        lineWidth: state.isSelected
-            ? 3.5
-            : state.isHovered
-                ? 4.5
-                : 2.5,
-        drawMode: FlLineDrawMode.solid,
-        curveType: FlLinkCurveType.bezier,
-      ),
-    );
-
-FlPortStyle inputDataPortStyle(FlPortState state) => outputDataPortStyle(state);
-
-FlPortStyle controlOutputPortStyle(FlPortState state) => FlPortStyle(
-      color: state.isHovered ? Colors.limeAccent : Colors.green,
-      shape: FlPortShape.triangle,
-      radius: 4,
-      linkStyleBuilder: (state) => FlLinkStyle.gradient(
-        gradient: const LinearGradient(
-          colors: [Colors.lightGreenAccent, Colors.blue],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        lineWidth: state.isSelected
-            ? 3.5
-            : state.isHovered
-                ? 4.5
-                : 2.5,
-        drawMode: FlLineDrawMode.solid,
-        curveType: FlLinkCurveType.bezier,
-      ),
-    );
-
-FlPortStyle controlInputPortStyle(FlPortState state) =>
-    controlOutputPortStyle(state);
 
 FlNodePrototype createValueNode<T>({
   required String idName,
@@ -72,36 +26,22 @@ FlNodePrototype createValueNode<T>({
   )? editorBuilder,
 }) {
   return FlNodePrototype(
-    idName: idName,
+    idName: 'value.$idName',
     displayName: displayName,
     description: (context) =>
         AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
-    styleBuilder: (state) => FlNodeStyle(
-      decoration: flDefaultNodeStyleBuilder(state).decoration,
-    ),
-    headerStyleBuilder: (state) =>
-        flDefaultNodeHeaderStyleBuilder(state).copyWith(
-      decoration: BoxDecoration(
-        color: Colors.orange,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(7),
-          topRight: const Radius.circular(7),
-          bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-          bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-        ),
-      ),
-    ),
+    headerStyleBuilder: NodeHeaderStyles.value,
     ports: [
       FlControlOutputPortPrototype(
         idName: 'completed',
         displayName: (context) =>
             AppLocalizations.of(context)!.completedPortName,
-        styleBuilder: controlOutputPortStyle,
+        styleBuilder: PortStyles.controlOutput,
       ),
       FlDataOutputPortPrototype<T>(
         idName: 'value',
         displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-        styleBuilder: outputDataPortStyle,
+        styleBuilder: PortStyles.dataOutput,
       ),
     ],
     fields: [
@@ -333,52 +273,38 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'operator',
+      idName: 'math.operator',
       displayName: (context) => AppLocalizations.of(context)!.operatorNodeName,
       description: (context) =>
           AppLocalizations.of(context)!.operatorNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.pink,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+      headerStyleBuilder: NodeHeaderStyles.math,
       ports: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
+          styleBuilder: PortStyles.controlInput,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'a',
           displayName: (context) => 'A',
-          styleBuilder: inputDataPortStyle,
+          styleBuilder: PortStyles.dataInput,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'b',
           displayName: (context) => 'B',
-          styleBuilder: inputDataPortStyle,
+          styleBuilder: PortStyles.dataInput,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'result',
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
-          styleBuilder: outputDataPortStyle,
+          styleBuilder: PortStyles.dataOutput,
         ),
       ],
       fields: [
@@ -454,36 +380,22 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'random',
+      idName: 'generator.random',
       displayName: (context) => AppLocalizations.of(context)!.randomNodeName,
       description: (context) =>
           AppLocalizations.of(context)!.randomNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.purple,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+      headerStyleBuilder: NodeHeaderStyles.generator,
       ports: [
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: outputDataPortStyle,
+          styleBuilder: PortStyles.dataOutput,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -496,45 +408,31 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'if',
+      idName: 'flow.if',
       displayName: (context) => AppLocalizations.of(context)!.ifNodeName,
       description: (context) => AppLocalizations.of(context)!.ifNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+      headerStyleBuilder: NodeHeaderStyles.flow,
       ports: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
+          styleBuilder: PortStyles.controlInput,
         ),
         FlDataInputPortPrototype<bool>(
           idName: 'condition',
           displayName: (context) =>
               AppLocalizations.of(context)!.conditionPortName,
-          styleBuilder: inputDataPortStyle,
+          styleBuilder: PortStyles.dataInput,
         ),
         FlControlOutputPortPrototype(
           idName: 'trueBranch',
           displayName: (context) => AppLocalizations.of(context)!.truePortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlControlOutputPortPrototype(
           idName: 'falseBranch',
           displayName: (context) => AppLocalizations.of(context)!.falsePortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -549,53 +447,105 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'comparator',
+      idName: 'flow.forEachLoop',
       displayName: (context) =>
-          AppLocalizations.of(context)!.comparatorNodeName,
+          AppLocalizations.of(context)!.forEachLoopNodeName,
       description: (context) =>
-          AppLocalizations.of(context)!.comparatorNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.cyan,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+          AppLocalizations.of(context)!.forEachLoopNodeDescription,
+      headerStyleBuilder: NodeHeaderStyles.flow,
       ports: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
+          styleBuilder: PortStyles.controlInput,
         ),
         FlDataInputPortPrototype(
-          idName: 'a',
-          displayName: (context) => 'A',
-          styleBuilder: inputDataPortStyle,
+          idName: 'list',
+          displayName: (context) => AppLocalizations.of(context)!.listPortName,
+          styleBuilder: PortStyles.dataInput,
         ),
-        FlDataInputPortPrototype(
-          idName: 'b',
-          displayName: (context) => 'B',
-          styleBuilder: inputDataPortStyle,
+        FlControlOutputPortPrototype(
+          idName: 'loopBody',
+          displayName: (context) =>
+              AppLocalizations.of(context)!.loopBodyPortName,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
+        ),
+        FlDataOutputPortPrototype(
+          idName: 'listElem',
+          displayName: (context) =>
+              AppLocalizations.of(context)!.listElementPortName,
+          styleBuilder: PortStyles.dataOutput,
+        ),
+        FlDataOutputPortPrototype<int>(
+          idName: 'listIdx',
+          displayName: (context) =>
+              AppLocalizations.of(context)!.listIndexPortName,
+          styleBuilder: PortStyles.dataOutput,
+        ),
+      ],
+      onExecute: (ports, fields, state, f, p) async {
+        final List<dynamic> list = ports['list']! as List<dynamic>;
+
+        late int i;
+
+        if (!state.containsKey('iteration')) {
+          i = state['iteration'] = 0;
+        } else {
+          i = state['iteration'] as int;
+        }
+
+        if (i < list.length) {
+          p({('listElem', list[i]), ('listIdx', i)});
+          state['iteration'] = ++i;
+          await f({'loopBody'});
+        } else {
+          unawaited(f({('completed')}));
+        }
+      },
+    ),
+  );
+
+  controller.registerNodePrototype(
+    FlNodePrototype(
+      idName: 'logic.comparator',
+      displayName: (context) =>
+          AppLocalizations.of(context)!.comparatorNodeName,
+      description: (context) =>
+          AppLocalizations.of(context)!.comparatorNodeDescription,
+      headerStyleBuilder: NodeHeaderStyles.logic,
+      ports: [
+        FlControlInputPortPrototype(
+          idName: 'exec',
+          displayName: (context) => AppLocalizations.of(context)!.execPortName,
+          styleBuilder: PortStyles.controlInput,
+        ),
+        FlDataInputPortPrototype(
+          idName: 'a',
+          displayName: (context) => 'A',
+          styleBuilder: PortStyles.dataInput,
+        ),
+        FlDataInputPortPrototype(
+          idName: 'b',
+          displayName: (context) => 'B',
+          styleBuilder: PortStyles.dataInput,
+        ),
+        FlControlOutputPortPrototype(
+          idName: 'completed',
+          displayName: (context) =>
+              AppLocalizations.of(context)!.completedPortName,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlDataOutputPortPrototype<bool>(
           idName: 'result',
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
-          styleBuilder: outputDataPortStyle,
+          styleBuilder: PortStyles.dataOutput,
         ),
       ],
       fields: [
@@ -657,41 +607,27 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'print',
+      idName: 'io.print',
       displayName: (context) => AppLocalizations.of(context)!.printNodeName,
       description: (context) =>
           AppLocalizations.of(context)!.printNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.deepPurple,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+      headerStyleBuilder: NodeHeaderStyles.io,
       ports: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
+          styleBuilder: PortStyles.controlInput,
         ),
         FlDataInputPortPrototype(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: inputDataPortStyle,
+          styleBuilder: PortStyles.dataInput,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -712,47 +648,33 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
 
   controller.registerNodePrototype(
     FlNodePrototype(
-      idName: 'round',
+      idName: 'math.round',
       displayName: (context) => AppLocalizations.of(context)!.roundNodeName,
       description: (context) =>
           AppLocalizations.of(context)!.roundNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
+      headerStyleBuilder: NodeHeaderStyles.math,
       ports: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
+          styleBuilder: PortStyles.controlInput,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: inputDataPortStyle,
+          styleBuilder: PortStyles.dataInput,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
+          styleBuilder: PortStyles.controlOutput,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'rounded',
           displayName: (context) =>
               AppLocalizations.of(context)!.roundedPortName,
-          styleBuilder: outputDataPortStyle,
+          styleBuilder: PortStyles.dataOutput,
         ),
       ],
       fields: [
@@ -798,86 +720,6 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         p({('rounded', double.parse(value.toStringAsFixed(decimals)))});
 
         unawaited(f({('completed')}));
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'forEachLoop',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.forEachLoopNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.forEachLoopNodeDescription,
-      styleBuilder: (state) => FlNodeStyle(
-        decoration: flDefaultNodeStyleBuilder(state).decoration,
-      ),
-      headerStyleBuilder: (state) =>
-          flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: BoxDecoration(
-          color: Colors.teal,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(7),
-            topRight: const Radius.circular(7),
-            bottomLeft: Radius.circular(state.isCollapsed ? 7 : 0),
-            bottomRight: Radius.circular(state.isCollapsed ? 7 : 0),
-          ),
-        ),
-      ),
-      ports: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: controlInputPortStyle,
-        ),
-        FlDataInputPortPrototype(
-          idName: 'list',
-          displayName: (context) => AppLocalizations.of(context)!.listPortName,
-          styleBuilder: inputDataPortStyle,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'loopBody',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.loopBodyPortName,
-          styleBuilder: controlOutputPortStyle,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: controlOutputPortStyle,
-        ),
-        FlDataOutputPortPrototype(
-          idName: 'listElem',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.listElementPortName,
-          styleBuilder: outputDataPortStyle,
-        ),
-        FlDataOutputPortPrototype<int>(
-          idName: 'listIdx',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.listIndexPortName,
-          styleBuilder: outputDataPortStyle,
-        ),
-      ],
-      onExecute: (ports, fields, state, f, p) async {
-        final List<dynamic> list = ports['list']! as List<dynamic>;
-
-        late int i;
-
-        if (!state.containsKey('iteration')) {
-          i = state['iteration'] = 0;
-        } else {
-          i = state['iteration'] as int;
-        }
-
-        if (i < list.length) {
-          p({('listElem', list[i]), ('listIdx', i)});
-          state['iteration'] = ++i;
-          await f({'loopBody'});
-        } else {
-          unawaited(f({('completed')}));
-        }
       },
     ),
   );
