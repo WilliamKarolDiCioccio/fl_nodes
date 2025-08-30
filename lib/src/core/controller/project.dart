@@ -172,7 +172,10 @@ class FlNodeEditorProject {
       absolute: true,
     );
 
-    controller.setViewportZoom(viewportJson['zoom'] as double);
+    controller.setViewportZoom(
+      viewportJson['zoom'] as double,
+      absolute: true,
+    );
 
     final nodesJson = json['nodes'] as List<dynamic>;
 
