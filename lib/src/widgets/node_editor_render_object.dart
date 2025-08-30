@@ -1,6 +1,11 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/models/paint.dart';
+import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:fl_nodes/src/widgets/default_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,16 +13,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-import 'package:fl_nodes/src/core/controller/config.dart';
-import 'package:fl_nodes/src/core/events/events.dart';
-import 'package:fl_nodes/src/core/models/paint.dart';
-import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
-import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:fl_nodes/src/widgets/default_node.dart';
-
 import '../core/controller/core.dart';
 import '../core/models/data.dart';
-
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -48,8 +45,6 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
 
 class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorController controller;
-  final FlNodeEditorStyle style;
-  final FlNodeEditorConfig config;
   final FragmentShader gridShader;
   final NodeHeaderBuilder? headerBuilder;
   final NodeFieldBuilder? fieldBuilder;
@@ -60,8 +55,6 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   NodeEditorRenderObjectWidget({
     super.key,
     required this.controller,
-    required this.style,
-    required this.config,
     required this.gridShader,
     this.headerBuilder,
     this.fieldBuilder,
@@ -88,8 +81,6 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   NodeEditorRenderBox createRenderObject(BuildContext context) {
     return NodeEditorRenderBox(
       controller: controller,
-      style: style,
-      config: config,
       gridShader: gridShader,
     );
   }
@@ -99,10 +90,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     BuildContext context,
     NodeEditorRenderBox renderObject,
   ) {
-    renderObject
-      ..style = style
-      ..config = config
-      ..gridShader = gridShader;
+    renderObject.gridShader = gridShader;
   }
 }
 
@@ -112,18 +100,12 @@ class NodeEditorRenderBox extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _ParentData> {
   NodeEditorRenderBox({
     required FlNodeEditorController controller,
-    required FlNodeEditorStyle style,
-    required FlNodeEditorConfig config,
     required FragmentShader gridShader,
   })  : _controller = controller,
-        _style = style,
-        _config = config,
         _gridShader = gridShader {
     _loadGridShader();
 
-    _updateNodes(
-      _getNodeDiffData(),
-    );
+    _updateNodes();
 
     _offset = _controller.viewportOffset;
     _zoom = _controller.viewportZoom;
@@ -133,6 +115,13 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _handleEvent(NodeEditorEvent event) {
+    if (event.isHandled) return;
+
+    // In the following code we must account for the possibility of events affecting nodes outside the viewport
+
+    // Node widgets state related events trigger style updates. Arbitrary styles might require layout updates.
+    // Therefore all node widgets must be marked for layout updates when receiving these events.
+
     if (event is FlViewportOffsetEvent) {
       _offset = event.offset;
       _transformMatrixDirty = true;
@@ -148,33 +137,39 @@ class NodeEditorRenderBox extends RenderBox
       _tmpLinkData = _getTmpLinkData();
       markNeedsPaint();
     } else if (event is FlDragSelectionEvent) {
-      _updateNodes(
-        _getNodeDiffData(),
-      );
-    } else if (event is FlAddNodeEvent || event is FlRemoveNodeEvent) {
-      _updateNodes(
-        _getNodeDiffData(),
-      );
+      _updateNodes();
+    } else if (event is FlAddNodeEvent ||
+        event is FlRemoveNodeEvent ||
+        event is FlCutSelectionEvent ||
+        event is FlPasteSelectionEvent) {
+      _updateNodes();
     } else if (event is FlAddLinkEvent || event is FlRemoveLinkEvent) {
-      markNeedsPaint();
-    } else if (event is FlNodeSelectionEvent ||
-        event is FlNodeDeselectionEvent) {
       markNeedsPaint();
     } else if (event is FlLinkSelectionEvent ||
         event is FlLinkDeselectionEvent) {
       markNeedsPaint();
+    } else if (event is FlNodeSelectionEvent) {
+      _childrenNotLaidOut.addAll(event.nodeIds);
+      markNeedsLayout();
+    } else if (event is FlNodeDeselectionEvent) {
+      _childrenNotLaidOut.addAll(event.nodeIds);
+      markNeedsLayout();
+    } else if (event is FlCollapseNodeEvent) {
+      _childrenNotLaidOut.addAll(event.nodeIds);
+      markNeedsLayout();
+    } else if (event is FlNodeFieldEvent) {
+      _childrenNotLaidOut.add(event.nodeId);
+      markNeedsLayout();
     } else if (event is FlConfigurationChangeEvent) {
-      _updateNodes(
-        _getNodeDiffData(),
-      );
+      _updateNodes();
     } else if (event is FlLocaleChangeEvent || event is FlStyleChangeEvent) {
-      // Locale changes trigger a repaint that clears dirty flags, but port positions
-      // need recalculation for proper node rendering. This forces an additional repaint.
-      _childrenNotLaidOut.addAll(_childrenById);
+      _childrenNotLaidOut.addAll(_childrenById.keys);
 
       markNeedsLayout();
 
       SchedulerBinding.instance.addPostFrameCallback((_) {
+        // Locale changes trigger a repaint that clears dirty flags, but port positions
+        // need recalculation for proper node rendering. This forces an additional repaint.
         _controller.linksDataDirty = true;
         _controller.nodesDataDirty = true;
         _portsPositionsDirty = true;
@@ -183,6 +178,12 @@ class NodeEditorRenderBox extends RenderBox
 
         markNeedsPaint();
       });
+    } else if (event is FlLoadProjectEvent || event is FlNewProjectEvent) {
+      _transformMatrix = null;
+      _transformMatrixDirty = true;
+
+      _childrenNotLaidOut.addAll(_childrenById.keys);
+      _updateNodes();
     }
   }
 
@@ -192,24 +193,8 @@ class NodeEditorRenderBox extends RenderBox
   // We keep track of the layout operation manually beacuse the hasSize getter
   // calls the size method which implementation causes assertions to be thrown.
   // See: https://api.flutter.dev/flutter/rendering/RenderBox/size.html
-  final Map<String, RenderBox> _childrenNotLaidOut = {};
+  final Set<String> _childrenNotLaidOut = {};
   final Set<String> _childrenNotPainted = {};
-
-  FlNodeEditorStyle _style;
-  FlNodeEditorStyle get style => _style;
-  set style(FlNodeEditorStyle value) {
-    if (_style == value) return;
-    _style = value;
-    markNeedsPaint();
-  }
-
-  FlNodeEditorConfig _config;
-  FlNodeEditorConfig get config => _config;
-  set config(FlNodeEditorConfig value) {
-    if (_config == value) return;
-    _config = value;
-    markNeedsLayout();
-  }
 
   FragmentShader _gridShader;
   FragmentShader get gridShader => _gridShader;
@@ -222,7 +207,7 @@ class NodeEditorRenderBox extends RenderBox
   Matrix4? _transformMatrix;
   bool _transformMatrixDirty = true;
 
-  Set<String> visibleNodes = {};
+  Set<String> _visibleNodes = {};
   int get lodLevel => _controller.lodLevel;
 
   late Offset _offset;
@@ -258,7 +243,7 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _loadGridShader() {
-    final gridStyle = style.gridStyle;
+    final gridStyle = _controller.style.gridStyle;
 
     gridShader.setFloat(0, gridStyle.gridSpacingX);
     gridShader.setFloat(1, gridStyle.gridSpacingY);
@@ -280,43 +265,64 @@ class NodeEditorRenderBox extends RenderBox
     gridShader.setFloat(11, intersectionColor.a);
   }
 
-  void _updateNodes(List<NodeDiffCheckData> nodesData) {
+  /// This method can be called directly only if the event is affecting the existing nodes data and not the widget tree.
+  /// This means that events related to node position, size, or state changes can call this method. If the event is
+  /// affecting the widget tree, it should go through updateRenderObject() method.
+  void _updateNodes() {
     if (!_controller.nodesDataDirty) return;
-
-    _nodesDiffCheckData = nodesData;
-
-    _childrenById.clear();
 
     RenderBox? child = firstChild;
     int index = 0;
-    bool needsLayout = false;
+    bool dataUpdated = false;
 
-    final nodesAsList = _controller.nodesAsList;
+    // Start by assuming all current children are removed
+    final Set<String> removedNodes = _childrenById.keys.toSet();
 
-    while (child != null && index < nodesData.length) {
+    // Refresh diff data from controller
+    _nodesDiffCheckData = _getNodeDiffData();
+
+    // Walk current children in order
+    while (child != null && index < _nodesDiffCheckData.length) {
       final childParentData = child.parentData! as _ParentData;
-      final nodeData = nodesData[index];
+      final nodeData = _nodesDiffCheckData[index];
 
-      if (childParentData.id != nodesAsList[index].id ||
+      // This node still exists → remove it from the "removed" set
+      removedNodes.remove(nodeData.id);
+
+      // Check if this child's metadata is stale
+      if (childParentData.id != nodeData.id ||
           childParentData.offset != nodeData.offset ||
-          childParentData.state.isCollapsed != nodeData.state.isCollapsed) {
-        childParentData.id = nodesAsList[index].id;
+          childParentData.state.isCollapsed != nodeData.state.isCollapsed ||
+          _childrenById[nodeData.id] != child) {
+        childParentData.id = nodeData.id;
         childParentData.offset = nodeData.offset;
         childParentData.state = nodeData.state;
         childParentData.rect = Rect.zero;
 
-        _childrenNotLaidOut[childParentData.id] = child;
+        _childrenById[nodeData.id] = child;
+        _childrenNotLaidOut.add(nodeData.id);
 
-        needsLayout = true;
+        dataUpdated = true;
       }
-
-      _childrenById[childParentData.id] = child;
 
       child = childParentData.nextSibling;
       index++;
     }
 
-    if (needsLayout) {
+    // Any IDs left in `removedNodes` are gone from diff data
+    for (final removedId in removedNodes) {
+      _visibleNodes.remove(removedId);
+      _childrenById.remove(removedId);
+      _childrenNotLaidOut.remove(removedId);
+      _childrenNotPainted.remove(removedId);
+
+      dataUpdated = true;
+    }
+
+    // If counts don't match, data is out of sync (nodes added/removed)
+    final bool treeUpdated = index != _nodesDiffCheckData.length;
+
+    if (dataUpdated || treeUpdated) {
       markNeedsLayout();
     } else {
       markNeedsPaint();
@@ -333,27 +339,33 @@ class NodeEditorRenderBox extends RenderBox
   @override
   void insert(RenderBox child, {RenderBox? after}) {
     setupParentData(child);
+
     super.insert(child, after: after);
 
-    final index = indexOf(child);
+    final currentIdx = lastChildIdx();
+
+    if (currentIdx >= _nodesDiffCheckData.length) {
+      throw Exception(
+        'NodeEditorRenderBox: Found $currentIdx children, but only ${_nodesDiffCheckData.length} nodes in the controller.',
+      );
+    }
+
     final parentData = child.parentData as _ParentData;
 
-    if (index >= 0 && index < _nodesDiffCheckData.length) {
-      parentData.id = _nodesDiffCheckData[index].id;
-      parentData.offset = _nodesDiffCheckData[index].offset;
-      parentData.state = _nodesDiffCheckData[index].state;
+    parentData.id = _nodesDiffCheckData[currentIdx].id;
+    parentData.offset = _nodesDiffCheckData[currentIdx].offset;
+    parentData.state = _nodesDiffCheckData[currentIdx].state;
 
-      _childrenById[parentData.id] = child;
-      _childrenNotLaidOut[parentData.id] = child;
-    }
+    _childrenById[parentData.id] = child;
+    _childrenNotLaidOut.add(parentData.id);
   }
 
-  int indexOf(RenderBox child) {
+  int lastChildIdx() {
     int index = 0;
     RenderBox? current = firstChild;
 
     while (current != null) {
-      if (current == child) return index;
+      if (current == lastChild) return index;
       current = childAfter(current);
       index++;
     }
@@ -368,11 +380,7 @@ class NodeEditorRenderBox extends RenderBox
     // If the child has not been laid out yet, we need to layout it.
     // Otherwise, we only need to layout it if it's within the viewport.
 
-    final Set<String> nodesToLayout = Set<String>.from(
-      _childrenNotLaidOut.keys,
-    ).union(visibleNodes);
-
-    for (final nodeId in nodesToLayout) {
+    for (final nodeId in _childrenNotLaidOut) {
       final child = _childrenById[nodeId];
 
       if (child == null) continue;
@@ -426,7 +434,7 @@ class NodeEditorRenderBox extends RenderBox
 
     // Performing the visibility update here ensures all layout operations are done.
 
-    visibleNodes = _controller.nodesSpatialHashGrid
+    _visibleNodes = _controller.nodesSpatialHashGrid
         .queryArea(
           // Inflate the viewport to include nodes that are close to the edges
           viewport.inflate(300),
@@ -487,7 +495,7 @@ class NodeEditorRenderBox extends RenderBox
   ////////////////////////////////////////////////////////////////////
 
   void _paintGrid(Canvas canvas, Rect viewport) {
-    if (!style.gridStyle.showGrid) return;
+    if (!_controller.style.gridStyle.showGrid) return;
 
     gridShader.setFloat(12, viewport.left);
     gridShader.setFloat(13, viewport.top);
@@ -626,10 +634,6 @@ class NodeEditorRenderBox extends RenderBox
   final List<((String, String), Rect)> portsHitTestData = [];
 
   void _paintChildren(PaintingContext context) {
-    _paintChildrenDefault(context);
-  }
-
-  void _paintChildrenDefault(PaintingContext context) {
     if (_controller.nodesDataDirty ||
         _controller.linksDataDirty ||
         _transformMatrixDirty ||
@@ -650,7 +654,7 @@ class NodeEditorRenderBox extends RenderBox
 
       final Set<PortPaintModel> portData = {};
 
-      for (final nodeId in visibleNodes) {
+      for (final nodeId in _visibleNodes) {
         final child = _childrenById[nodeId];
 
         final childParentData = child!.parentData as _ParentData;

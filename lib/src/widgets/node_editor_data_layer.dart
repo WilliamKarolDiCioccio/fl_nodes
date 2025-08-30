@@ -744,8 +744,6 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
           (context, gridShader, child) => NodeEditorRenderObjectWidget(
             key: kNodeEditorWidgetKey,
             controller: widget.controller,
-            style: style,
-            config: config,
             gridShader: gridShader,
             headerBuilder: widget.headerBuilder,
             portBuilder: widget.portBuilder,
