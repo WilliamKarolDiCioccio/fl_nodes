@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../constants.dart';
 import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
@@ -24,10 +23,10 @@ class FlNodeEditorClipboard {
   NodeEditorEventBus get eventBus => controller.eventBus;
   Offset get viewportOffset => controller.viewportOffset;
   double get viewportZoom => controller.viewportZoom;
+  GlobalKey get editorKey => controller.editorKey;
   Map<String, FlNodePrototype> get nodePrototypes => controller.nodePrototypes;
   Map<String, FlNodeDataModel> get nodes => controller.nodes;
   Set<String> get selectedNodeIds => controller.selectedNodeIds;
-
   FlNodeEditorClipboard(this.controller);
 
   /// Copies the selected nodes to the clipboard.
@@ -119,7 +118,10 @@ class FlNodeEditorClipboard {
   /// The nodes are then deep copied with the new IDs and added to the node editor.
   ///
   /// See [mapToNewIds] for more info on how the new IDs are generated.
-  void pasteSelection({Offset? position, BuildContext? context}) async {
+  void pasteSelection({
+    Offset? position,
+    BuildContext? context,
+  }) async {
     final strings = FlNodeEditorLocalizations.of(context);
 
     final clipboardData = await Clipboard.getData('text/plain');
@@ -145,8 +147,7 @@ class FlNodeEditorClipboard {
     }
 
     if (position == null) {
-      final viewportSize =
-          RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+      final viewportSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
 
       position = Rect.fromLTWH(
         -viewportOffset.dx -
