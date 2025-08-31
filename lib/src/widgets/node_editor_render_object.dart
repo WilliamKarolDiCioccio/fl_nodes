@@ -496,8 +496,6 @@ class NodeEditorRenderBox extends RenderBox
   void _paintGrid(Canvas canvas, Rect viewport) {
     if (!_controller.style.gridStyle.showGrid) return;
 
-    print('viewport: $viewport');
-
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }
 
