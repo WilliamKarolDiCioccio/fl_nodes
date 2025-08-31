@@ -148,8 +148,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0;
     final moveAmount = 5.0 / widget.controller.viewportZoom;
-    final editorBounds =
-        RenderBoxUtils.getEditorBoundsInScreen(widget.controller.editorKey);
+    final editorBounds = RenderBoxUtils.getEditorBoundsInScreen(editorKey);
     if (editorBounds == null) return;
 
     _edgeTimer?.cancel();
