@@ -2,13 +2,12 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:fl_nodes/src/core/controller/core.dart';
-import 'package:fl_nodes/src/core/models/data.dart';
-import 'package:fl_nodes/src/widgets/builders.dart';
-import 'package:fl_nodes/src/core/controller/config.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
 import 'package:fl_nodes/src/core/models/paint.dart';
 import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:fl_nodes/src/widgets/builders.dart';
 import 'package:fl_nodes/src/widgets/default_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -245,7 +244,7 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _loadGridShader() => gridShader.setFloatUniforms((uniforms) {
-        final gridStyle = style.gridStyle;
+        final gridStyle = _controller.style.gridStyle;
 
         // uniform vec2 uGridSpacing
         uniforms.setVector(
