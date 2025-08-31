@@ -1,23 +1,23 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-
 import 'package:fl_nodes/src/core/controller/config.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/models/paint.dart';
 import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:fl_nodes/src/widgets/default_node.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:vector_math/vector_math.dart' as vec;
 
 import '../core/controller/core.dart';
 import '../core/models/data.dart';
-
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -257,33 +257,26 @@ class NodeEditorRenderBox extends RenderBox
     );
   }
 
-  void _loadGridShader() {
-    final gridStyle = style.gridStyle;
+  void _loadGridShader() => gridShader.setFloatUniforms((uniforms) {
+        final gridStyle = style.gridStyle;
 
-    // uniform vec2 uGridSpacing
-    gridShader.setFloat(0, gridStyle.gridSpacingX);
-    gridShader.setFloat(1, gridStyle.gridSpacingY);
+        // uniform vec2 uGridSpacing
+        uniforms.setVector(
+          vec.Vector2(gridStyle.gridSpacingX, gridStyle.gridSpacingY),
+        );
 
-    // uniform float uLineWidth
-    gridShader.setFloat(2, gridStyle.lineWidth);
+        // uniform float uLineWidth
+        uniforms.setFloat(gridStyle.lineWidth);
 
-    final lineColor = gridStyle.lineColor;
-    // uniform vec4 uLineColor
-    gridShader.setFloat(3, lineColor.r * lineColor.a);
-    gridShader.setFloat(4, lineColor.g * lineColor.a);
-    gridShader.setFloat(5, lineColor.b * lineColor.a);
-    gridShader.setFloat(6, lineColor.a);
+        // uniform vec4 uLineColor
+        uniforms.setColor(gridStyle.lineColor, premultiply: true);
 
-    // uniform float uIntersectionRadius
-    gridShader.setFloat(7, gridStyle.intersectionRadius);
+        // uniform float uIntersectionRadius
+        uniforms.setFloat(gridStyle.intersectionRadius);
 
-    final intersectionColor = gridStyle.intersectionColor;
-    // uniform vec4 uIntersectionColor
-    gridShader.setFloat(8, intersectionColor.r * intersectionColor.a);
-    gridShader.setFloat(9, intersectionColor.g * intersectionColor.a);
-    gridShader.setFloat(10, intersectionColor.b * intersectionColor.a);
-    gridShader.setFloat(11, intersectionColor.a);
-  }
+        // uniform vec4 uIntersectionColor
+        uniforms.setColor(gridStyle.intersectionColor, premultiply: true);
+      });
 
   void _updateNodes(List<NodeDiffCheckData> nodesData) {
     if (!_controller.nodesDataDirty) return;
