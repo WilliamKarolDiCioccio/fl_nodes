@@ -24,33 +24,33 @@
   "@executeGraphTooltip": {},
   "touchCommandsTitle": "Touch Commands:",
   "@touchCommandsTitle": {},
-  "touchTap": "- Tap: Select Node",
+  "touchTap": "Tap: Select Node",
   "@touchTap": {},
-  "touchDoubleTap": "- Double Tap: Clear Selection",
+  "touchDoubleTap": "Double Tap: Clear Selection",
   "@touchDoubleTap": {},
-  "touchLongPress": "- Long Press: Open Context Menu",
+  "touchLongPress": "Long Press: Open Context Menu",
   "@touchLongPress": {},
-  "touchDrag": "- Drag: Start Linking / Select Nodes",
+  "touchDrag": "Drag: Start Linking / Select Nodes",
   "@touchDrag": {},
-  "touchPinch": "- Pinch: Zoom In/Out",
+  "touchPinch": "Pinch: Zoom In/Out",
   "@touchPinch": {},
   "touchAdditionalGestures": "Additional Gestures:",
   "@touchAdditionalGestures": {},
-  "touchTwoFingerDrag": "- Two-Finger Drag: Pan",
+  "touchTwoFingerDrag": "Two-Finger Drag: Pan",
   "@touchTwoFingerDrag": {},
   "mouseCommandsTitle": "Mouse Commands:",
   "@mouseCommandsTitle": {},
-  "mouseLeftClick": "- Left Click: Select Node/Link",
+  "mouseLeftClick": "Left Click: Select Node/Link",
   "@mouseLeftClick": {},
-  "mouseRightClick": "- Right Click: Open Context Menu",
+  "mouseRightClick": "Right Click: Open Context Menu",
   "@mouseRightClick": {},
-  "mouseScroll": "- Scroll: Zoom In/Out",
+  "mouseScroll": "Scroll: Zoom In/Out",
   "@mouseScroll": {},
-  "mouseMiddleClick": "- Middle Click: Pan",
+  "mouseMiddleClick": "Middle Click: Pan",
   "@mouseMiddleClick": {},
   "keyboardCommandsTitle": "Keyboard Commands:",
   "@keyboardCommandsTitle": {},
-  "keyboardSave": "- {comboKey} + S: Save Project",
+  "keyboardSave": "{comboKey} + S: Save Project",
   "@keyboardSave": {
     "placeholders": {
       "comboKey": {
@@ -58,7 +58,7 @@
       }
     }
   },
-  "keyboardOpen": "- {comboKey} + O: Open Project",
+  "keyboardOpen": "{comboKey} + O: Open Project",
   "@keyboardOpen": {
     "placeholders": {
       "comboKey": {
@@ -66,7 +66,7 @@
       }
     }
   },
-  "keyboardNew": "- {comboKey} + Shift + N: New Project",
+  "keyboardNew": "{comboKey} + Shift + N: New Project",
   "@keyboardNew": {
     "placeholders": {
       "comboKey": {
@@ -74,7 +74,7 @@
       }
     }
   },
-  "keyboardCopy": "- {comboKey} + C: Copy Node",
+  "keyboardCopy": "{comboKey} + C: Copy Node",
   "@keyboardCopy": {
     "placeholders": {
       "comboKey": {
@@ -82,7 +82,7 @@
       }
     }
   },
-  "keyboardPaste": "- {comboKey} + V: Paste Node",
+  "keyboardPaste": "{comboKey} + V: Paste Node",
   "@keyboardPaste": {
     "placeholders": {
       "comboKey": {
@@ -90,7 +90,7 @@
       }
     }
   },
-  "keyboardCut": "- {comboKey} + X: Cut Node",
+  "keyboardCut": "{comboKey} + X: Cut Node",
   "@keyboardCut": {
     "placeholders": {
       "comboKey": {
@@ -98,9 +98,9 @@
       }
     }
   },
-  "keyboardDelete": "- Delete | Backspace: Remove Node",
+  "keyboardDelete": "Delete | Backspace: Remove Node",
   "@keyboardDelete": {},
-  "keyboardUndo": "- {comboKey} + Z: Undo",
+  "keyboardUndo": "{comboKey} + Z: Undo",
   "@keyboardUndo": {
     "placeholders": {
       "comboKey": {
@@ -108,38 +108,11 @@
       }
     }
   },
-  "keyboardRedo": "- {comboKey} + Y: Redo",
+  "keyboardRedo": "{comboKey} + Y: Redo",
   "@keyboardRedo": {
     "placeholders": {
       "comboKey": {
         "type": "String"
-      }
-    }
-  },
-  "searching": "Searching...",
-  "@searching": {},
-  "noResults": "No results found",
-  "@noResults": {},
-  "nextResult": "Next Result",
-  "@nextResult": {},
-  "previousResult": "Previous Result",
-  "@previousResult": {},
-  "resultsCount": "{count} results",
-  "@resultsCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "resultPosition": "{current} di {total}",
-  "@resultPosition": {
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
       }
     }
   },
@@ -251,6 +224,69 @@
   "@listElementPortName": {},
   "listIndexPortName": "List Index",
   "@listIndexPortName": {},
-  "cycleLocaleTooltip": "Change language",
-  "@cycleLocaleTooltip": {}
+  "createProjectActionTooltip": "Create",
+  "@createProjectActionTooltip": {},
+  "openProjectActionTooltip": "Open",
+  "@openProjectActionTooltip": {},
+  "saveProjectActionTooltip": "Save",
+  "@saveProjectActionTooltip": {},
+  "undoActionTooltip": "Undo",
+  "@undoActionTooltip": {},
+  "redoActionTooltip": "Redo",
+  "@redoActionTooltip": {},
+  "starOnGitHubTooltip": "Star on GitHub",
+  "@starOnGitHubTooltip": {},
+  "settingsPanelTitle": "Settings",
+  "@settingsPanelTitle": {},
+  "languageSettingsSectionTitle": "Language",
+  "@languageSettingsSectionTitle": {},
+  "projectSettingsSectionTitle": "Project",
+  "@projectSettingsSectionTitle": {},
+  "linksSectionTitle": "Links",
+  "@linksSectionTitle": {},
+  "settingsTooltip": "Settings",
+  "@settingsTooltip": {},
+  "instructionsTooltip": "Instructions",
+  "@instructionsTooltip": {},
+  "instructionsPanelTitle": "Instructions",
+  "@instructionsPanelTitle": {},
+  "searchNodesHint": "Search nodes...",
+  "@searchNodesHint": {},
+  "sortByLabel": "Sort by",
+  "@sortByLabel": {},
+  "showOnlySelectedTooltip": "Show only selected",
+  "@showOnlySelectedTooltip": {},
+  "showingNodesCount": "Showing {index} of {length}",
+  "@showingNodesCount": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNodesFound": "No nodes found",
+  "@noNodesFound": {},
+  "noNodesInGraph": "No nodes in graph",
+  "@noNodesInGraph": {},
+  "tryDifferentSearchTerm": "Try a different search term",
+  "@tryDifferentSearchTerm": {},
+  "githubRepositoryLinkTitle": "GitHub Repository",
+  "@githubRepositoryLinkTitle": {},
+  "githubRepositoryLinkSubtitle": "Star the project on GitHub",
+  "@githubRepositoryLinkSubtitle": {},
+  "documentationLinkTitle": "Documentation",
+  "@documentationLinkTitle": {},
+  "documentationLinkSubtitle": "Learn more about fl_nodes",
+  "@documentationLinkSubtitle": {}
 }

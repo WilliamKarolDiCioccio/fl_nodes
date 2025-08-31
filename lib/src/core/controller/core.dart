@@ -9,6 +9,7 @@ import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../events/bus.dart';
@@ -87,6 +88,28 @@ class FlNodeEditorController with ChangeNotifier {
   late final FlNodeEditorProject project;
 
   ////////////////////////////////////////////////////////////////////////////////
+  /// Animation properties are used to manage animations in the node editor.
+  ////////////////////////////////////////////////////////////////////////////////
+
+  TickerProvider? _tickerProvider;
+
+  late AnimationController _viewportOffsetAnimController;
+  late AnimationController _viewportZoomAnimController;
+  late Animation<Offset> _viewportOffsetAnim;
+  late Animation<double> _viewportZoomAnim;
+
+  void setTickerProvider(TickerProvider tickerProvider) {
+    _tickerProvider = tickerProvider;
+
+    _viewportOffsetAnimController = AnimationController(
+      vsync: _tickerProvider!,
+    );
+    _viewportZoomAnimController = AnimationController(
+      vsync: _tickerProvider!,
+    );
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   /// Viewport properties are used to manage the viewport of the node editor.
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,37 +119,6 @@ class FlNodeEditorController with ChangeNotifier {
 
   Offset get viewportOffset => viewportOffsetNotifier.value;
   double get viewportZoom => viewportZoomNotifier.value;
-
-  void updateViewportOffsetFromUI(Offset offset) {
-    viewportOffsetNotifier.value = offset;
-
-    eventBus.emit(
-      FlViewportOffsetEvent(
-        id: const Uuid().v4(),
-        viewportOffsetNotifier.value,
-        animate: false,
-        isHandled: true,
-      ),
-    );
-  }
-
-  /// The update...FromUI methods are helpers used to update the viewport properties from the UI
-  /// defaulting event parameters to the correct values.
-
-  void updateViewportZoomFromUI(double zoom) {
-    viewportZoomNotifier.value = zoom;
-
-    eventBus.emit(
-      FlViewportZoomEvent(
-        id: const Uuid().v4(),
-        viewportZoom,
-        animate: false,
-        isHandled: true,
-      ),
-    );
-
-    lodLevelNotifier.value = _computeLODLevel(viewportZoom);
-  }
 
   /// This method is used to set the offset of the viewport.
   ///
@@ -139,14 +131,71 @@ class FlNodeEditorController with ChangeNotifier {
     bool absolute = false,
     bool isHandled = false,
   }) {
-    eventBus.emit(
-      FlViewportOffsetEvent(
-        id: const Uuid().v4(),
-        absolute ? offset : viewportOffset + offset,
-        animate: animate,
-        isHandled: isHandled,
+    if (viewportOffset == offset) return;
+
+    _viewportOffsetAnimController.stop();
+
+    final beginOffset = viewportOffset;
+
+    final tempOffset = absolute ? offset : offset + beginOffset;
+
+    final Offset endOffset = Offset(
+      tempOffset.dx.clamp(
+        -config.maxPanX,
+        config.maxPanX,
+      ),
+      tempOffset.dy.clamp(
+        -config.maxPanY,
+        config.maxPanY,
       ),
     );
+
+    if (animate) {
+      _viewportOffsetAnimController.reset();
+
+      final distance = (offset - endOffset).distance;
+      final durationFactor = (distance / 1000).clamp(0.5, 3.0);
+
+      _viewportOffsetAnimController.duration = Duration(
+        milliseconds: (1000 * durationFactor).toInt(),
+      );
+
+      _viewportOffsetAnim = Tween<Offset>(
+        begin: beginOffset,
+        end: endOffset,
+      ).animate(
+        CurvedAnimation(
+          parent: _viewportOffsetAnimController,
+          curve: Curves.easeOut,
+        ),
+      )..addListener(() {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            viewportOffsetNotifier.value = _viewportOffsetAnim.value;
+
+            eventBus.emit(
+              FlViewportOffsetEvent(
+                id: const Uuid().v4(),
+                _viewportOffsetAnim.value,
+                animate: animate,
+                isHandled: isHandled,
+              ),
+            );
+          });
+        });
+
+      _viewportOffsetAnimController.forward();
+    } else {
+      viewportOffsetNotifier.value = endOffset;
+
+      eventBus.emit(
+        FlViewportOffsetEvent(
+          id: const Uuid().v4(),
+          endOffset,
+          animate: animate,
+          isHandled: isHandled,
+        ),
+      );
+    }
   }
 
   /// This method is used to set the zoom level of the viewport.
@@ -157,18 +206,63 @@ class FlNodeEditorController with ChangeNotifier {
   void setViewportZoom(
     double zoom, {
     bool animate = true,
+    bool absolute = false,
     bool isHandled = false,
   }) {
-    eventBus.emit(
-      FlViewportZoomEvent(
-        id: const Uuid().v4(),
-        zoom,
-        animate: animate,
-        isHandled: isHandled,
-      ),
+    if (viewportZoom == zoom) return;
+
+    _viewportZoomAnimController.stop();
+
+    final beginZoom = viewportZoom;
+
+    final endZoom = (absolute ? zoom : viewportZoom + zoom).clamp(
+      config.minZoom,
+      config.maxZoom,
     );
 
-    lodLevelNotifier.value = _computeLODLevel(viewportZoom);
+    if (animate) {
+      _viewportZoomAnimController.reset();
+
+      _viewportZoomAnimController.duration = const Duration(milliseconds: 200);
+
+      _viewportZoomAnim = Tween<double>(
+        begin: beginZoom,
+        end: endZoom,
+      ).animate(
+        CurvedAnimation(
+          parent: _viewportZoomAnimController,
+          curve: Curves.easeOut,
+        ),
+      )..addListener(() {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            lodLevelNotifier.value = _computeLODLevel(viewportZoom);
+            viewportZoomNotifier.value = _viewportZoomAnim.value;
+
+            eventBus.emit(
+              FlViewportZoomEvent(
+                id: const Uuid().v4(),
+                _viewportZoomAnim.value,
+                animate: animate,
+                isHandled: isHandled,
+              ),
+            );
+          });
+        });
+
+      _viewportZoomAnimController.forward();
+    } else {
+      lodLevelNotifier.value = _computeLODLevel(endZoom);
+      viewportZoomNotifier.value = endZoom;
+
+      eventBus.emit(
+        FlViewportZoomEvent(
+          id: const Uuid().v4(),
+          endZoom,
+          animate: animate,
+          isHandled: isHandled,
+        ),
+      );
+    }
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -225,8 +319,6 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// Enable or disable zooming in the node editor.
   void enableSnapToGrid(bool enable) async {
-    setConfig(config.copyWith(enableSnapToGrid: enable));
-
     if (!enable) {
       for (final node in nodes.values) {
         node.offset = _unboundNodeOffsets[node.id]!;
@@ -244,8 +336,7 @@ class FlNodeEditorController with ChangeNotifier {
       }
     }
 
-    nodesDataDirty = true;
-    linksDataDirty = true;
+    setConfig(config.copyWith(enableSnapToGrid: enable));
   }
 
   /// Set the size of the grid to snap to in the node editor.
@@ -290,12 +381,6 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
     linksDataDirty = true;
 
-    eventBus.emit(
-      FlLocaleChangeEvent(
-        locale,
-        id: const Uuid().v4(),
-      ),
-    );
     eventBus.emit(
       FlLocaleChangeEvent(
         locale,
@@ -949,21 +1034,25 @@ class FlNodeEditorController with ChangeNotifier {
   /// calculates the zoom level required to fit all the nodes in the viewport.
   ///
   /// See [calculateEncompassingRect], [selectNodesById], [setViewportOffset], and [setViewportZoom] for more information.
-  void focusNodesById(Set<String> ids) {
+  void focusNodesById(
+    Set<String> ids, {
+    bool holdSelection = false,
+    bool animate = true,
+  }) {
+    selectNodesById(ids, holdSelection: holdSelection);
+
     final encompassingRect = FlNodeEditorUtils.calculateEncompassingRect(
-      ids,
+      selectedNodeIds,
       nodes,
       margin: 256,
     );
-
-    selectNodesById(ids, holdSelection: false);
 
     final nodeEditorSize =
         RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
 
     setViewportOffset(
       -encompassingRect.center,
-      animate: true,
+      animate: animate,
       absolute: true,
     );
 
@@ -972,7 +1061,11 @@ class FlNodeEditorController with ChangeNotifier {
       nodeEditorSize.height / encompassingRect.height,
     );
 
-    setViewportZoom(fitZoom, animate: true);
+    setViewportZoom(
+      fitZoom,
+      absolute: true,
+      animate: animate,
+    );
   }
 
   /// This method is used to find all nodes with the specified display name.

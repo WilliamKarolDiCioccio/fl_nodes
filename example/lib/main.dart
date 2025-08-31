@@ -1,27 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:example/models/locale.dart';
+import 'package:example/nodes/data/handlers.dart';
+import 'package:example/nodes/prototypes/prototypes.dart';
+import 'package:example/utils/snackbar.dart';
+import 'package:example/widgets/hierarchy.dart';
+import 'package:example/widgets/instructions.dart';
+import 'package:example/widgets/settings.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:example/data_handlers.dart';
-import 'package:example/nodes.dart';
-import 'package:example/utils/snackbar.dart';
-import 'package:example/widgets/instructions.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:fl_nodes/fl_nodes.dart';
-
-import './widgets/hierarchy.dart';
-import './widgets/search.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const NodeEditorExampleApp());
 }
 
@@ -35,24 +33,22 @@ class NodeEditorExampleApp extends StatefulWidget {
 class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
   late Locale _locale;
 
-  final locales = [
-    'en',
-    'it',
-    'fr',
-    'es',
-    'de',
-    'ja',
-    'zh',
-    'ko',
-    'ru',
-    'ar',
+  final List<LocaleDataModel> locales = [
+    const LocaleDataModel('en', '🇺🇸', 'English'),
+    const LocaleDataModel('it', '🇮🇹', 'Italiano'),
+    const LocaleDataModel('fr', '🇫🇷', 'Français'),
+    const LocaleDataModel('es', '🇪🇸', 'Español'),
+    const LocaleDataModel('de', '🇩🇪', 'Deutsch'),
+    const LocaleDataModel('ja', '🇯🇵', '日本語'),
+    const LocaleDataModel('zh', '🇨🇳', '中文'),
+    const LocaleDataModel('ko', '🇰🇷', '한국어'),
+    const LocaleDataModel('ru', '🇷🇺', 'Русский'),
+    const LocaleDataModel('ar', '🇸🇦', 'العربية'),
   ];
 
-  void _cycleLocale() {
+  void _setLocale(String languageCode) {
     setState(() {
-      final currentIndex = locales.indexOf(_locale.languageCode);
-      final nextIndex = (currentIndex + 1) % locales.length;
-      _locale = Locale(locales[nextIndex]);
+      _locale = Locale(languageCode);
     });
   }
 
@@ -61,7 +57,7 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
     super.initState();
 
     final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-    final supportedLanguageCodes = locales.toSet();
+    final supportedLanguageCodes = locales.map((l) => l.code).toSet();
     final defaultLanguageCode =
         supportedLanguageCodes.contains(systemLocale.languageCode)
             ? systemLocale.languageCode
@@ -80,13 +76,24 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        ...locales.map((lang) => Locale(lang)),
-      ],
+      supportedLocales: locales.map((l) => Locale(l.code)).toList(),
       locale: _locale,
       title: 'Fl Nodes Example',
-      theme: ThemeData.dark(),
-      home: NodeEditorExampleScreen(onLocaleToggle: _cycleLocale),
+      theme: ThemeData.dark().copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+      ),
+      home: NodeEditorExampleScreen(
+        locales: locales,
+        currentLocale: _locale,
+        onLocaleChanged: _setLocale,
+      ),
       debugShowCheckedModeBanner: kDebugMode,
     );
   }
@@ -95,10 +102,14 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
 class NodeEditorExampleScreen extends StatefulWidget {
   const NodeEditorExampleScreen({
     super.key,
-    required this.onLocaleToggle,
+    required this.locales,
+    required this.currentLocale,
+    required this.onLocaleChanged,
   });
 
-  final VoidCallback onLocaleToggle;
+  final List<LocaleDataModel> locales;
+  final Locale currentLocale;
+  final Function(String) onLocaleChanged;
 
   @override
   State<NodeEditorExampleScreen> createState() =>
@@ -108,7 +119,24 @@ class NodeEditorExampleScreen extends StatefulWidget {
 class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
   late final FlNodeEditorController _nodeEditorController;
 
-  bool isHierarchyCollapsed = true;
+  bool isHierarchyCollapsed = false;
+  bool _childCollapsed = false;
+
+  void _toggleHierarchy() {
+    if (isHierarchyCollapsed) {
+      // expanding -> immediately start expanding and later clear collapsed flag in child
+      setState(() {
+        isHierarchyCollapsed = false;
+        // don't change _childCollapsed yet; let animation reveal first
+      });
+    } else {
+      // collapsing -> start animation, then set child collapsed after animation ends
+      setState(() {
+        isHierarchyCollapsed = true;
+        // _childCollapsed will be set to true inside onEnd of the tween
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -132,28 +160,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       },
       projectLoader: (isSaved) async {
         if (!isSaved) {
-          final bool? proceed = await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
-                content: Text(
-                  AppLocalizations.of(context)!.unsavedChangesMsg,
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(AppLocalizations.of(context)!.cancel),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(AppLocalizations.of(context)!.proceed),
-                  ),
-                ],
-              );
-            },
-          );
-
+          final bool? proceed = await _showUnsavedChangesDialog();
           if (proceed != true) return null;
         }
 
@@ -178,30 +185,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
       },
       projectCreator: (isSaved) async {
         if (isSaved) return true;
-
-        final bool? proceed = await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
-              content: Text(
-                AppLocalizations.of(context)!.unsavedChangesMsg,
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(AppLocalizations.of(context)!.proceed),
-                ),
-              ],
-            );
-          },
-        );
-
-        return proceed == true;
+        return await _showUnsavedChangesDialog() == true;
       },
       onCallback: (type, message) =>
           showNodeEditorSnackbar(context, message, type),
@@ -213,28 +197,97 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
     _loadSampleProject();
   }
 
+  Future<bool?> _showUnsavedChangesDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
+          content: Text(AppLocalizations.of(context)!.unsavedChangesMsg),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(AppLocalizations.of(context)!.proceed),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _loadSampleProject() async {
     const sampleProjectLink =
         'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/example/assets/www/node_project.json';
 
-    final response = await http.get(Uri.parse(sampleProjectLink));
+    try {
+      final response = await http.get(Uri.parse(sampleProjectLink));
 
-    if (response.statusCode == 200 && mounted) {
-      _nodeEditorController.project.load(
-        data: jsonDecode(response.body),
-        context: context,
-      );
-    } else {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      if (response.statusCode == 200 && mounted) {
+        _nodeEditorController.project.load(
+          data: jsonDecode(response.body),
+          context: context,
+        );
+      } else {
+        if (mounted) {
+          _showErrorSnackbar(
             AppLocalizations.of(context)!.failedToLoadSampleProject,
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackbar(
+          AppLocalizations.of(context)!.failedToLoadSampleProject,
+        );
+      }
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  void _showSettingsPanel() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SettingsPanel(
+        locales: widget.locales,
+        currentLocale: widget.currentLocale,
+        onLocaleChanged: widget.onLocaleChanged,
+        controller: _nodeEditorController,
+      ),
+    );
+  }
+
+  void _showInstructionsPanel() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const InstructionsPanel(),
+    );
+  }
+
+  Future<void> _launchGitHub() async {
+    const url = 'https://github.com/WilliamKarolDiCioccio/fl_nodes';
+    final uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      _showErrorSnackbar('Could not launch GitHub');
     }
   }
 
@@ -247,110 +300,205 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: FlNodeEditorShortcutsWidget(
+        controller: _nodeEditorController,
         child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            HierarchyWidget(
-              controller: _nodeEditorController,
-              isCollapsed: isHierarchyCollapsed,
+            // Widget tree (where you want the reveal)
+            ClipRect(
+              // ClipRect ensures anything outside the reveal box is hidden.
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(
+                  begin: isHierarchyCollapsed ? 1.0 : 0.0,
+                  end: isHierarchyCollapsed ? 0.0 : 1.0,
+                ),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                onEnd: () {
+                  // After the reveal/collapse animation finishes, update the child's internal collapsed flag.
+                  // If we are collapsed, we set childCollapsed = true. If expanded, childCollapsed = false.
+                  setState(() {
+                    _childCollapsed = isHierarchyCollapsed;
+                  });
+                },
+                builder: (context, widthFactor, child) {
+                  // Align with widthFactor reveals only a fraction of the child horizontally.
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: widthFactor.clamp(0.0, 1.0),
+                    child: child,
+                  );
+                },
+                // Important: put the HierarchyWidget into `child:` so it is not rebuilt each frame.
+                child: SizedBox(
+                  width: 300, // child stays at full width always
+                  child: HierarchyWidget(
+                    controller: _nodeEditorController,
+                    // pass the internal collapsed flag (only changes after animation completes)
+                    isCollapsed: _childCollapsed,
+                  ),
+                ),
+              ),
             ),
             Expanded(
               child: FlNodeEditorWidget(
                 controller: _nodeEditorController,
                 expandToParent: true,
-                overlay: () {
-                  return [
-                    FlOverlayData(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Row(
-                          spacing: 8,
-                          children: [
-                            // Hierarchy toggle button
-                            IconButton.filled(
-                              tooltip: AppLocalizations.of(context)!
-                                  .toggleHierarchyTooltip,
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                              ),
-                              onPressed: () => setState(() {
-                                isHierarchyCollapsed = !isHierarchyCollapsed;
-                              }),
-                              icon: Icon(
-                                isHierarchyCollapsed
-                                    ? Icons.keyboard_arrow_right
-                                    : Icons.keyboard_arrow_left,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                            // Search widget
-                            SearchWidget(controller: _nodeEditorController),
-                            const Spacer(),
-                            // Locale toggle button
-                            IconButton.filled(
-                              tooltip: AppLocalizations.of(context)!
-                                  .cycleLocaleTooltip,
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                              ),
-                              onPressed: widget.onLocaleToggle,
-                              icon: const Icon(
-                                Icons.translate,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                            // Snap to grid toggle button
-                            IconButton.filled(
-                              tooltip: AppLocalizations.of(context)!
-                                  .toggleSnapToGridTooltip,
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                              ),
-                              onPressed: () =>
-                                  _nodeEditorController.enableSnapToGrid(
-                                !_nodeEditorController.config.enableSnapToGrid,
-                              ),
-                              icon: Icon(
-                                _nodeEditorController.config.enableSnapToGrid
-                                    ? Icons.grid_on
-                                    : Icons.grid_off,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                            // Execute graph button
-                            IconButton.filled(
-                              tooltip: AppLocalizations.of(context)!
-                                  .executeGraphTooltip,
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                              ),
-                              onPressed: () => _nodeEditorController.runner
-                                  .executeGraph(context: context),
-                              icon: const Icon(
-                                Icons.play_arrow,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    FlOverlayData(
-                      bottom: 0,
-                      left: 0,
-                      child: const InstructionsWidget(),
-                    ),
-                  ];
-                },
+                overlay: () => [
+                  FlOverlayData(
+                    child: _buildTopToolbar(),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopToolbar() {
+    final strings = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        spacing: 16,
+        children: [
+          // Hierarchy controls
+          _buildToobarSection(
+            children: [
+              _buildToolbarButton(
+                icon: isHierarchyCollapsed ? Icons.menu_open : Icons.menu,
+                tooltip: AppLocalizations.of(context)!.toggleHierarchyTooltip,
+                onPressed: _toggleHierarchy,
+              ),
+            ],
+          ),
+          // Editor controls
+          _buildToobarSection(
+            children: [
+              _buildToolbarButton(
+                icon: Icons.add,
+                tooltip: strings.createProjectActionTooltip,
+                onPressed: () =>
+                    _nodeEditorController.project.create(context: context),
+              ),
+              _buildToolbarButton(
+                icon: Icons.folder_open,
+                tooltip: strings.openProjectActionTooltip,
+                onPressed: () =>
+                    _nodeEditorController.project.load(context: context),
+              ),
+              _buildToolbarButton(
+                icon: Icons.save,
+                tooltip: strings.saveProjectActionTooltip,
+                onPressed: () =>
+                    _nodeEditorController.project.save(context: context),
+              ),
+              _buildToolbarButton(
+                icon: Icons.undo,
+                tooltip: strings.undoActionTooltip,
+                onPressed: () => _nodeEditorController.history.undo(),
+              ),
+              _buildToolbarButton(
+                icon: Icons.redo,
+                tooltip: strings.redoActionTooltip,
+                onPressed: () => _nodeEditorController.history.redo(),
+              ),
+              _buildToolbarButton(
+                icon: _nodeEditorController.config.enableSnapToGrid
+                    ? Icons.grid_on
+                    : Icons.grid_off,
+                tooltip: AppLocalizations.of(context)!.toggleSnapToGridTooltip,
+                onPressed: () => setState(() {
+                  _nodeEditorController.enableSnapToGrid(
+                    !_nodeEditorController.config.enableSnapToGrid,
+                  );
+                }),
+              ),
+              _buildToolbarButton(
+                icon: Icons.play_arrow,
+                tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
+                onPressed: () =>
+                    _nodeEditorController.runner.executeGraph(context: context),
+                color: Colors.green,
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Miscellaneous
+          _buildToobarSection(
+            children: [
+              _buildToolbarButton(
+                icon: Icons.star_border,
+                tooltip: strings.starOnGitHubTooltip,
+                onPressed: _launchGitHub,
+                color: Colors.amber,
+              ),
+              _buildToolbarButton(
+                icon: Icons.settings,
+                tooltip: strings.settingsTooltip,
+                onPressed: _showSettingsPanel,
+              ),
+              _buildToolbarButton(
+                icon: Icons.help_outline,
+                tooltip: strings.instructionsTooltip,
+                onPressed: _showInstructionsPanel,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToobarSection({required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withAlpha(230),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildToolbarButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+    Color? color,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onPressed,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              icon,
+              size: 20,
+              color: color ?? Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
         ),
       ),
     );

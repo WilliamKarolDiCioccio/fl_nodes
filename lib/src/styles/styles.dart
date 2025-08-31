@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:flutter/material.dart';
 
 enum FlLineDrawMode {
   solid,
@@ -30,22 +29,22 @@ class FlGridStyle {
   const factory FlGridStyle.basic() = FlGridStyle._constBasic;
 
   const FlGridStyle._constBasic()
-      : gridSpacingX = 64.0,
-        gridSpacingY = 64.0,
-        lineWidth = 1.0,
-        lineColor = const Color.fromARGB(64, 100, 100, 100),
-        intersectionColor = const Color.fromARGB(128, 150, 150, 150),
-        intersectionRadius = 2,
+      : gridSpacingX = 48.0,
+        gridSpacingY = 48.0,
+        lineWidth = 0.8,
+        lineColor = const Color.fromARGB(80, 120, 144, 156),
+        intersectionColor = const Color.fromARGB(120, 144, 164, 174),
+        intersectionRadius = 1.5,
         showGrid = true;
 
   const factory FlGridStyle.dense() = FlGridStyle._constDense;
 
   const FlGridStyle._constDense()
-      : gridSpacingX = 32.0,
-        gridSpacingY = 32.0,
-        lineWidth = 0.5,
-        lineColor = const Color.fromARGB(64, 120, 120, 120),
-        intersectionColor = const Color.fromARGB(128, 180, 180, 180),
+      : gridSpacingX = 24.0,
+        gridSpacingY = 24.0,
+        lineWidth = 0.6,
+        lineColor = const Color.fromARGB(60, 120, 144, 156),
+        intersectionColor = const Color.fromARGB(100, 144, 164, 174),
         intersectionRadius = 1,
         showGrid = true;
 
@@ -86,9 +85,9 @@ class FlHighlightAreaStyle {
   const factory FlHighlightAreaStyle.basic() = FlHighlightAreaStyle._constBasic;
 
   const FlHighlightAreaStyle._constBasic()
-      : color = const Color.fromARGB(25, 33, 150, 243),
-        borderWidth = 1.0,
-        borderColor = const Color.fromARGB(255, 33, 150, 243),
+      : color = const Color.fromARGB(30, 41, 121, 255),
+        borderWidth = 1.5,
+        borderColor = const Color.fromARGB(180, 41, 121, 255),
         borderDrawMode = FlLineDrawMode.solid;
 
   FlHighlightAreaStyle copyWith({
@@ -130,8 +129,8 @@ class FlLinkStyle {
   const factory FlLinkStyle.basic() = FlLinkStyle._constBasic;
 
   const FlLinkStyle._constBasic()
-      : color = Colors.blue,
-        lineWidth = 2.0,
+      : color = const Color(0xFF42A5F5),
+        lineWidth = 2.5,
         drawMode = FlLineDrawMode.solid,
         gradient = null,
         curveType = FlLinkCurveType.bezier;
@@ -218,8 +217,8 @@ class FlPortStyle {
 
   const FlPortStyle._constBasic()
       : shape = FlPortShape.circle,
-        color = Colors.blue,
-        radius = 4,
+        color = const Color(0xFF42A5F5),
+        radius = 5,
         linkStyleBuilder = flDefaultLinkStyleBuilder;
 
   FlPortStyle copyWith({
@@ -255,10 +254,16 @@ class FlFieldStyle {
 
   const FlFieldStyle._constBasic()
       : decoration = const BoxDecoration(
-          color: Color(0xFF424242),
+          color: Color(0xFF37474F),
           borderRadius: BorderRadius.all(Radius.circular(8)),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: Color(0xFF546E7A),
+              width: 1.0,
+            ),
+          ),
         ),
-        padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+        padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
   FlFieldStyle copyWith({
     BoxDecoration? decoration,
@@ -287,18 +292,26 @@ class FlNodeHeaderStyle {
   const factory FlNodeHeaderStyle.basic() = FlNodeHeaderStyle._constBasic;
 
   const FlNodeHeaderStyle._constBasic()
-      : padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      : padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration = const BoxDecoration(
-          color: Colors.blue,
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue,
+              Colors.transparent,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(7),
-            topRight: Radius.circular(7),
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
           ),
         ),
         textStyle = const TextStyle(
           color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
         ),
         icon = Icons.expand_more;
 
@@ -335,16 +348,28 @@ class FlNodeStyle {
 
   const FlNodeStyle._constBasic()
       : decoration = const BoxDecoration(
-          color: Color(0xC8424242),
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          color: Color(0xE6263238),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: Color(0xFF37474F),
+              width: 1.5,
+            ),
+          ),
         );
 
   const factory FlNodeStyle.selected() = FlNodeStyle._constSelected;
 
   const FlNodeStyle._constSelected()
       : decoration = const BoxDecoration(
-          color: Color(0xC7616161),
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          color: Color(0xE6263238),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: Color(0xFF42A5F5),
+              width: 2.5,
+            ),
+          ),
         );
 
   FlNodeStyle copyWith({
@@ -372,9 +397,16 @@ class FlNodeEditorStyle {
 
   const FlNodeEditorStyle({
     this.decoration = const BoxDecoration(
-      color: Colors.black12,
+      gradient: LinearGradient(
+        colors: [
+          Color(0xFF1A1A1A),
+          Color(0xFF0D1117),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
     ),
-    this.padding = const EdgeInsets.all(8.0),
+    this.padding = const EdgeInsets.all(0.0),
     this.gridStyle = const FlGridStyle.basic(),
     this.highlightAreaStyle = const FlHighlightAreaStyle.basic(),
   });
