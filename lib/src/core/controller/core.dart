@@ -18,6 +18,8 @@ import 'config.dart';
 import 'runner.dart';
 import 'utils.dart';
 
+export 'config.dart';
+
 /// A controller class for the Node Editor.
 ///
 /// This class is responsible for managing the state of the node editor,
