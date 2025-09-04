@@ -1,6 +1,10 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:fl_nodes/src/widgets/builders.dart';
+import 'package:fl_nodes/src/core/controller/config.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/models/paint.dart';
 import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
@@ -12,10 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
-import '../core/controller/core.dart';
-import '../core/models/data.dart';
-import 'builders.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:vector_math/vector_math.dart' as vec;
 
 class NodeDiffCheckData {
   String id;
@@ -242,28 +244,26 @@ class NodeEditorRenderBox extends RenderBox
     );
   }
 
-  void _loadGridShader() {
-    final gridStyle = _controller.style.gridStyle;
+  void _loadGridShader() => gridShader.setFloatUniforms((uniforms) {
+        final gridStyle = style.gridStyle;
 
-    gridShader.setFloat(0, gridStyle.gridSpacingX);
-    gridShader.setFloat(1, gridStyle.gridSpacingY);
+        // uniform vec2 uGridSpacing
+        uniforms.setVector(
+          vec.Vector2(gridStyle.gridSpacingX, gridStyle.gridSpacingY),
+        );
 
-    final lineColor = gridStyle.lineColor;
+        // uniform float uLineWidth
+        uniforms.setFloat(gridStyle.lineWidth);
 
-    gridShader.setFloat(2, gridStyle.lineWidth);
-    gridShader.setFloat(3, lineColor.r * lineColor.a);
-    gridShader.setFloat(4, lineColor.g * lineColor.a);
-    gridShader.setFloat(5, lineColor.b * lineColor.a);
-    gridShader.setFloat(6, lineColor.a);
+        // uniform vec4 uLineColor
+        uniforms.setColor(gridStyle.lineColor, premultiply: true);
 
-    final intersectionColor = gridStyle.intersectionColor;
+        // uniform float uIntersectionRadius
+        uniforms.setFloat(gridStyle.intersectionRadius);
 
-    gridShader.setFloat(7, gridStyle.intersectionRadius);
-    gridShader.setFloat(8, intersectionColor.r * intersectionColor.a);
-    gridShader.setFloat(9, intersectionColor.g * intersectionColor.a);
-    gridShader.setFloat(10, intersectionColor.b * intersectionColor.a);
-    gridShader.setFloat(11, intersectionColor.a);
-  }
+        // uniform vec4 uIntersectionColor
+        uniforms.setColor(gridStyle.intersectionColor, premultiply: true);
+      });
 
   /// This method can be called directly only if the event is affecting the existing nodes data and not the widget tree.
   /// This means that events related to node position, size, or state changes can call this method. If the event is
@@ -497,10 +497,7 @@ class NodeEditorRenderBox extends RenderBox
   void _paintGrid(Canvas canvas, Rect viewport) {
     if (!_controller.style.gridStyle.showGrid) return;
 
-    gridShader.setFloat(12, viewport.left);
-    gridShader.setFloat(13, viewport.top);
-    gridShader.setFloat(14, viewport.right);
-    gridShader.setFloat(15, viewport.bottom);
+    print('viewport: $viewport');
 
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }
