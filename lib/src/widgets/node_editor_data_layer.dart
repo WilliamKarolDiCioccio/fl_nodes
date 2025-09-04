@@ -58,6 +58,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   double get zoom => widget.controller.viewportZoom;
   FlNodeEditorStyle get style => widget.controller.style;
   FlNodeEditorConfig get config => widget.controller.config;
+  GlobalKey get editorKey => widget.controller.editorKey;
 
   // Interaction state
   bool _isDragging = false;
@@ -146,6 +147,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     _isSelecting = true;
     _selectionStart = RenderBoxUtils.screenToWorld(
+      editorKey,
       position,
       offset,
       zoom,
@@ -157,6 +159,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       Rect.fromPoints(
         _selectionStart,
         RenderBoxUtils.screenToWorld(
+          editorKey,
           position,
           offset,
           zoom,
@@ -188,6 +191,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
   _TempLink? _isNearPort(Offset position) {
     final worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
       position,
       offset,
       zoom,
@@ -223,6 +227,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
   void _onLinkUpdate(Offset position) {
     final worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
       position,
       offset,
       zoom,
@@ -403,6 +408,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       }
 
       final worldPosition = RenderBoxUtils.screenToWorld(
+        editorKey,
         position,
         offset,
         zoom,
@@ -445,6 +451,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     List<ContextMenuEntry> editorContextMenuEntries(Offset position) {
       final worldPosition = RenderBoxUtils.screenToWorld(
+        editorKey,
         position,
         offset,
         zoom,
@@ -742,7 +749,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         child: ShaderBuilder(
           assetKey: 'packages/fl_nodes/shaders/grid.frag',
           (context, gridShader, child) => NodeEditorRenderObjectWidget(
-            key: kNodeEditorWidgetKey,
+            key: editorKey,
             controller: widget.controller,
             gridShader: gridShader,
             headerBuilder: widget.headerBuilder,
