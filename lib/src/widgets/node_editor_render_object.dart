@@ -149,14 +149,13 @@ class NodeEditorRenderBox extends RenderBox
       _updateNodes();
     } else if (event is FlAddLinkEvent || event is FlRemoveLinkEvent) {
       markNeedsPaint();
-    } else if (event is FlLinkSelectionEvent ||
-        event is FlLinkDeselectionEvent) {
+    } else if (event is FlLinkSelectionEvent) {
       markNeedsPaint();
     } else if (event is FlNodeSelectionEvent) {
       _childrenNotLaidOut.addAll(event.nodeIds);
       markNeedsLayout();
-    } else if (event is FlNodeDeselectionEvent) {
-      _childrenNotLaidOut.addAll(event.nodeIds);
+    } else if (event is FlNodeHoverEvent) {
+      _childrenNotLaidOut.add(event.nodeId);
       markNeedsLayout();
     } else if (event is FlCollapseNodeEvent) {
       _childrenNotLaidOut.addAll(event.nodeIds);

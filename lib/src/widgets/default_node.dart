@@ -114,8 +114,6 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       });
     } else if (event is FlNodeSelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
-    } else if (event is FlNodeDeselectionEvent) {
-      if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
     } else if (event is FlCollapseNodeEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
