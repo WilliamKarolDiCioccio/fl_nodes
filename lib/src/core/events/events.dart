@@ -218,6 +218,32 @@ final class FlCutSelectionEvent extends NodeEditorEvent {
 }
 
 ////////////////////////////////////////////////////////////////////////
+/// Hover events.
+////////////////////////////////////////////////////////////////////////
+
+enum FlHoverEventType {
+  enter,
+  exit,
+}
+
+/// Event produced when the user enters or exits the bounds of a node.
+final class FlNodeHoverEvent extends NodeEditorEvent {
+  final FlHoverEventType type;
+  final String nodeId;
+
+  const FlNodeHoverEvent(
+    this.nodeId, {
+    required this.type,
+    required super.id,
+    super.isHandled,
+  });
+}
+
+// NOTE: We don't have hover events for links and ports because they are not widgets and therefore
+// they do not require state management and are managed directly in the render object. Moreover,
+// hover events in general cannot be produced from the controller.
+
+////////////////////////////////////////////////////////////////////////
 /// Nodes, groups and links management events.
 ////////////////////////////////////////////////////////////////////////
 
