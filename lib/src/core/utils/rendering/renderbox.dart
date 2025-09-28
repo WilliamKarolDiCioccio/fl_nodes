@@ -1,7 +1,5 @@
-import 'package:flutter/widgets.dart';
-
-import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:flutter/widgets.dart';
 
 /// Utility class for working with RenderBox objects.
 final class RenderBoxUtils {
@@ -69,12 +67,13 @@ final class RenderBoxUtils {
 
   /// Converts a screen position to a world (canvas) position.
   static Offset? screenToWorld(
+    GlobalKey editorKey,
     Offset screenPosition,
     Offset offset,
     double zoom,
   ) {
     // Get the bounds of the editor widget on the screen
-    final nodeEditorBounds = getEditorBoundsInScreen(kNodeEditorWidgetKey);
+    final nodeEditorBounds = getEditorBoundsInScreen(editorKey);
     if (nodeEditorBounds == null) return null;
     final size = nodeEditorBounds.size;
 

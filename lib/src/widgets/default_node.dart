@@ -70,6 +70,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
   double get viewportZoom => widget.controller.viewportZoom;
   Offset get viewportOffset => widget.controller.viewportOffset;
+  GlobalKey get editorKey => widget.controller.editorKey;
 
   @override
   void initState() {
@@ -150,8 +151,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0;
     final moveAmount = 5.0 / widget.controller.viewportZoom;
-    final editorBounds =
-        RenderBoxUtils.getEditorBoundsInScreen(kNodeEditorWidgetKey);
+    final editorBounds = RenderBoxUtils.getEditorBoundsInScreen(editorKey);
     if (editorBounds == null) return;
 
     _edgeTimer?.cancel();
@@ -187,8 +187,12 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   _TempLink? _isNearPort(Offset position) {
-    final worldPosition =
-        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
+      position,
+      viewportOffset,
+      viewportZoom,
+    );
 
     final near = Rect.fromCenter(
       center: worldPosition!,
@@ -217,8 +221,12 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   }
 
   void _onTmpLinkUpdate(Offset position) {
-    final worldPosition =
-        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
+      position,
+      viewportOffset,
+      viewportZoom,
+    );
     final node = widget.controller.nodes[_tempLink!.nodeId]!;
     final port = node.ports[_tempLink!.portId]!;
     final absolutePortOffset = node.offset + port.offset;
@@ -509,8 +517,12 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       );
     }
 
-    final worldPosition =
-        RenderBoxUtils.screenToWorld(position, viewportOffset, viewportZoom);
+    final worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
+      position,
+      viewportOffset,
+      viewportZoom,
+    );
 
     return compatiblePrototypes.map((entry) {
       return MenuItem(

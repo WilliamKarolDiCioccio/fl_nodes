@@ -22,6 +22,8 @@ import 'config.dart';
 import 'runner.dart';
 import 'utils.dart';
 
+export 'config.dart';
+
 /// A controller class for the Node Editor.
 ///
 /// This class is responsible for managing the state of the node editor,
@@ -33,6 +35,7 @@ import 'utils.dart';
 /// sending and receiving events.
 class FlNodeEditorController with ChangeNotifier {
   FlCallback? onCallback;
+  GlobalKey editorKey;
 
   FlNodeEditorController({
     this.config = const FlNodeEditorConfig(),
@@ -41,7 +44,8 @@ class FlNodeEditorController with ChangeNotifier {
     ProjectLoader? projectLoader,
     ProjectCreator? projectCreator,
     this.onCallback,
-  }) {
+    GlobalKey? editorKey,
+  }) : editorKey = editorKey ?? GlobalKey() {
     clipboard = FlNodeEditorClipboard(this);
     runner = FlNodeEditorRunner(this);
     history = FlNodeEditorHistory(this);
@@ -1058,8 +1062,7 @@ class FlNodeEditorController with ChangeNotifier {
       margin: 256,
     );
 
-    final nodeEditorSize =
-        RenderBoxUtils.getSizeFromGlobalKey(kNodeEditorWidgetKey)!;
+    final nodeEditorSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
 
     setViewportOffset(
       -encompassingRect.center,

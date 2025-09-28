@@ -1,5 +1,6 @@
 export 'package:fl_nodes/src/core/controller/callback.dart' show FlCallbackType;
-export 'package:fl_nodes/src/core/controller/core.dart';
+export 'package:fl_nodes/src/core/controller/core.dart'
+    show FlNodeEditorController, FlNodeEditorConfig;
 export 'package:fl_nodes/src/core/events/events.dart'
     show
         FlViewportOffsetEvent,
