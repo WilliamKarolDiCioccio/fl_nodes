@@ -37,6 +37,9 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
   Offset nodeOffset = Offset.zero;
   FlNodeState state = FlNodeState();
 
+  // This is used to store the border radius of the node for more accurate hit testing and rendering
+  double borderRadius = 8.0;
+
   // // // This is used to prevent unnecessary layout and painting of children
   // // bool hasBeenLaidOut = false;
 
@@ -351,9 +354,24 @@ class NodeEditorRenderBox extends RenderBox
 
     final parentData = child.parentData as _ParentData;
 
-    parentData.id = _nodesDiffCheckData[currentIdx].id;
-    parentData.offset = _nodesDiffCheckData[currentIdx].offset;
-    parentData.state = _nodesDiffCheckData[currentIdx].state;
+    final diffCheckData = _nodesDiffCheckData[currentIdx];
+
+    parentData.id = diffCheckData.id;
+    parentData.offset = diffCheckData.offset;
+    parentData.state = diffCheckData.state;
+
+    final decoration =
+        _controller.nodes[diffCheckData.id]?.builtStyle.decoration;
+
+    if (decoration?.borderRadius is BorderRadius) {
+      final borderRadius = decoration!.borderRadius as BorderRadius;
+      parentData.borderRadius = borderRadius.topLeft.x;
+    } else if (decoration?.borderRadius is Radius) {
+      final radius = decoration!.borderRadius as Radius;
+      parentData.borderRadius = radius.x;
+    } else {
+      parentData.borderRadius = 8.0;
+    }
 
     _childrenById[parentData.id] = child;
     _childrenNotLaidOut.add(parentData.id);
@@ -659,7 +677,7 @@ class NodeEditorRenderBox extends RenderBox
           selectedShadowPath.addRRect(
             RRect.fromRectAndRadius(
               childParentData.rect.inflate(4),
-              const Radius.circular(4),
+              Radius.circular(childParentData.borderRadius),
             ),
           );
 
@@ -681,7 +699,7 @@ class NodeEditorRenderBox extends RenderBox
           unselectedShadowPath.addRRect(
             RRect.fromRectAndRadius(
               childParentData.rect.inflate(4),
-              const Radius.circular(4),
+              Radius.circular(childParentData.borderRadius),
             ),
           );
 
@@ -926,6 +944,7 @@ class NodeEditorRenderBox extends RenderBox
   // The code for managing hover state doesn't really belong in the controller
   // as it doesn't trigger events and can't be set externally.
 
+  String? lastHoveredNodeId;
   String? lastHoveredLinkId;
   (String, String)? lastHoveredPortLocator;
 
@@ -954,11 +973,14 @@ class NodeEditorRenderBox extends RenderBox
         final child = _childrenById[nodeId]!;
         final childParentData = child.parentData as _ParentData;
 
-        final childRect = Rect.fromLTWH(
-          childParentData.offset.dx,
-          childParentData.offset.dy,
-          child.size.width,
-          child.size.height,
+        final childRect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            childParentData.offset.dx,
+            childParentData.offset.dy,
+            child.size.width,
+            child.size.height,
+          ),
+          Radius.circular(childParentData.borderRadius),
         );
 
         if (childRect.contains(transformedPosition)) {
