@@ -1,20 +1,23 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+
+import 'package:flutter_context_menu/flutter_context_menu.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../constants.dart';
 import '../core/models/data.dart';
+
 import 'builders.dart';
 
 typedef _TempLink = ({String nodeId, String portId});
@@ -115,8 +118,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       });
     } else if (event is FlNodeSelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
-    } else if (event is FlNodeDeselectionEvent) {
-      if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
+    } else if (event is FlNodeHoverEvent) {
+      if (event.nodeId == widget.node.id) _updateStyleCache();
     } else if (event is FlCollapseNodeEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 

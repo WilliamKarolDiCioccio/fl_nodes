@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:flutter/material.dart';
 
 class DebugInfoWidget extends StatelessWidget {
   final FlNodeEditorController controller;
@@ -44,8 +43,7 @@ class DebugInfoWidget extends StatelessWidget {
                   event is FlRemoveNodeEvent ||
                   event is FlAddLinkEvent ||
                   event is FlRemoveLinkEvent ||
-                  event is FlNodeSelectionEvent ||
-                  event is FlNodeDeselectionEvent,
+                  event is FlNodeSelectionEvent,
             ),
             builder: (context, snapshot) {
               return Column(

@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:flutter/material.dart';
 
 import '../controller/config.dart';
 
@@ -62,23 +63,20 @@ final class FlViewportZoomEvent extends NodeEditorEvent {
 /// Selection events.
 ////////////////////////////////////////////////////////////////////////
 
-/// Event produced when nodes are selected.
+enum FlSelectionEventType {
+  select,
+  holdSelect,
+  deselect,
+}
+
+/// Event produced when nodes are selected or deselected.
 final class FlNodeSelectionEvent extends NodeEditorEvent {
+  final FlSelectionEventType type;
   final Set<String> nodeIds;
 
   const FlNodeSelectionEvent(
     this.nodeIds, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
-/// Event produced when nodes are deselected.
-final class FlNodeDeselectionEvent extends NodeEditorEvent {
-  final Set<String> nodeIds;
-
-  const FlNodeDeselectionEvent(
-    this.nodeIds, {
+    required this.type,
     required super.id,
     super.isHandled,
   });
@@ -171,23 +169,14 @@ final class FlDragSelectionEndEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user selects a group of links (one or more).
+/// Event produced when the user selects or deselects a group of links (one or more).
 final class FlLinkSelectionEvent extends NodeEditorEvent {
+  final FlSelectionEventType type;
   final Set<String> linkIds;
 
   const FlLinkSelectionEvent(
     this.linkIds, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
-/// Event produced when the user deselects a group of links (one or more).
-final class FlLinkDeselectionEvent extends NodeEditorEvent {
-  final Set<String> linkIds;
-
-  const FlLinkDeselectionEvent(
-    this.linkIds, {
+    required this.type,
     required super.id,
     super.isHandled,
   });
@@ -227,6 +216,32 @@ final class FlCutSelectionEvent extends NodeEditorEvent {
     super.isHandled,
   });
 }
+
+////////////////////////////////////////////////////////////////////////
+/// Hover events.
+////////////////////////////////////////////////////////////////////////
+
+enum FlHoverEventType {
+  enter,
+  exit,
+}
+
+/// Event produced when the user enters or exits the bounds of a node.
+final class FlNodeHoverEvent extends NodeEditorEvent {
+  final FlHoverEventType type;
+  final String nodeId;
+
+  const FlNodeHoverEvent(
+    this.nodeId, {
+    required this.type,
+    required super.id,
+    super.isHandled,
+  });
+}
+
+// NOTE: We don't have hover events for links and ports because they are not widgets and therefore
+// they do not require state management and are managed directly in the render object. Moreover,
+// hover events in general cannot be produced from the controller.
 
 ////////////////////////////////////////////////////////////////////////
 /// Nodes, groups and links management events.

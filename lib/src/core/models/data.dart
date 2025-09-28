@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
-
-import 'package:uuid/uuid.dart';
-
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/helpers/single_listener_change_notifier.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
 
@@ -427,10 +425,12 @@ final class FlNodePrototype {
 final class FlNodeState {
   bool isSelected; // Not saved as it is only used during rendering
   bool isCollapsed;
+  bool isHovered;
 
   FlNodeState({
     this.isSelected = false,
     this.isCollapsed = false,
+    this.isHovered = false,
   });
 
   factory FlNodeState.fromJson(Map<String, dynamic> json) {

@@ -1,5 +1,6 @@
-import 'package:fl_nodes/src/core/models/data.dart';
 import 'package:flutter/material.dart';
+
+import 'package:fl_nodes/src/core/models/data.dart';
 
 enum FlLineDrawMode {
   solid,
@@ -372,6 +373,20 @@ class FlNodeStyle {
           ),
         );
 
+  const factory FlNodeStyle.hovered() = FlNodeStyle._constHovered;
+
+  const FlNodeStyle._constHovered()
+      : decoration = const BoxDecoration(
+          color: Color(0xE6263238),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: Color(0xFF64B5F6),
+              width: 2.0,
+            ),
+          ),
+        );
+
   FlNodeStyle copyWith({
     BoxDecoration? decoration,
   }) {
@@ -386,7 +401,9 @@ typedef NodeStyleBuilder = FlNodeStyle Function(FlNodeState style);
 FlNodeStyle flDefaultNodeStyleBuilder(FlNodeState state) {
   return state.isSelected
       ? const FlNodeStyle.selected()
-      : const FlNodeStyle.basic();
+      : state.isHovered
+          ? const FlNodeStyle.hovered()
+          : const FlNodeStyle.basic();
 }
 
 class FlNodeEditorStyle {

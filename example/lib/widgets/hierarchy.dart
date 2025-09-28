@@ -33,7 +33,6 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
       if (event.isHandled) return;
 
       if (event is FlNodeSelectionEvent ||
-          event is FlNodeDeselectionEvent ||
           event is FlDragSelectionEvent ||
           event is FlAddNodeEvent ||
           event is FlRemoveNodeEvent ||

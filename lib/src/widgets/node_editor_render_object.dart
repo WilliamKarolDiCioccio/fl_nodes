@@ -1,11 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:fl_nodes/src/core/events/events.dart';
-import 'package:fl_nodes/src/core/models/paint.dart';
-import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
-import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:fl_nodes/src/widgets/default_node.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +8,18 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-import '../core/controller/core.dart';
-import '../core/models/data.dart';
-import 'builders.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:uuid/uuid.dart';
+import 'package:vector_math/vector_math.dart' as vec;
+
+import 'package:fl_nodes/src/core/controller/core.dart';
+import 'package:fl_nodes/src/core/events/events.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:fl_nodes/src/core/models/paint.dart';
+import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
+import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:fl_nodes/src/widgets/builders.dart';
+import 'package:fl_nodes/src/widgets/default_node.dart';
 
 class NodeDiffCheckData {
   String id;
@@ -35,6 +39,9 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
   String id = '';
   Offset nodeOffset = Offset.zero;
   FlNodeState state = FlNodeState();
+
+  // This is used to store the border radius of the node for more accurate hit testing and rendering
+  double borderRadius = 8.0;
 
   // // // This is used to prevent unnecessary layout and painting of children
   // // bool hasBeenLaidOut = false;
@@ -145,14 +152,13 @@ class NodeEditorRenderBox extends RenderBox
       _updateNodes();
     } else if (event is FlAddLinkEvent || event is FlRemoveLinkEvent) {
       markNeedsPaint();
-    } else if (event is FlLinkSelectionEvent ||
-        event is FlLinkDeselectionEvent) {
+    } else if (event is FlLinkSelectionEvent) {
       markNeedsPaint();
     } else if (event is FlNodeSelectionEvent) {
       _childrenNotLaidOut.addAll(event.nodeIds);
       markNeedsLayout();
-    } else if (event is FlNodeDeselectionEvent) {
-      _childrenNotLaidOut.addAll(event.nodeIds);
+    } else if (event is FlNodeHoverEvent) {
+      _childrenNotLaidOut.add(event.nodeId);
       markNeedsLayout();
     } else if (event is FlCollapseNodeEvent) {
       _childrenNotLaidOut.addAll(event.nodeIds);
@@ -242,28 +248,26 @@ class NodeEditorRenderBox extends RenderBox
     );
   }
 
-  void _loadGridShader() {
-    final gridStyle = _controller.style.gridStyle;
+  void _loadGridShader() => gridShader.setFloatUniforms((uniforms) {
+        final gridStyle = _controller.style.gridStyle;
 
-    gridShader.setFloat(0, gridStyle.gridSpacingX);
-    gridShader.setFloat(1, gridStyle.gridSpacingY);
+        // uniform vec2 uGridSpacing
+        uniforms.setVector(
+          vec.Vector2(gridStyle.gridSpacingX, gridStyle.gridSpacingY),
+        );
 
-    final lineColor = gridStyle.lineColor;
+        // uniform float uLineWidth
+        uniforms.setFloat(gridStyle.lineWidth);
 
-    gridShader.setFloat(2, gridStyle.lineWidth);
-    gridShader.setFloat(3, lineColor.r * lineColor.a);
-    gridShader.setFloat(4, lineColor.g * lineColor.a);
-    gridShader.setFloat(5, lineColor.b * lineColor.a);
-    gridShader.setFloat(6, lineColor.a);
+        // uniform vec4 uLineColor
+        uniforms.setColor(gridStyle.lineColor, premultiply: true);
 
-    final intersectionColor = gridStyle.intersectionColor;
+        // uniform float uIntersectionRadius
+        uniforms.setFloat(gridStyle.intersectionRadius);
 
-    gridShader.setFloat(7, gridStyle.intersectionRadius);
-    gridShader.setFloat(8, intersectionColor.r * intersectionColor.a);
-    gridShader.setFloat(9, intersectionColor.g * intersectionColor.a);
-    gridShader.setFloat(10, intersectionColor.b * intersectionColor.a);
-    gridShader.setFloat(11, intersectionColor.a);
-  }
+        // uniform vec4 uIntersectionColor
+        uniforms.setColor(gridStyle.intersectionColor, premultiply: true);
+      });
 
   /// This method can be called directly only if the event is affecting the existing nodes data and not the widget tree.
   /// This means that events related to node position, size, or state changes can call this method. If the event is
@@ -352,9 +356,24 @@ class NodeEditorRenderBox extends RenderBox
 
     final parentData = child.parentData as _ParentData;
 
-    parentData.id = _nodesDiffCheckData[currentIdx].id;
-    parentData.offset = _nodesDiffCheckData[currentIdx].offset;
-    parentData.state = _nodesDiffCheckData[currentIdx].state;
+    final diffCheckData = _nodesDiffCheckData[currentIdx];
+
+    parentData.id = diffCheckData.id;
+    parentData.offset = diffCheckData.offset;
+    parentData.state = diffCheckData.state;
+
+    final decoration =
+        _controller.nodes[diffCheckData.id]?.builtStyle.decoration;
+
+    if (decoration?.borderRadius is BorderRadius) {
+      final borderRadius = decoration!.borderRadius as BorderRadius;
+      parentData.borderRadius = borderRadius.topLeft.x;
+    } else if (decoration?.borderRadius is Radius) {
+      final radius = decoration!.borderRadius as Radius;
+      parentData.borderRadius = radius.x;
+    } else {
+      parentData.borderRadius = 8.0;
+    }
 
     _childrenById[parentData.id] = child;
     _childrenNotLaidOut.add(parentData.id);
@@ -496,11 +515,6 @@ class NodeEditorRenderBox extends RenderBox
 
   void _paintGrid(Canvas canvas, Rect viewport) {
     if (!_controller.style.gridStyle.showGrid) return;
-
-    gridShader.setFloat(12, viewport.left);
-    gridShader.setFloat(13, viewport.top);
-    gridShader.setFloat(14, viewport.right);
-    gridShader.setFloat(15, viewport.bottom);
 
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }
@@ -665,7 +679,7 @@ class NodeEditorRenderBox extends RenderBox
           selectedShadowPath.addRRect(
             RRect.fromRectAndRadius(
               childParentData.rect.inflate(4),
-              const Radius.circular(4),
+              Radius.circular(childParentData.borderRadius),
             ),
           );
 
@@ -687,7 +701,7 @@ class NodeEditorRenderBox extends RenderBox
           unselectedShadowPath.addRRect(
             RRect.fromRectAndRadius(
               childParentData.rect.inflate(4),
-              const Radius.circular(4),
+              Radius.circular(childParentData.borderRadius),
             ),
           );
 
@@ -881,7 +895,7 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   //////////////////////////////////////////////////////////////////
-  /// Hit testing methods
+  /// Built-in hit testing methods
   //////////////////////////////////////////////////////////////////
 
   @override
@@ -916,6 +930,11 @@ class NodeEditorRenderBox extends RenderBox
     return false;
   }
 
+  //////////////////////////////////////////////////////////////////
+  /// Hit testing utility methods
+  //////////////////////////////////////////////////////////////////
+
+  /// Checks if a point is near a path within the given tolerance
   bool isPointNearPath(Path path, Offset point, double tolerance) {
     for (final metric in path.computeMetrics()) {
       for (double t = 0; t < metric.length; t += 1.0) {
@@ -925,16 +944,73 @@ class NodeEditorRenderBox extends RenderBox
         }
       }
     }
-
     return false;
   }
 
-  // The code for managing hover state doesn't really belong in the controller
-  // as it doesn't trigger events and can't be set externally.
+  //////////////////////////////////////////////////////////////////
+  /// Hover state management methods
+  //////////////////////////////////////////////////////////////////
 
+  // Note: This hover state management doesn't belong in the controller
+  // as it doesn't trigger events and can't be set externally.
+  String? lastHoveredNodeId;
   String? lastHoveredLinkId;
   (String, String)? lastHoveredPortLocator;
 
+  /// Tests for hits on nodes and handles hover/selection events
+  bool hitTestNodes(
+    Offset transformedPosition,
+    Rect checkRect,
+    PointerEvent event,
+  ) {
+    if (event is! PointerDownEvent && event is! PointerHoverEvent) {
+      return false;
+    }
+
+    final nodeIds =
+        _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
+
+    if (nodeIds.isEmpty) {
+      if (event is PointerHoverEvent) {
+        _clearNodeHover();
+      }
+      return false;
+    }
+
+    // Find the topmost node that contains the position
+    String? hitNodeId;
+    for (final nodeId in nodeIds) {
+      final child = _childrenById[nodeId]!;
+      final childParentData = child.parentData as _ParentData;
+
+      final childRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          childParentData.offset.dx,
+          childParentData.offset.dy,
+          child.size.width,
+          child.size.height,
+        ),
+        Radius.circular(childParentData.borderRadius),
+      );
+
+      if (childRect.contains(transformedPosition)) {
+        hitNodeId = nodeId;
+        break; // Take the first (topmost) hit
+      }
+    }
+
+    if (hitNodeId == null) {
+      if (event is PointerHoverEvent) {
+        _clearNodeHover();
+      }
+      return false;
+    }
+
+    _handleNodeHit(hitNodeId, event);
+    return true;
+  }
+
+  /// Tests for hits on links and handles hover/selection events
   bool hitTestLinks(
     Offset transformedPosition,
     Rect checkRect,
@@ -952,6 +1028,8 @@ class NodeEditorRenderBox extends RenderBox
       return false;
     }
 
+    // Check if there's a node overlapping the link at this position
+    // Nodes have higher priority than links
     final nodeIds =
         _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
 
@@ -960,28 +1038,30 @@ class NodeEditorRenderBox extends RenderBox
         final child = _childrenById[nodeId]!;
         final childParentData = child.parentData as _ParentData;
 
-        final childRect = Rect.fromLTWH(
-          childParentData.offset.dx,
-          childParentData.offset.dy,
-          child.size.width,
-          child.size.height,
+        final childRect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            childParentData.offset.dx,
+            childParentData.offset.dy,
+            child.size.width,
+            child.size.height,
+          ),
+          Radius.circular(childParentData.borderRadius),
         );
 
         if (childRect.contains(transformedPosition)) {
           if (event is PointerHoverEvent) {
             _clearLinkHover();
           }
-
-          return false;
+          return false; // Node takes priority
         }
       }
     }
 
     _handleLinkHit(hitLinkId, event);
-
     return true;
   }
 
+  /// Tests for hits on ports and handles hover events
   bool hitTestPorts(
     Offset transformedPosition,
     Rect checkRect,
@@ -994,8 +1074,9 @@ class NodeEditorRenderBox extends RenderBox
 
     if (isHit) {
       _handlePortHover(hitPortLocator);
-      // Clear link hover when port is hovered (ports have higher priority)
+      // Clear other hover states when port is hovered (ports have highest priority)
       _clearLinkHover();
+      _clearNodeHover();
     } else {
       _clearPortHover();
     }
@@ -1003,6 +1084,11 @@ class NodeEditorRenderBox extends RenderBox
     return isHit;
   }
 
+  //////////////////////////////////////////////////////////////////
+  /// Hit detection methods
+  //////////////////////////////////////////////////////////////////
+
+  /// Finds a link that is hit by the given position within tolerance
   String? _findHitLink(Offset transformedPosition, Rect checkRect) {
     const tolerance = 4.0;
 
@@ -1016,6 +1102,7 @@ class NodeEditorRenderBox extends RenderBox
     return null;
   }
 
+  /// Finds a port that is hit by the given position within tolerance
   (String, String)? _findHitPort(Offset transformedPosition, Rect checkRect) {
     const tolerance = 4.0;
 
@@ -1027,24 +1114,32 @@ class NodeEditorRenderBox extends RenderBox
     return null;
   }
 
-  void _handleLinkHit(String linkId, PointerEvent event) {
-    if (event is PointerDownEvent) {
-      _controller.selectLinkById(
-        linkId,
-        holdSelection: HardwareKeyboard.instance.isControlPressed,
+  //////////////////////////////////////////////////////////////////
+  /// Hover state setters
+  //////////////////////////////////////////////////////////////////
+
+  /// Sets hover state for a node
+  void _setNodeHover(String nodeId) {
+    if (lastHoveredNodeId != nodeId) {
+      _clearNodeHover();
+
+      _controller.nodes[nodeId]!.state.isHovered = true;
+      _controller.nodesDataDirty = true;
+      lastHoveredNodeId = nodeId;
+
+      _controller.eventBus.emit(
+        FlNodeHoverEvent(
+          nodeId,
+          type: FlHoverEventType.enter,
+          id: const Uuid().v4(),
+        ),
       );
-    } else if (event is PointerHoverEvent) {
-      _setLinkHover(linkId);
+
+      markNeedsPaint();
     }
   }
 
-  void _handlePortHover((String, String) portLocator) {
-    if (lastHoveredPortLocator != portLocator) {
-      _clearPortHover();
-      _setPortHover(portLocator);
-    }
-  }
-
+  /// Sets hover state for a link
   void _setLinkHover(String linkId) {
     if (lastHoveredLinkId != linkId) {
       _clearLinkHover();
@@ -1057,6 +1152,42 @@ class NodeEditorRenderBox extends RenderBox
     }
   }
 
+  /// Sets hover state for a port
+  void _setPortHover((String, String) portLocator) {
+    _controller.nodes[portLocator.$1]!.ports[portLocator.$2]!.state.isHovered =
+        true;
+    _controller.nodesDataDirty = true;
+    lastHoveredPortLocator = portLocator;
+
+    markNeedsPaint();
+  }
+
+  //////////////////////////////////////////////////////////////////
+  /// Hover state clearers
+  //////////////////////////////////////////////////////////////////
+
+  /// Clears hover state for nodes
+  void _clearNodeHover() {
+    if (lastHoveredNodeId != null &&
+        _controller.nodes.containsKey(lastHoveredNodeId!)) {
+      _controller.nodes[lastHoveredNodeId!]!.state.isHovered = false;
+      _controller.nodesDataDirty = true;
+
+      _controller.eventBus.emit(
+        FlNodeHoverEvent(
+          lastHoveredNodeId!,
+          type: FlHoverEventType.enter,
+          id: const Uuid().v4(),
+        ),
+      );
+
+      lastHoveredNodeId = null;
+
+      markNeedsPaint();
+    }
+  }
+
+  /// Clears hover state for links
   void _clearLinkHover() {
     if (lastHoveredLinkId != null &&
         _controller.linksById.containsKey(lastHoveredLinkId!)) {
@@ -1068,15 +1199,7 @@ class NodeEditorRenderBox extends RenderBox
     }
   }
 
-  void _setPortHover((String, String) portLocator) {
-    _controller.nodes[portLocator.$1]!.ports[portLocator.$2]!.state.isHovered =
-        true;
-    _controller.nodesDataDirty = true;
-    lastHoveredPortLocator = portLocator;
-
-    markNeedsPaint();
-  }
-
+  /// Clears hover state for ports
   void _clearPortHover() {
     if (lastHoveredPortLocator != null) {
       _controller.nodes[lastHoveredPortLocator!.$1]!
@@ -1088,6 +1211,18 @@ class NodeEditorRenderBox extends RenderBox
     }
   }
 
+  /// Clears all hover states
+  // ignore: unused_element
+  void _clearAllHoverStates() {
+    _clearNodeHover();
+    _clearLinkHover();
+    _clearPortHover();
+  }
+
+  //////////////////////////////////////////////////////////////////
+  /// Render object event handlers
+  //////////////////////////////////////////////////////////////////
+
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
     super.handleEvent(event, entry);
@@ -1097,6 +1232,7 @@ class NodeEditorRenderBox extends RenderBox
     final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
+    // Ignore middle mouse button events
     if (event is PointerDownEvent && event.buttons == kMiddleMouseButton) {
       return;
     }
@@ -1106,9 +1242,44 @@ class NodeEditorRenderBox extends RenderBox
       radius: 6.0,
     );
 
-    // Test ports first (higher priority), then links
+    // Test in priority order: Ports (highest) > Nodes > Links (lowest)
+    // Each method returns true if it handled the event
     if (!hitTestPorts(transformedPosition, checkRect, event)) {
-      hitTestLinks(transformedPosition, checkRect, event);
+      if (!hitTestNodes(transformedPosition, checkRect, event)) {
+        hitTestLinks(transformedPosition, checkRect, event);
+      }
+    }
+  }
+
+  /// Handles node hit events (click/hover)
+  void _handleNodeHit(String nodeId, PointerEvent event) {
+    if (event is PointerDownEvent) {
+      _controller.selectNodesById(
+        {nodeId},
+        holdSelection: HardwareKeyboard.instance.isControlPressed,
+      );
+    } else if (event is PointerHoverEvent) {
+      _setNodeHover(nodeId);
+    }
+  }
+
+  /// Handles link hit events (click/hover)
+  void _handleLinkHit(String linkId, PointerEvent event) {
+    if (event is PointerDownEvent) {
+      _controller.selectLinkById(
+        linkId,
+        holdSelection: HardwareKeyboard.instance.isControlPressed,
+      );
+    } else if (event is PointerHoverEvent) {
+      _setLinkHover(linkId);
+    }
+  }
+
+  /// Handles port hover events
+  void _handlePortHover((String, String) portLocator) {
+    if (lastHoveredPortLocator != portLocator) {
+      _clearPortHover();
+      _setPortHover(portLocator);
     }
   }
 

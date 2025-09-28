@@ -1,5 +1,11 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+import 'package:uuid/uuid.dart';
+
+import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
@@ -7,12 +13,10 @@ import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:uuid/uuid.dart';
 
 import '../events/bus.dart';
 import '../models/data.dart';
+
 import 'clipboard.dart';
 import 'config.dart';
 import 'runner.dart';
@@ -932,6 +936,9 @@ class FlNodeEditorController with ChangeNotifier {
       FlNodeSelectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
+        type: holdSelection
+            ? FlSelectionEventType.holdSelect
+            : FlSelectionEventType.select,
         isHandled: isHandled,
       ),
     );
@@ -986,6 +993,9 @@ class FlNodeEditorController with ChangeNotifier {
       FlLinkSelectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
+        type: holdSelection
+            ? FlSelectionEventType.holdSelect
+            : FlSelectionEventType.select,
         isHandled: isHandled,
       ),
     );
@@ -1007,17 +1017,19 @@ class FlNodeEditorController with ChangeNotifier {
     nodesDataDirty = true;
 
     eventBus.emit(
-      FlNodeDeselectionEvent(
+      FlNodeSelectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
+        type: FlSelectionEventType.deselect,
         isHandled: isHandled,
       ),
     );
 
     eventBus.emit(
-      FlLinkDeselectionEvent(
+      FlLinkSelectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
+        type: FlSelectionEventType.deselect,
         isHandled: isHandled,
       ),
     );
