@@ -17,7 +17,7 @@ import 'utils.dart';
 /// A class that manages the clipboard operations of the node editor.
 ///
 /// The clipboard operations include copying, pasting, and cutting nodes.
-class FlNodeEditorClipboard {
+class FlNodeEditorClipboardHelper {
   final FlNodeEditorController controller;
 
   NodeEditorEventBus get eventBus => controller.eventBus;
@@ -27,7 +27,8 @@ class FlNodeEditorClipboard {
   Map<String, FlNodePrototype> get nodePrototypes => controller.nodePrototypes;
   Map<String, FlNodeDataModel> get nodes => controller.nodes;
   Set<String> get selectedNodeIds => controller.selectedNodeIds;
-  FlNodeEditorClipboard(this.controller);
+
+  FlNodeEditorClipboardHelper(this.controller);
 
   /// Copies the selected nodes to the clipboard.
   ///

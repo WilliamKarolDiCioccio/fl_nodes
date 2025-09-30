@@ -11,7 +11,7 @@ import 'core.dart';
 /// A class that manages the execution of the node editor graph.
 ///
 /// NOTE: This class is still in development and there are performance improvements to be made.
-class FlNodeEditorRunner {
+class FlNodeEditorExecutionHelper {
   final FlNodeEditorController controller;
   Map<String, FlNodeDataModel> _nodes = {};
   Map<String, Set<String>> _dataDeps = {};
@@ -19,7 +19,7 @@ class FlNodeEditorRunner {
   Set<String> _executedNodes = {};
   Map<String, Map<String, dynamic>> _execState = {};
 
-  FlNodeEditorRunner(this.controller) {
+  FlNodeEditorExecutionHelper(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
   }
 

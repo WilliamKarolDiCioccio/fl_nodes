@@ -1,11 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
-import 'package:uuid/uuid.dart';
-
-import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
@@ -13,10 +7,12 @@ import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:uuid/uuid.dart';
 
 import '../events/bus.dart';
 import '../models/data.dart';
-
 import 'clipboard.dart';
 import 'config.dart';
 import 'runner.dart';
@@ -46,10 +42,10 @@ class FlNodeEditorController with ChangeNotifier {
     this.onCallback,
     GlobalKey? editorKey,
   }) : editorKey = editorKey ?? GlobalKey() {
-    clipboard = FlNodeEditorClipboard(this);
-    runner = FlNodeEditorRunner(this);
-    history = FlNodeEditorHistory(this);
-    project = FlNodeEditorProject(
+    clipboard = FlNodeEditorClipboardHelper(this);
+    runner = FlNodeEditorExecutionHelper(this);
+    history = FlNodeEditorHistoryHelper(this);
+    project = FlNodeEditorProjectHelper(
       this,
       projectSaver: projectSaver,
       projectLoader: projectLoader,
@@ -89,10 +85,10 @@ class FlNodeEditorController with ChangeNotifier {
   /// The event bus is used to communicate between different susbsystems and with the UI.
   final eventBus = NodeEditorEventBus();
 
-  late final FlNodeEditorClipboard clipboard;
-  late final FlNodeEditorRunner runner;
-  late final FlNodeEditorHistory history;
-  late final FlNodeEditorProject project;
+  late final FlNodeEditorClipboardHelper clipboard;
+  late final FlNodeEditorExecutionHelper runner;
+  late final FlNodeEditorHistoryHelper history;
+  late final FlNodeEditorProjectHelper project;
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Animation properties are used to manage animations in the node editor.

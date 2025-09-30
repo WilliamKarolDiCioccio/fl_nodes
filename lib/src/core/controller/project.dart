@@ -26,7 +26,7 @@ class DataHandler {
 /// instead it simpliy converts the project data to JSON and vice versa. JSON was chosen as it
 /// was quick and easy to implement and can be easily manipulated and converted to other formats
 /// (e.g. structured data in a database).
-class FlNodeEditorProject {
+class FlNodeEditorProjectHelper {
   final FlNodeEditorController controller;
 
   bool _isSaved = true;
@@ -72,7 +72,7 @@ class FlNodeEditorProject {
   /// The [projectSaver] callback is used to save the project data, should return a boolean.
   /// The [projectLoader] callback is used to load the project data, should return a JSON object.
   /// The [projectCreator] callback is used to create a new project, should return a boolean.
-  FlNodeEditorProject(
+  FlNodeEditorProjectHelper(
     this.controller, {
     required this.projectSaver,
     required this.projectLoader,

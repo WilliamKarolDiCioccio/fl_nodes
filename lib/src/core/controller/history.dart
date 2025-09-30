@@ -3,7 +3,6 @@ import 'package:fl_nodes/src/core/models/data.dart';
 import '../../constants.dart';
 import '../events/events.dart';
 import '../utils/dsa/stack.dart';
-
 import 'core.dart';
 
 /// A class that manages the undo and redo history of the node editor.
@@ -12,14 +11,14 @@ import 'core.dart';
 /// [kMaxEventRedoHistory] respectively.
 ///
 /// The history is updated whenever an undoable event is triggered.
-class FlNodeEditorHistory {
+class FlNodeEditorHistoryHelper {
   final FlNodeEditorController controller;
 
   bool _isTraversingHistory = false;
   final _undoStack = Stack<NodeEditorEvent>(kMaxEventUndoHistory);
   final _redoStack = Stack<NodeEditorEvent>(kMaxEventRedoHistory);
 
-  FlNodeEditorHistory(this.controller) {
+  FlNodeEditorHistoryHelper(this.controller) {
     controller.eventBus.events.listen(_handleUndoableEvents);
   }
 
