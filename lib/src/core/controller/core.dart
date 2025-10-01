@@ -59,7 +59,7 @@ class FlNodeEditorController with ChangeNotifier {
     eventBus.close();
     history.clear();
     project.clear();
-    runner.dispose();
+    runner.clear();
 
     clear();
 
@@ -68,11 +68,11 @@ class FlNodeEditorController with ChangeNotifier {
 
   /// This method is used to clear the core controller and all of its subsystems.
   void clear() {
-    nodes.clear();
     nodesSpatialHashGrid.clear();
     selectedNodeIds.clear();
     selectedLinkIds.clear();
-    _linksById.clear();
+
+    unboundNodeOffsets.clear();
 
     linksDataDirty = true;
     nodesDataDirty = true;
@@ -324,18 +324,16 @@ class FlNodeEditorController with ChangeNotifier {
   void enableSnapToGrid(bool enable) async {
     if (!enable) {
       for (final node in nodes.values) {
-        node.offset = _unboundNodeOffsets[node.id]!;
+        node.offset = unboundNodeOffsets[node.id]!;
       }
     } else {
       for (final node in nodes.values) {
-        if (enable) {
-          node.offset = Offset(
-            (node.offset.dx / config.snapToGridSize).round() *
-                config.snapToGridSize,
-            (node.offset.dy / config.snapToGridSize).round() *
-                config.snapToGridSize,
-          );
-        }
+        node.offset = Offset(
+          (node.offset.dx / config.snapToGridSize).round() *
+              config.snapToGridSize,
+          (node.offset.dy / config.snapToGridSize).round() *
+              config.snapToGridSize,
+        );
       }
     }
 
@@ -396,17 +394,33 @@ class FlNodeEditorController with ChangeNotifier {
   /// Nodes and links management.
   ////////////////////////////////////////////////////////////////////////
 
-  final Map<String, FlNodePrototype> nodePrototypes = {};
-  final Map<String, FlNodeDataModel> nodes = {};
-
+  Map<String, FlNodePrototype> nodePrototypes = {};
   List<FlNodePrototype> get nodePrototypesAsList =>
       nodePrototypes.values.map((e) => e).toList();
+  int get nodePrototypeCount => nodePrototypes.length;
+
+  Map<String, FlNodeDataModel> get nodes => project.projectData.nodes;
   List<FlNodeDataModel> get nodesAsList => nodes.values.toList();
+  int get nodeCount => nodes.length;
+
+  Map<String, FlLinkDataModel> get links => project.projectData.links;
+  List<FlLinkDataModel> get linksAsList =>
+      project.projectData.links.values.toList();
+  int get linkCount => links.length;
 
   final SpatialHashGrid nodesSpatialHashGrid = SpatialHashGrid();
 
   /// This map holds the raw nodes offsets before they are snapped to the grid.
-  final Map<String, Offset> _unboundNodeOffsets = {};
+  final Map<String, Offset> unboundNodeOffsets = {};
+
+  bool isNodePresent(String id) => nodes.containsKey(id);
+  bool isLinkPresent(String id) => links.containsKey(id);
+
+  bool isNodeSelected(String id) => selectedNodeIds.contains(id);
+  bool isLinkSelected(String id) => selectedLinkIds.contains(id);
+
+  FlNodeDataModel? getNodeById(String id) => nodes[id];
+  FlLinkDataModel? getLinkById(String id) => project.projectData.links[id];
 
   /// This method is used to register a node prototype with the node editor.
   ///
@@ -458,7 +472,7 @@ class FlNodeEditorController with ChangeNotifier {
     );
 
     nodes.putIfAbsent(instance.id, () => instance);
-    _unboundNodeOffsets.putIfAbsent(instance.id, () => instance.offset);
+    unboundNodeOffsets.putIfAbsent(instance.id, () => instance.offset);
 
     nodesDataDirty = true;
 
@@ -493,7 +507,7 @@ class FlNodeEditorController with ChangeNotifier {
 
     nodes.putIfAbsent(node.id, () => node.copyWith(offset: offset));
 
-    _unboundNodeOffsets.putIfAbsent(node.id, () => node.offset);
+    unboundNodeOffsets.putIfAbsent(node.id, () => node.offset);
 
     if (node.state.isSelected) selectedNodeIds.add(node.id);
 
@@ -534,7 +548,6 @@ class FlNodeEditorController with ChangeNotifier {
       }
     }
 
-    nodesSpatialHashGrid.remove(id);
     nodes.remove(id);
 
     // selectedNodeIds.remove(id); We don't remove the node from the selected nodes because you might be iterating over them.
@@ -642,7 +655,7 @@ class FlNodeEditorController with ChangeNotifier {
     port1.links.add(link);
     port2.links.add(link);
 
-    linksById.putIfAbsent(
+    links.putIfAbsent(
       link.id,
       () => link,
     );
@@ -681,12 +694,13 @@ class FlNodeEditorController with ChangeNotifier {
     }
 
     final fromPort = nodes[link.fromTo.from]!.ports[link.fromTo.to]!;
-    final toPort = nodes[link.fromTo.fromPort]!.ports[link.fromTo.toPort]!;
+    final toPort = project
+        .projectData.nodes[link.fromTo.fromPort]!.ports[link.fromTo.toPort]!;
 
     fromPort.links.add(link);
     toPort.links.add(link);
 
-    linksById.putIfAbsent(
+    links.putIfAbsent(
       link.id,
       () => link,
     );
@@ -704,9 +718,6 @@ class FlNodeEditorController with ChangeNotifier {
     );
   }
 
-  final Map<String, FlLinkDataModel> _linksById = {};
-  Map<String, FlLinkDataModel> get linksById => _linksById;
-
   /// This method is used to remove a link by its ID.
   ///
   /// Emits a [FlRemoveLinkEvent] event.
@@ -715,9 +726,9 @@ class FlNodeEditorController with ChangeNotifier {
     String? eventId,
     bool isHandled = false,
   }) {
-    if (!linksById.containsKey(id)) return;
+    if (!links.containsKey(id)) return;
 
-    final link = linksById[id]!;
+    final link = links[id]!;
 
     // Remove the link from its associated ports
     final fromPort = nodes[link.fromTo.from]?.ports[link.fromTo.to];
@@ -726,7 +737,7 @@ class FlNodeEditorController with ChangeNotifier {
     fromPort?.links.remove(link);
     toPort?.links.remove(link);
 
-    linksById.remove(id);
+    links.remove(id);
 
     // selectedLinkIds.remove(id); We don't remove the link from the selected links because you might be iterating over them.
 
@@ -860,16 +871,16 @@ class FlNodeEditorController with ChangeNotifier {
 
       // Reset the unbound offset if requested (e.g. during undo/redo)
       if (resetUnboundOffset) {
-        _unboundNodeOffsets[id] = node.offset;
+        unboundNodeOffsets[id] = node.offset;
       } else {
-        _unboundNodeOffsets.putIfAbsent(id, () => node.offset);
+        unboundNodeOffsets.putIfAbsent(id, () => node.offset);
       }
 
       // Update the unbound offset by adding the effective delta.
-      _unboundNodeOffsets[id] = _unboundNodeOffsets[id]! + effectiveDelta;
+      unboundNodeOffsets[id] = unboundNodeOffsets[id]! + effectiveDelta;
 
       if (config.enableSnapToGrid) {
-        final unboundOffset = _unboundNodeOffsets[id]!;
+        final unboundOffset = unboundNodeOffsets[id]!;
 
         // Snap the node's offset to the grid using rounding.
         node.offset = Offset(
@@ -979,7 +990,7 @@ class FlNodeEditorController with ChangeNotifier {
     selectedLinkIds.add(id);
 
     for (final id in selectedLinkIds) {
-      final link = linksById[id];
+      final link = links[id];
       link?.state.isSelected = true;
     }
 
@@ -1005,7 +1016,7 @@ class FlNodeEditorController with ChangeNotifier {
     }
 
     for (final id in selectedLinkIds) {
-      final link = linksById[id];
+      final link = links[id];
       link?.state.isSelected = false;
     }
 

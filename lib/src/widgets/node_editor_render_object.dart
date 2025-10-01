@@ -1,17 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-
-import 'package:flutter_shaders/flutter_shaders.dart';
-import 'package:uuid/uuid.dart';
-import 'package:vector_math/vector_math.dart' as vec;
-
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
@@ -20,6 +9,15 @@ import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:fl_nodes/src/widgets/builders.dart';
 import 'package:fl_nodes/src/widgets/default_node.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:uuid/uuid.dart';
+import 'package:vector_math/vector_math.dart' as vec;
 
 class NodeDiffCheckData {
   String id;
@@ -319,6 +317,7 @@ class NodeEditorRenderBox extends RenderBox
       _childrenById.remove(removedId);
       _childrenNotLaidOut.remove(removedId);
       _childrenNotPainted.remove(removedId);
+      _controller.nodesSpatialHashGrid.remove(removedId);
 
       dataUpdated = true;
     }
@@ -363,7 +362,7 @@ class NodeEditorRenderBox extends RenderBox
     parentData.state = diffCheckData.state;
 
     final decoration =
-        _controller.nodes[diffCheckData.id]?.builtStyle.decoration;
+        _controller.getNodeById(diffCheckData.id)?.builtStyle.decoration;
 
     if (decoration?.borderRadius is BorderRadius) {
       final borderRadius = decoration!.borderRadius as BorderRadius;
@@ -540,9 +539,9 @@ class NodeEditorRenderBox extends RenderBox
       _solidColorsLinksBatches.clear();
       _linksHitTestData.clear();
 
-      for (final link in _controller.linksById.values) {
-        final outNode = _controller.nodes[link.fromTo.from]!;
-        final inNode = _controller.nodes[link.fromTo.fromPort]!;
+      for (final link in _controller.links.values) {
+        final outNode = _controller.getNodeById(link.fromTo.from)!;
+        final inNode = _controller.getNodeById(link.fromTo.fromPort)!;
         final outPort = outNode.ports[link.fromTo.to]!;
         final inPort = inNode.ports[link.fromTo.toPort]!;
 
@@ -685,7 +684,7 @@ class NodeEditorRenderBox extends RenderBox
 
           if (lodLevel <= 2) continue;
 
-          for (final port in _controller.nodes[nodeId]!.ports.values) {
+          for (final port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
               PortPaintModel(
                 locator: (nodeId, port.prototype.idName),
@@ -707,7 +706,7 @@ class NodeEditorRenderBox extends RenderBox
 
           if (lodLevel <= 2) continue;
 
-          for (final port in _controller.nodes[nodeId]!.ports.values) {
+          for (final port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
               PortPaintModel(
                 locator: (nodeId, port.prototype.idName),
@@ -1123,7 +1122,7 @@ class NodeEditorRenderBox extends RenderBox
     if (lastHoveredNodeId != nodeId) {
       _clearNodeHover();
 
-      _controller.nodes[nodeId]!.state.isHovered = true;
+      _controller.getNodeById(nodeId)!.state.isHovered = true;
       _controller.nodesDataDirty = true;
       lastHoveredNodeId = nodeId;
 
@@ -1144,7 +1143,7 @@ class NodeEditorRenderBox extends RenderBox
     if (lastHoveredLinkId != linkId) {
       _clearLinkHover();
 
-      _controller.linksById[linkId]!.state.isHovered = true;
+      _controller.links[linkId]!.state.isHovered = true;
       _controller.linksDataDirty = true;
       lastHoveredLinkId = linkId;
 
@@ -1154,8 +1153,11 @@ class NodeEditorRenderBox extends RenderBox
 
   /// Sets hover state for a port
   void _setPortHover((String, String) portLocator) {
-    _controller.nodes[portLocator.$1]!.ports[portLocator.$2]!.state.isHovered =
-        true;
+    _controller
+        .getNodeById(portLocator.$1)!
+        .ports[portLocator.$2]!
+        .state
+        .isHovered = true;
     _controller.nodesDataDirty = true;
     lastHoveredPortLocator = portLocator;
 
@@ -1169,8 +1171,8 @@ class NodeEditorRenderBox extends RenderBox
   /// Clears hover state for nodes
   void _clearNodeHover() {
     if (lastHoveredNodeId != null &&
-        _controller.nodes.containsKey(lastHoveredNodeId!)) {
-      _controller.nodes[lastHoveredNodeId!]!.state.isHovered = false;
+        _controller.isNodePresent(lastHoveredNodeId!)) {
+      _controller.getNodeById(lastHoveredNodeId!)!.state.isHovered = false;
       _controller.nodesDataDirty = true;
 
       _controller.eventBus.emit(
@@ -1190,8 +1192,8 @@ class NodeEditorRenderBox extends RenderBox
   /// Clears hover state for links
   void _clearLinkHover() {
     if (lastHoveredLinkId != null &&
-        _controller.linksById.containsKey(lastHoveredLinkId!)) {
-      _controller.linksById[lastHoveredLinkId!]!.state.isHovered = false;
+        _controller.links.containsKey(lastHoveredLinkId!)) {
+      _controller.links[lastHoveredLinkId!]!.state.isHovered = false;
       _controller.linksDataDirty = true;
       lastHoveredLinkId = null;
 
@@ -1202,8 +1204,11 @@ class NodeEditorRenderBox extends RenderBox
   /// Clears hover state for ports
   void _clearPortHover() {
     if (lastHoveredPortLocator != null) {
-      _controller.nodes[lastHoveredPortLocator!.$1]!
-          .ports[lastHoveredPortLocator!.$2]!.state.isHovered = false;
+      _controller
+          .getNodeById(lastHoveredPortLocator!.$1)!
+          .ports[lastHoveredPortLocator!.$2]!
+          .state
+          .isHovered = false;
       _controller.nodesDataDirty = true;
       lastHoveredPortLocator = null;
 

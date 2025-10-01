@@ -23,7 +23,7 @@ class FlNodeEditorExecutionHelper {
     controller.eventBus.events.listen(_handleRunnerEvents);
   }
 
-  void dispose() {
+  void clear() {
     _nodes = {};
     _dataDeps = {};
     _executedNodes = {};

@@ -50,14 +50,14 @@ class DebugInfoWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Node count: ${controller.nodes.length}',
+                    'Node count: ${controller.nodeCount}',
                     style: const TextStyle(
                       color: Colors.yellow,
                       fontSize: 16,
                     ),
                   ),
                   Text(
-                    'Links count: ${controller.linksById.length}',
+                    'Links count: ${controller.links.length}',
                     style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 16,

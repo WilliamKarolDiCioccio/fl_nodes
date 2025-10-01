@@ -1,23 +1,20 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-
-import 'package:flutter_context_menu/flutter_context_menu.dart';
-
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../constants.dart';
 import '../core/models/data.dart';
-
 import 'builders.dart';
 
 typedef _TempLink = ({String nodeId, String portId});
@@ -203,7 +200,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
-      final node = widget.controller.nodes[nodeId]!;
+      final node = widget.controller.getNodeById(nodeId)!;
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
         if ((worldPosition - absolutePortPosition).distance < 4) {
@@ -227,7 +224,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       viewportOffset,
       viewportZoom,
     );
-    final node = widget.controller.nodes[_tempLink!.nodeId]!;
+    final node = widget.controller.getNodeById(_tempLink!.nodeId)!;
     final port = node.ports[_tempLink!.portId]!;
     final absolutePortOffset = node.offset + port.offset;
 
@@ -505,8 +502,9 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
 
     if (fromLink) {
-      final startPort =
-          widget.controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+      final startPort = widget.controller
+          .getNodeById(_tempLink!.nodeId)!
+          .ports[_tempLink!.portId]!;
       widget.controller.nodePrototypes.forEach((key, value) {
         if (value.ports.any(
           startPort.prototype.compatibleWith,
@@ -532,14 +530,14 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
         label: entry.value.displayName(context),
         icon: Icons.widgets,
         onSelected: () {
-          widget.controller.addNode(
+          final addedNode = widget.controller.addNode(
             entry.key,
             offset: worldPosition ?? Offset.zero,
           );
           if (fromLink) {
-            final addedNode = widget.controller.nodes.values.last;
             final startPort = widget
                 .controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
+
             widget.controller.addLink(
               _tempLink!.nodeId,
               _tempLink!.portId,

@@ -629,3 +629,67 @@ final class FlNodeGroup {
     );
   }
 }
+
+/// A container for all the data in a project.
+class FlNodeEditorProjectDataModel {
+  Offset viewportOffset;
+  double viewportZoom;
+  Map<String, FlNodeDataModel> nodes;
+  Map<String, FlLinkDataModel> links;
+
+  FlNodeEditorProjectDataModel({
+    required this.nodes,
+    required this.links,
+    this.viewportOffset = Offset.zero,
+    this.viewportZoom = 1.0,
+  });
+
+  Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) {
+    final nodesJson =
+        nodes.values.map((node) => node.toJson(dataHandlers)).toList();
+
+    return {
+      'viewport': {
+        'offset': [viewportOffset.dx, viewportOffset.dy],
+        'zoom': viewportZoom,
+      },
+      'nodes': nodesJson,
+    };
+  }
+
+  factory FlNodeEditorProjectDataModel.fromJson(
+    Map<String, dynamic> json,
+    Map<String, FlNodePrototype> nodePrototypes,
+    Map<String, DataHandler> dataHandlers,
+  ) {
+    final nodesJson = json['nodes'] as List<dynamic>;
+    final nodes = <String, FlNodeDataModel>{};
+    final links = <String, FlLinkDataModel>{};
+
+    for (final nodeJson in nodesJson) {
+      final node = FlNodeDataModel.fromJson(
+        nodeJson,
+        nodePrototypes: nodePrototypes,
+        dataHandlers: dataHandlers,
+      );
+
+      for (final port in node.ports.values) {
+        for (final link in port.links) {
+          links[link.id] = link;
+        }
+      }
+
+      nodes[node.id] = node;
+    }
+
+    return FlNodeEditorProjectDataModel(
+      nodes: nodes,
+      links: links,
+      viewportOffset: Offset(
+        (json['viewport']['offset'][0] as num).toDouble(),
+        (json['viewport']['offset'][1] as num).toDouble(),
+      ),
+      viewportZoom: (json['viewport']['zoom'] as num).toDouble(),
+    );
+  }
+}

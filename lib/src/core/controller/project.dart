@@ -13,6 +13,7 @@ typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
 typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
 typedef ProjectCreator = Future<bool> Function(bool isSaved);
 
+/// A helper class that handles the conversion of data to and from JSON.
 class DataHandler {
   final String Function(dynamic data) toJson;
   final dynamic Function(String json) fromJson;
@@ -29,8 +30,12 @@ class DataHandler {
 class FlNodeEditorProjectHelper {
   final FlNodeEditorController controller;
 
-  bool _isSaved = true;
-  bool get isSaved => _isSaved;
+  FlNodeEditorProjectDataModel projectData = FlNodeEditorProjectDataModel(
+    nodes: {},
+    links: {},
+  );
+
+  bool isSaved = true;
 
   Offset get viewportOffset => controller.viewportOffset;
   double get viewportZoom => controller.viewportZoom;
@@ -77,9 +82,7 @@ class FlNodeEditorProjectHelper {
     required this.projectSaver,
     required this.projectLoader,
     required this.projectCreator,
-  }) {
-    controller.eventBus.events.listen(_handleProjectEvents);
-  }
+  });
 
   /// Registers a custom data handler for a specific type.
   void registerDataHandler<T>({
@@ -110,88 +113,11 @@ class FlNodeEditorProjectHelper {
 
   /// Clears the history and sets the project as saved.
   void clear() {
+    controller.clear();
     controller.history.clear();
-    controller.runner.dispose();
+    controller.runner.clear();
 
-    _isSaved = true;
-  }
-
-  /// Handles project related events.
-  ///
-  /// - [FlSaveProjectEvent]: Sets the project as saved.
-  /// - [FlLoadProjectEvent]: Sets the project as saved and clears the history.
-  /// - [FlNewProjectEvent]: Clears the project.
-  ///
-  /// If the event is undoable, the project is set as unsaved.
-  void _handleProjectEvents(NodeEditorEvent event) {
-    if (event.isUndoable) _isSaved = false;
-
-    if (event is FlSaveProjectEvent) {
-      _isSaved = true;
-    } else if (event is FlLoadProjectEvent) {
-      _isSaved = true;
-      controller.history.clear();
-    } else if (event is FlNewProjectEvent) {
-      _isSaved = true;
-      controller.clear();
-    }
-  }
-
-  /// Private method to convert the project data to JSON.
-  ///
-  /// Even doe counterintuitive, this method is the one actually responsible for saving the project data other than serializing the project data.
-  /// This choice was made to avoid redundancy and to keep the project data saving logic in one place.
-  Map<String, dynamic> _toJson() {
-    final nodesJson = controller.nodes.values
-        .map((node) => node.toJson(dataHandlers))
-        .toList();
-
-    return {
-      'viewport': {
-        'offset': [viewportOffset.dx, viewportOffset.dy],
-        'zoom': viewportZoom,
-      },
-      'nodes': nodesJson,
-    };
-  }
-
-  /// Private method to convert the JSON data to project data.
-  ///
-  /// Even doe counterintuitive, this method is the one actually responsible for loading the project data other than deserializing the JSON data.
-  /// This choice was made to avoid redundancy and to keep the project data loading logic in one place.
-  (Offset, double, Set<FlNodeDataModel>)? _fromJson(Map<String, dynamic> json) {
-    if (json.isEmpty) return null;
-
-    final viewportJson = json['viewport'] as Map<String, dynamic>;
-
-    controller.setViewportOffset(
-      Offset(
-        viewportJson['offset'][0] as double,
-        viewportJson['offset'][1] as double,
-      ),
-      absolute: true,
-    );
-
-    controller.setViewportZoom(
-      viewportJson['zoom'] as double,
-      absolute: true,
-    );
-
-    final nodesJson = json['nodes'] as List<dynamic>;
-
-    final nodes = nodesJson.map((node) {
-      return FlNodeDataModel.fromJson(
-        node,
-        nodePrototypes: controller.nodePrototypes,
-        dataHandlers: dataHandlers,
-      );
-    }).toSet();
-
-    for (final node in nodes) {
-      controller.addNodeFromExisting(node, isHandled: true);
-    }
-
-    return (viewportOffset, viewportZoom, nodes);
+    isSaved = true;
   }
 
   /// This method wraps [_toJson] and adds additional
@@ -205,7 +131,7 @@ class FlNodeEditorProjectHelper {
     late final Map<String, dynamic> jsonData;
 
     try {
-      jsonData = _toJson();
+      jsonData = projectData.toJson(dataHandlers);
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
@@ -219,7 +145,7 @@ class FlNodeEditorProjectHelper {
     final hasSaved = await projectSaver?.call(jsonData);
     if (hasSaved == false) return;
 
-    _isSaved = true;
+    isSaved = true;
 
     controller.eventBus.emit(FlSaveProjectEvent(id: const Uuid().v4()));
 
@@ -253,10 +179,14 @@ class FlNodeEditorProjectHelper {
       return;
     }
 
-    controller.clear();
+    clear();
 
     try {
-      _fromJson(jsonData);
+      projectData = FlNodeEditorProjectDataModel.fromJson(
+        jsonData,
+        controller.nodePrototypes,
+        dataHandlers,
+      );
     } catch (e) {
       controller.onCallback?.call(
         FlCallbackType.error,
@@ -264,6 +194,21 @@ class FlNodeEditorProjectHelper {
       );
       return;
     }
+
+    // Normally this would be handled by the node editor itself, but since we're loading
+    // a project, we need to manually set the offsets of unbound nodes otherwise we would,
+    // once again, add the nodes to the project data, which would be incorrect.
+    for (final node in projectData.nodes.values) {
+      controller.unboundNodeOffsets[node.id] = node.offset;
+    }
+
+    // These too require manual setting as they are not strictly part of the project data.
+    // Their value at the moment of saving the project is what matters. They also trigger
+    // animations when set via the controller, which is a nice touch.
+    controller.setViewportOffset(projectData.viewportOffset, absolute: true);
+    controller.setViewportZoom(projectData.viewportZoom, absolute: true);
+
+    isSaved = true;
 
     controller.eventBus.emit(FlLoadProjectEvent(id: const Uuid().v4()));
 
@@ -284,6 +229,15 @@ class FlNodeEditorProjectHelper {
     final shouldProceed = await projectCreator?.call(isSaved);
 
     if (shouldProceed == false) return;
+
+    clear();
+
+    projectData = FlNodeEditorProjectDataModel(
+      nodes: {},
+      links: {},
+    );
+
+    isSaved = false;
 
     controller.eventBus.emit(FlNewProjectEvent(id: const Uuid().v4()));
 

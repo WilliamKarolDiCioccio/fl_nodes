@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:fl_nodes/src/constants.dart';
-import 'package:fl_nodes/src/core/controller/config.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
