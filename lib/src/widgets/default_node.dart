@@ -281,9 +281,12 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                   position: position,
                 );
               } else if (!isContextMenuVisible) {
+                widget.controller.selectNodesById({widget.node.id});
+
                 final entries = widget.contextMenuBuilder != null
                     ? widget.contextMenuBuilder!(context, widget.node)
                     : _defaultNodeContextMenuEntries();
+
                 createAndShowContextMenu(
                   context,
                   entries: entries,
