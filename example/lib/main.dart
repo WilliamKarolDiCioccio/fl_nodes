@@ -117,14 +117,19 @@ class NodeEditorExampleScreen extends StatefulWidget {
       NodeEditorExampleScreenState();
 }
 
+final bool isMobile = TargetPlatform.iOS == defaultTargetPlatform ||
+        TargetPlatform.android == defaultTargetPlatform
+    ? true
+    : false;
+
 class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
   late final FlNodeEditorController _nodeEditorController;
   final TerminalController _terminalController = TerminalController();
 
-  bool isHierarchyCollapsed = false;
-  bool isHierarchyFullyCollapsed = false;
-  bool isTerminalCollapsed = false;
-  bool isTerminalFullyCollapsed = false;
+  bool isHierarchyCollapsed = isMobile ? true : false;
+  bool isHierarchyFullyCollapsed = isMobile ? true : false;
+  bool isTerminalCollapsed = isMobile ? true : false;
+  bool isTerminalFullyCollapsed = isMobile ? true : false;
 
   void _toggleHierarchy() {
     setState(() {
