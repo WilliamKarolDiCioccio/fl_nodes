@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:fl_nodes/src/core/controller/callback.dart';
@@ -36,6 +37,10 @@ class FlNodeEditorProjectHelper {
   );
 
   bool isSaved = true;
+  DateTime? lastSaveTime;
+
+  Timer? _autoSaveTimer;
+  Timer? _saveDebounceTimer;
 
   Offset get viewportOffset => controller.viewportOffset;
   double get viewportZoom => controller.viewportZoom;
@@ -82,7 +87,29 @@ class FlNodeEditorProjectHelper {
     required this.projectSaver,
     required this.projectLoader,
     required this.projectCreator,
-  });
+  }) {
+    controller.eventBus.events.listen(_handleProjectEvents);
+  }
+
+  /// Handles events from the controller and manages the project state accordingly.
+  void _handleProjectEvents(NodeEditorEvent event) {
+    if (event is FlAddNodeEvent ||
+        event is FlRemoveNodeEvent ||
+        event is FlAddLinkEvent ||
+        event is FlRemoveLinkEvent ||
+        event is FlDragSelectionEndEvent ||
+        (event is FlNodeFieldEvent &&
+            event.eventType == FlFieldEventType.submit)) {
+      isSaved = false;
+
+      if (_autoSaveTimer == null || !_autoSaveTimer!.isActive) {
+        _autoSaveTimer =
+            Timer.periodic(controller.config.autoSaveInterval, (timer) {
+          if (!isSaved) save();
+        });
+      }
+    }
+  }
 
   /// Registers a custom data handler for a specific type.
   void registerDataHandler<T>({
@@ -126,6 +153,10 @@ class FlNodeEditorProjectHelper {
   ///
   /// e.g. Save to a file, save to a database, etc.
   void save({BuildContext? context}) async {
+    if (_saveDebounceTimer != null && _saveDebounceTimer!.isActive) return;
+
+    _saveDebounceTimer = Timer(controller.config.manualSaveDebounce, () {});
+
     final strings = FlNodeEditorLocalizations.of(context);
 
     late final Map<String, dynamic> jsonData;
@@ -146,6 +177,7 @@ class FlNodeEditorProjectHelper {
     if (hasSaved == false) return;
 
     isSaved = true;
+    lastSaveTime = DateTime.now();
 
     controller.eventBus.emit(FlSaveProjectEvent(id: const Uuid().v4()));
 

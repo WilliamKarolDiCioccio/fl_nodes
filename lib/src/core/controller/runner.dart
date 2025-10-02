@@ -14,9 +14,13 @@ import 'core.dart';
 class FlNodeEditorExecutionHelper {
   final FlNodeEditorController controller;
 
-  Set<String> _executedNodes = {};
-  Map<String, Map<String, dynamic>> _execState = {};
-  Map<String, Set<String>> _dataDeps = {};
+  final Set<String> _executedNodes = {};
+  final Map<String, Map<String, dynamic>> _execState = {};
+  final Map<String, Set<String>> _dataDeps = {};
+
+  Timer? _buildGraphDelayTimer;
+  Timer? _runGraphDelayTimer;
+
   FlNodeEditorProjectDataModel projectData = FlNodeEditorProjectDataModel(
     nodes: {},
     links: {},
@@ -41,15 +45,40 @@ class FlNodeEditorExecutionHelper {
 
   /// Handles events from the controller and updates the graph accordingly.
   void _handleRunnerEvents(NodeEditorEvent event) {
-    if (event is FlLoadProjectEvent ||
-        event is FlNewProjectEvent ||
-        event is FlAddNodeEvent ||
+    if (event is FlLoadProjectEvent || event is FlNewProjectEvent) {
+      _buildGraphDelayTimer?.cancel();
+      _runGraphDelayTimer?.cancel();
+
+      if (controller.config.autoBuildGraph) {
+        _buildDepsMap();
+
+        if (controller.config.autoRunGraph) {
+          executeGraph();
+        }
+      }
+    }
+
+    if (event is FlAddNodeEvent ||
         event is FlRemoveNodeEvent ||
         event is FlAddLinkEvent ||
         event is FlRemoveLinkEvent ||
         (event is FlNodeFieldEvent &&
             event.eventType == FlFieldEventType.submit)) {
-      _buildDepsMap();
+      if (controller.config.autoBuildGraph) {
+        _buildGraphDelayTimer?.cancel();
+        _buildGraphDelayTimer =
+            Timer(controller.config.autoBuildGraphDelay, () {
+          _buildDepsMap();
+
+          if (controller.config.autoRunGraph) {
+            _runGraphDelayTimer?.cancel();
+            _runGraphDelayTimer =
+                Timer(controller.config.autoRunGraphDelay, () {
+              executeGraph();
+            });
+          }
+        });
+      }
     }
   }
 
@@ -58,7 +87,7 @@ class FlNodeEditorExecutionHelper {
   /// The data dependency map is a map of node IDs to the unique IDs of nodes connected to the node's data input ports.
   /// This map is used to determine the order in which nodes are executed to ensure that data is propagated correctly.
   void _buildDepsMap() {
-    _dataDeps = {};
+    _dataDeps.clear();
 
     projectData = controller.project.projectData.copyWith();
 
@@ -134,8 +163,21 @@ class FlNodeEditorExecutionHelper {
 
   /// Executes the entire graph asynchronously
   Future<void> executeGraph({BuildContext? context}) async {
-    _executedNodes = {};
-    _execState = {};
+    if (_runGraphDelayTimer != null && _runGraphDelayTimer!.isActive) {
+      _runGraphDelayTimer!.cancel();
+    }
+
+    if (controller.config.autoBuildGraph) {
+      if (_buildGraphDelayTimer != null && _buildGraphDelayTimer!.isActive) {
+        _buildGraphDelayTimer!.cancel();
+        _buildDepsMap();
+      }
+    } else {
+      _buildDepsMap();
+    }
+
+    _executedNodes.clear();
+    _execState.clear();
 
     for (final node in nodes.values) {
       if (!node.ports.values.every(

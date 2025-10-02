@@ -18,6 +18,13 @@ class FlNodeEditorConfig {
   final bool enableSnapToGrid;
   final double snapToGridSize;
   final bool enableAutoPlacement;
+  final bool autoSave;
+  final bool autoBuildGraph;
+  final bool autoRunGraph;
+  final Duration autoSaveInterval;
+  final Duration manualSaveDebounce;
+  final Duration autoBuildGraphDelay;
+  final Duration autoRunGraphDelay;
 
   const FlNodeEditorConfig({
     this.enableZoom = true,
@@ -34,6 +41,13 @@ class FlNodeEditorConfig {
     this.enableSnapToGrid = true,
     this.snapToGridSize = 64.0,
     this.enableAutoPlacement = false,
+    this.autoSave = false,
+    this.autoBuildGraph = true,
+    this.autoRunGraph = true,
+    this.autoSaveInterval = const Duration(seconds: 30),
+    this.manualSaveDebounce = const Duration(seconds: 2),
+    this.autoBuildGraphDelay = const Duration(seconds: 5),
+    this.autoRunGraphDelay = const Duration(seconds: 5),
   });
 
   FlNodeEditorConfig copyWith({
