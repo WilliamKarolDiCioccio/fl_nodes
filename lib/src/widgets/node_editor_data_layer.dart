@@ -335,20 +335,20 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   }) {
     if (!widget.controller.config.enableZoom) return;
 
-    const double zoomSpeed = 0.1;
     final double sensitivity = widget.controller.config.zoomSensitivity;
-
-    late double targetZoom;
-
-    // Check if we're on a mobile platform
     final bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
 
+    late double targetZoom;
+
     // Mobile: simple linear/multiplicative scaling - no logarithms
     if (isMobile) {
+      const platformWeight = 0.1;
+
       final double delta = defaultTargetPlatform == TargetPlatform.android
-          ? -amount * zoomSpeed * sensitivity // Flip for Android
-          : amount * zoomSpeed * sensitivity; // Keep as-is for iOS
+          ? -amount * platformWeight * sensitivity // Flip for Android
+          : amount * platformWeight * sensitivity; // Keep as-is for iOS
+
       targetZoom = zoom * (1.0 + delta);
     }
     // Desktop: use logarithmic scaling for smooth trackpad/mouse wheel input
@@ -357,26 +357,52 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       late double delta;
 
       if (isTrackpadInput) {
-        final double weight = switch (defaultTargetPlatform) {
+        final platformWeight = switch (defaultTargetPlatform) {
           TargetPlatform.macOS => 1.0,
           TargetPlatform.windows => 10.0,
           TargetPlatform.linux => 5.0,
           _ => 1.0
         };
-        delta = log(amount) * sensitivity * weight;
+        delta = log(amount) * sensitivity * platformWeight;
       } else {
-        delta = amount * zoomSpeed * sensitivity;
+        const platformWeight = 0.01;
+
+        delta = amount * platformWeight * sensitivity;
       }
 
-      final double targetLogZoom =
-          isTrackpadInput ? logZoom + delta : logZoom - delta;
+      final double targetLogZoom = isTrackpadInput
+          ? logZoom + delta // Normal for trackpad
+          : logZoom - delta; // Invert for mouse wheel
+
       targetZoom = exp(targetLogZoom);
     }
+
+    final localFocalPoint = RenderBoxUtils.screenToWorld(
+      editorKey,
+      focalPoint,
+      offset,
+      zoom,
+    );
 
     widget.controller.setViewportZoom(
       targetZoom,
       absolute: true,
-      animate: !isMobile && defaultTargetPlatform != TargetPlatform.macOS,
+      animate: false,
+    );
+
+    final newLocalFocalPoint = RenderBoxUtils.screenToWorld(
+      editorKey,
+      focalPoint,
+      widget.controller.viewportOffset,
+      widget.controller.viewportZoom,
+    );
+
+    final focalPointOffsetDelta = newLocalFocalPoint! - localFocalPoint!;
+
+    widget.controller.setViewportOffset(
+      widget.controller.viewportOffset + focalPointOffsetDelta,
+      absolute: true,
+      animate: false,
     );
   }
 
@@ -602,8 +628,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                     _onDragUpdate(details.focalPointDelta);
                   }
                   if (widget.controller.config.enableZoom &&
-                          details.scale > 1.25 ||
-                      details.scale < 0.75) {
+                          details.scale > 1.5 ||
+                      details.scale < 0.5) {
                     _setZoomFromRawInput(
                       details.scale < 1 ? details.scale : -details.scale,
                       details.focalPoint,
