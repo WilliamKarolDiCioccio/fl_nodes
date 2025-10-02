@@ -692,4 +692,17 @@ class FlNodeEditorProjectDataModel {
       viewportZoom: (json['viewport']['zoom'] as num).toDouble(),
     );
   }
+
+  FlNodeEditorProjectDataModel copyWith() {
+    return FlNodeEditorProjectDataModel(
+      viewportOffset: viewportOffset,
+      viewportZoom: viewportZoom,
+      nodes: Map.fromEntries(
+        nodes.entries.map((e) => MapEntry(e.key, e.value.copyWith())),
+      ),
+      links: Map.fromEntries(
+        links.entries.map((e) => MapEntry(e.key, e.value)),
+      ),
+    );
+  }
 }

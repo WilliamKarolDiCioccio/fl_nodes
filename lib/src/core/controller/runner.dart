@@ -13,21 +13,30 @@ import 'core.dart';
 /// NOTE: This class is still in development and there are performance improvements to be made.
 class FlNodeEditorExecutionHelper {
   final FlNodeEditorController controller;
-  Map<String, FlNodeDataModel> _nodes = {};
-  Map<String, Set<String>> _dataDeps = {};
 
   Set<String> _executedNodes = {};
   Map<String, Map<String, dynamic>> _execState = {};
+  Map<String, Set<String>> _dataDeps = {};
+  FlNodeEditorProjectDataModel projectData = FlNodeEditorProjectDataModel(
+    nodes: {},
+    links: {},
+  );
+
+  Map<String, FlNodeDataModel> get nodes => projectData.nodes;
 
   FlNodeEditorExecutionHelper(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
   }
 
   void clear() {
-    _nodes = {};
-    _dataDeps = {};
-    _executedNodes = {};
-    _execState = {};
+    projectData = FlNodeEditorProjectDataModel(
+      nodes: {},
+      links: {},
+    );
+
+    _execState.clear();
+    _executedNodes.clear();
+    _dataDeps.clear();
   }
 
   /// Handles events from the controller and updates the graph accordingly.
@@ -44,38 +53,6 @@ class FlNodeEditorExecutionHelper {
     }
   }
 
-  /// Identifies independent subgraphs in the graph.
-  void _copyNodes() {
-    // This isolates and avoids async access issues
-    _nodes = controller.nodes.map((id, node) {
-      final deepCopiedPorts = node.ports.map((portId, port) {
-        final deepCopiedLinks = port.links.map((link) {
-          return link.copyWith();
-        }).toSet();
-
-        return MapEntry(
-          portId,
-          port.copyWith(links: deepCopiedLinks),
-        );
-      });
-
-      final deepCopiedFields = node.fields.map((fieldId, field) {
-        return MapEntry(
-          fieldId,
-          field.copyWith(),
-        );
-      });
-
-      return MapEntry(
-        id,
-        node.copyWith(
-          ports: deepCopiedPorts,
-          fields: deepCopiedFields,
-        ),
-      );
-    });
-  }
-
   /// Builds the data dependency map.
   ///
   /// The data dependency map is a map of node IDs to the unique IDs of nodes connected to the node's data input ports.
@@ -83,11 +60,11 @@ class FlNodeEditorExecutionHelper {
   void _buildDepsMap() {
     _dataDeps = {};
 
-    _copyNodes();
+    projectData = controller.project.projectData.copyWith();
 
     final Set<String> visited = {};
 
-    for (final node in _nodes.values) {
+    for (final node in projectData.nodes.values) {
       if (!node.ports.values.every(
         (port) => port.prototype.direction == FlPortDirection.output,
       )) {
@@ -104,13 +81,13 @@ class FlNodeEditorExecutionHelper {
     visited.add(nodeId);
 
     _dataDeps[nodeId] = _getConnectedNodeIdsFromNode(
-      _nodes[nodeId]!,
+      nodes[nodeId]!,
       FlPortDirection.input,
       FlPortType.data,
     );
 
     final connectedOutputNodeIds = _getConnectedNodeIdsFromNode(
-      _nodes[nodeId]!,
+      nodes[nodeId]!,
       FlPortDirection.output,
       FlPortType.control,
     );
@@ -125,7 +102,7 @@ class FlNodeEditorExecutionHelper {
     final connectedNodeIds = <String>{};
 
     for (final link in port.links) {
-      final connectedNode = _nodes[
+      final connectedNode = nodes[
           port.prototype.direction == FlPortDirection.input
               ? link.fromTo.from
               : link.fromTo.fromPort]!;
@@ -160,7 +137,7 @@ class FlNodeEditorExecutionHelper {
     _executedNodes = {};
     _execState = {};
 
-    for (final node in _nodes.values) {
+    for (final node in nodes.values) {
       if (!node.ports.values.every(
         (port) => port.prototype.direction == FlPortDirection.output,
       )) {
@@ -202,7 +179,7 @@ class FlNodeEditorExecutionHelper {
         }
 
         for (final nodeId in connectedNodeIds) {
-          futures.add(_executeNode(_nodes[nodeId]!));
+          futures.add(_executeNode(nodes[nodeId]!));
         }
       }
 
@@ -224,7 +201,7 @@ class FlNodeEditorExecutionHelper {
         }
 
         for (final link in port.links) {
-          final connectedNode = _nodes[link.fromTo.fromPort]!;
+          final connectedNode = nodes[link.fromTo.fromPort]!;
           final connectedPort = connectedNode.ports[link.fromTo.toPort]!;
 
           connectedPort.data = data;
@@ -236,7 +213,7 @@ class FlNodeEditorExecutionHelper {
 
     for (final dep in _dataDeps[node.id]!) {
       if (_executedNodes.contains(dep)) continue;
-      await _executeNode(_nodes[dep]!);
+      await _executeNode(nodes[dep]!);
     }
 
     try {
