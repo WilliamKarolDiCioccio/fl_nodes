@@ -32,7 +32,9 @@ class FlNodeEditorExecutionHelper {
 
   /// Handles events from the controller and updates the graph accordingly.
   void _handleRunnerEvents(NodeEditorEvent event) {
-    if (event is FlAddNodeEvent ||
+    if (event is FlLoadProjectEvent ||
+        event is FlNewProjectEvent ||
+        event is FlAddNodeEvent ||
         event is FlRemoveNodeEvent ||
         event is FlAddLinkEvent ||
         event is FlRemoveLinkEvent ||
