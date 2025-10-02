@@ -5,8 +5,8 @@ import 'package:example/l10n/app_localizations.dart';
 import 'package:example/nodes/data/types.dart';
 import 'package:example/nodes/styles/headers.dart';
 import 'package:example/nodes/styles/ports.dart';
+import 'package:example/widgets/terminal.dart';
 import 'package:fl_nodes/fl_nodes.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 FlNodePrototype createValueNode<T>({
@@ -631,15 +631,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
-        if (kDebugMode) {
-          print(ports['value']);
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Value: ${ports['value']}'),
-          ),
-        );
+        TerminalController.instance.info('Value: ${ports['value']}');
 
         unawaited(f({('completed')}));
       },

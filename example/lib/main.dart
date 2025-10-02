@@ -8,6 +8,7 @@ import 'package:example/utils/snackbar.dart';
 import 'package:example/widgets/hierarchy.dart';
 import 'package:example/widgets/instructions.dart';
 import 'package:example/widgets/settings.dart';
+import 'package:example/widgets/terminal.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
@@ -118,24 +119,23 @@ class NodeEditorExampleScreen extends StatefulWidget {
 
 class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
   late final FlNodeEditorController _nodeEditorController;
+  final TerminalController _terminalController = TerminalController();
 
   bool isHierarchyCollapsed = false;
-  bool _childCollapsed = false;
+  bool isHierarchyFullyCollapsed = false;
+  bool isTerminalCollapsed = false;
+  bool isTerminalFullyCollapsed = false;
 
   void _toggleHierarchy() {
-    if (isHierarchyCollapsed) {
-      // expanding -> immediately start expanding and later clear collapsed flag in child
-      setState(() {
-        isHierarchyCollapsed = false;
-        // don't change _childCollapsed yet; let animation reveal first
-      });
-    } else {
-      // collapsing -> start animation, then set child collapsed after animation ends
-      setState(() {
-        isHierarchyCollapsed = true;
-        // _childCollapsed will be set to true inside onEnd of the tween
-      });
-    }
+    setState(() {
+      isHierarchyCollapsed = !isHierarchyCollapsed;
+    });
+  }
+
+  void _toggleTerminal() {
+    setState(() {
+      isTerminalCollapsed = !isTerminalCollapsed;
+    });
   }
 
   @override
@@ -304,9 +304,7 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
         controller: _nodeEditorController,
         child: Row(
           children: [
-            // Widget tree (where you want the reveal)
             ClipRect(
-              // ClipRect ensures anything outside the reveal box is hidden.
               child: TweenAnimationBuilder<double>(
                 tween: Tween<double>(
                   begin: isHierarchyCollapsed ? 1.0 : 0.0,
@@ -315,38 +313,68 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 onEnd: () {
-                  // After the reveal/collapse animation finishes, update the child's internal collapsed flag.
-                  // If we are collapsed, we set childCollapsed = true. If expanded, childCollapsed = false.
                   setState(() {
-                    _childCollapsed = isHierarchyCollapsed;
+                    isHierarchyFullyCollapsed = isHierarchyCollapsed;
                   });
                 },
                 builder: (context, widthFactor, child) {
-                  // Align with widthFactor reveals only a fraction of the child horizontally.
                   return Align(
                     alignment: Alignment.centerLeft,
                     widthFactor: widthFactor.clamp(0.0, 1.0),
                     child: child,
                   );
                 },
-                // Important: put the HierarchyWidget into `child:` so it is not rebuilt each frame.
                 child: SizedBox(
-                  width: 300, // child stays at full width always
+                  width: 300,
                   child: HierarchyWidget(
                     controller: _nodeEditorController,
-                    // pass the internal collapsed flag (only changes after animation completes)
-                    isCollapsed: _childCollapsed,
+                    isCollapsed: isHierarchyFullyCollapsed,
                   ),
                 ),
               ),
             ),
             Expanded(
-              child: FlNodeEditorWidget(
-                controller: _nodeEditorController,
-                expandToParent: true,
-                overlay: () => [
-                  FlOverlayData(
-                    child: _buildTopToolbar(),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: FlNodeEditorWidget(
+                      controller: _nodeEditorController,
+                      expandToParent: true,
+                      overlay: () => [
+                        FlOverlayData(
+                          child: _buildTopToolbar(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ClipRect(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(
+                        begin: isTerminalCollapsed ? 1.0 : 0.0,
+                        end: isTerminalCollapsed ? 0.0 : 1.0,
+                      ),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      onEnd: () {
+                        setState(() {
+                          isTerminalFullyCollapsed = isTerminalCollapsed;
+                        });
+                      },
+                      builder: (context, heightFactor, child) {
+                        return Align(
+                          alignment: Alignment.bottomCenter,
+                          heightFactor: heightFactor.clamp(0.0, 1.0),
+                          child: child,
+                        );
+                      },
+                      child: SizedBox(
+                        height: 400,
+                        child: TerminalWidget(
+                          controller: _terminalController,
+                          isCollapsed: isTerminalFullyCollapsed,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -372,6 +400,13 @@ class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
                 icon: isHierarchyCollapsed ? Icons.menu_open : Icons.menu,
                 tooltip: AppLocalizations.of(context)!.toggleHierarchyTooltip,
                 onPressed: _toggleHierarchy,
+              ),
+              _buildToolbarButton(
+                icon: isTerminalCollapsed
+                    ? Icons.terminal
+                    : Icons.terminal_outlined,
+                tooltip: AppLocalizations.of(context)!.toggleTerminalTooltip,
+                onPressed: _toggleTerminal,
               ),
             ],
           ),
