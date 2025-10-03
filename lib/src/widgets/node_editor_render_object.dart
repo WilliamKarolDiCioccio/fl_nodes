@@ -682,7 +682,7 @@ class NodeEditorRenderBox extends RenderBox
             ),
           );
 
-          if (lodLevel <= 2) continue;
+          if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
           for (final port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
@@ -704,7 +704,7 @@ class NodeEditorRenderBox extends RenderBox
             ),
           );
 
-          if (lodLevel <= 2) continue;
+          if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
           for (final port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
