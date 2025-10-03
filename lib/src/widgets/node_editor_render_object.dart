@@ -1258,12 +1258,7 @@ class NodeEditorRenderBox extends RenderBox
 
   /// Handles node hit events (click/hover)
   void _handleNodeHit(String nodeId, PointerEvent event) {
-    if (event is PointerDownEvent) {
-      _controller.selectNodesById(
-        {nodeId},
-        holdSelection: HardwareKeyboard.instance.isControlPressed,
-      );
-    } else if (event is PointerHoverEvent) {
+    if (event is PointerHoverEvent) {
       _setNodeHover(nodeId);
     }
   }
