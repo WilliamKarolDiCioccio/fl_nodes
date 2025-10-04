@@ -38,6 +38,7 @@ typedef NodePortBuilder = Widget Function(
 /// The context menu is the menu that appears when the user right-clicks (content depends on the entity being clicked).
 typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
   BuildContext context,
+  FlNodeEditorController controller,
   FlNodeDataModel node,
 );
 

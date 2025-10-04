@@ -2,22 +2,18 @@ import 'dart:async';
 
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
-import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
-import 'package:fl_nodes/src/widgets/context_menu.dart';
+import 'package:fl_nodes/src/core/utils/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../constants.dart';
 import '../core/models/data.dart';
 import 'builders.dart';
-
-typedef _TempLink = ({String nodeId, String portId});
 
 /// The main NodeWidget which represents a node in the editor.
 /// It now ensures that fields (regardless of whether a custom fieldBuilder is used)
@@ -56,8 +52,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
   // The last known position of the pointer (GestureDetector).
   Offset? _lastPanPosition;
 
-  // Temporary link locator used during linking.
-  _TempLink? _tempLink;
+  // Temporary source port locator used during linking.
+  PortLocator? _portLocator;
 
   late Color fakeTransparentColor;
 
@@ -183,7 +179,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     _edgeTimer?.cancel();
   }
 
-  _TempLink? _isNearPort(Offset position) {
+  PortLocator? _isNearPort(Offset position) {
     final worldPosition = RenderBoxUtils.screenToWorld(
       editorKey,
       position,
@@ -212,8 +208,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
     return null;
   }
 
-  void _onTmpLinkStart(_TempLink locator) {
-    _tempLink = (nodeId: locator.nodeId, portId: locator.portId);
+  void _onTmpLinkStart(PortLocator locator) {
+    _portLocator = (nodeId: locator.nodeId, portId: locator.portId);
     _isLinking = true;
   }
 
@@ -224,8 +220,8 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
       viewportOffset,
       viewportZoom,
     );
-    final node = widget.controller.getNodeById(_tempLink!.nodeId)!;
-    final port = node.ports[_tempLink!.portId]!;
+    final node = widget.controller.getNodeById(_portLocator!.nodeId)!;
+    final port = node.ports[_portLocator!.portId]!;
     final absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
@@ -237,19 +233,19 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
 
   void _onTmpLinkCancel() {
     _isLinking = false;
-    _tempLink = null;
+    _portLocator = null;
     widget.controller.clearTempLink();
   }
 
-  void _onTmpLinkEnd(_TempLink locator) {
+  void _onTmpLinkEnd(PortLocator locator) {
     widget.controller.addLink(
-      _tempLink!.nodeId,
-      _tempLink!.portId,
+      _portLocator!.nodeId,
+      _portLocator!.portId,
       locator.nodeId,
       locator.portId,
     );
     _isLinking = false;
-    _tempLink = null;
+    _portLocator = null;
     widget.controller.clearTempLink();
   }
 
@@ -272,19 +268,32 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
               }
 
               if (locator != null && !widget.node.state.isCollapsed) {
-                createAndShowContextMenu(
+                ContextMenuUtils.createAndShowContextMenu(
                   context,
-                  entries: _portContextMenuEntries(position, locator: locator),
+                  entries: ContextMenuUtils.portContextMenuEntries(
+                    position,
+                    context: context,
+                    controller: widget.controller,
+                    locator: locator,
+                  ),
                   position: position,
                 );
               } else if (!isContextMenuVisible) {
                 widget.controller.selectNodesById({widget.node.id});
 
                 final entries = widget.contextMenuBuilder != null
-                    ? widget.contextMenuBuilder!(context, widget.node)
-                    : _defaultNodeContextMenuEntries();
+                    ? widget.contextMenuBuilder!(
+                        context,
+                        widget.controller,
+                        widget.node,
+                      )
+                    : ContextMenuUtils.nodeMenuEntries(
+                        context,
+                        widget.controller,
+                        widget.node,
+                      );
 
-                createAndShowContextMenu(
+                ContextMenuUtils.createAndShowContextMenu(
                   context,
                   entries: entries,
                   position: position,
@@ -297,7 +306,7 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             onPanStart: (details) {
               final position = details.globalPosition;
               _isLinking = false;
-              _tempLink = null;
+              _portLocator = null;
 
               final locator = _isNearPort(position);
               if (locator != null) {
@@ -324,9 +333,14 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  createAndShowContextMenu(
+                  ContextMenuUtils.createAndShowContextMenu(
                     context,
-                    entries: _createSubmenuEntries(_lastPanPosition!),
+                    entries: ContextMenuUtils.nodeCreationMenuEntries(
+                      _lastPanPosition!,
+                      context: context,
+                      controller: widget.controller,
+                      locator: locator,
+                    ),
                     position: _lastPanPosition!,
                     onDismiss: (value) => _onTmpLinkCancel(),
                   );
@@ -342,35 +356,47 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             behavior: HitTestBehavior.translucent,
             onPointerPressed: (event) async {
               _isLinking = false;
-              _tempLink = null;
+              _portLocator = null;
 
               final locator = _isNearPort(event.position);
+
               if (event.buttons == kSecondaryMouseButton) {
                 if (!widget.node.state.isSelected) {
                   widget.controller.selectNodesById({widget.node.id});
                 }
 
                 if (locator != null && !widget.node.state.isCollapsed) {
-                  createAndShowContextMenu(
+                  ContextMenuUtils.createAndShowContextMenu(
                     context,
-                    entries: _portContextMenuEntries(
+                    entries: ContextMenuUtils.portContextMenuEntries(
                       event.position,
+                      context: context,
+                      controller: widget.controller,
                       locator: locator,
                     ),
                     position: event.position,
                   );
                 } else if (!isContextMenuVisible) {
                   final entries = widget.contextMenuBuilder != null
-                      ? widget.contextMenuBuilder!(context, widget.node)
-                      : _defaultNodeContextMenuEntries();
-                  createAndShowContextMenu(
+                      ? widget.contextMenuBuilder!(
+                          context,
+                          widget.controller,
+                          widget.node,
+                        )
+                      : ContextMenuUtils.nodeMenuEntries(
+                          context,
+                          widget.controller,
+                          widget.node,
+                        );
+
+                  ContextMenuUtils.createAndShowContextMenu(
                     context,
                     entries: entries,
                     position: event.position,
                   );
                 }
               } else if (event.buttons == kPrimaryMouseButton) {
-                if (locator != null && !_isLinking && _tempLink == null) {
+                if (locator != null && !_isLinking && _portLocator == null) {
                   _onTmpLinkStart(locator);
                 } else if (!widget.node.state.isSelected) {
                   widget.controller.selectNodesById(
@@ -391,12 +417,18 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             onPointerReleased: (event) async {
               if (_isLinking) {
                 final locator = _isNearPort(event.position);
+
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  createAndShowContextMenu(
+                  ContextMenuUtils.createAndShowContextMenu(
                     context,
-                    entries: _createSubmenuEntries(event.position),
+                    entries: ContextMenuUtils.nodeCreationMenuEntries(
+                      event.position,
+                      context: context,
+                      controller: widget.controller,
+                      locator: locator,
+                    ),
                     position: event.position,
                     onDismiss: (value) => _onTmpLinkCancel(),
                   );
@@ -407,155 +439,6 @@ class _DefaultNodeWidgetState extends State<DefaultNodeWidget> {
             },
             child: child,
           );
-  }
-
-  List<ContextMenuEntry> _defaultNodeContextMenuEntries() {
-    final strings = FlNodeEditorLocalizations.of(context);
-
-    return [
-      MenuHeader(text: strings.nodeMenuLabel),
-      MenuItem(
-        label: strings.seeNodeDescriptionAction,
-        icon: Icons.info,
-        onSelected: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text(widget.node.prototype.displayName(context)),
-                content: Text(widget.node.prototype.description(context)),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(strings.closeAction),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-      const MenuDivider(),
-      MenuItem(
-        label: widget.node.state.isCollapsed
-            ? strings.expandNodeAction
-            : strings.collapseNodeAction,
-        icon: widget.node.state.isCollapsed
-            ? Icons.arrow_drop_down
-            : Icons.arrow_right,
-        onSelected: () => widget.controller
-            .toggleCollapseSelectedNodes(!widget.node.state.isCollapsed),
-      ),
-      const MenuDivider(),
-      MenuItem(
-        label: strings.deleteNodeAction,
-        icon: Icons.delete,
-        onSelected: () {
-          if (widget.node.state.isSelected) {
-            for (final nodeId in widget.controller.selectedNodeIds) {
-              widget.controller.removeNodeById(nodeId);
-            }
-          } else {
-            for (final nodeId in widget.controller.selectedNodeIds) {
-              widget.controller.removeNodeById(nodeId);
-            }
-          }
-
-          widget.controller.clearSelection();
-        },
-      ),
-      MenuItem(
-        label: strings.cutSelectionAction,
-        icon: Icons.content_cut,
-        onSelected: () =>
-            widget.controller.clipboard.cutSelection(context: context),
-      ),
-      MenuItem(
-        label: strings.copySelectionAction,
-        icon: Icons.copy,
-        onSelected: () =>
-            widget.controller.clipboard.copySelection(context: context),
-      ),
-    ];
-  }
-
-  List<ContextMenuEntry> _portContextMenuEntries(
-    Offset position, {
-    required _TempLink locator,
-  }) {
-    final strings = FlNodeEditorLocalizations.of(context);
-
-    return [
-      MenuHeader(text: strings.portMenuLabel),
-      MenuItem(
-        label: strings.cutLinksAction,
-        icon: Icons.remove_circle,
-        onSelected: () {
-          widget.controller.breakPortLinks(locator.nodeId, locator.portId);
-        },
-      ),
-    ];
-  }
-
-  List<ContextMenuEntry> _createSubmenuEntries(Offset position) {
-    final fromLink = _tempLink != null;
-    final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
-
-    if (fromLink) {
-      final startPort = widget.controller
-          .getNodeById(_tempLink!.nodeId)!
-          .ports[_tempLink!.portId]!;
-      widget.controller.nodePrototypes.forEach((key, value) {
-        if (value.ports.any(
-          startPort.prototype.compatibleWith,
-        )) {
-          compatiblePrototypes.add(MapEntry(key, value));
-        }
-      });
-    } else {
-      widget.controller.nodePrototypes.forEach(
-        (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
-      );
-    }
-
-    final worldPosition = RenderBoxUtils.screenToWorld(
-      editorKey,
-      position,
-      viewportOffset,
-      viewportZoom,
-    );
-
-    return compatiblePrototypes.map((entry) {
-      return MenuItem(
-        label: entry.value.displayName(context),
-        icon: Icons.widgets,
-        onSelected: () {
-          final addedNode = widget.controller.addNode(
-            entry.key,
-            offset: worldPosition ?? Offset.zero,
-          );
-          if (fromLink) {
-            final startPort = widget
-                .controller.nodes[_tempLink!.nodeId]!.ports[_tempLink!.portId]!;
-
-            widget.controller.addLink(
-              _tempLink!.nodeId,
-              _tempLink!.portId,
-              addedNode.id,
-              addedNode.ports.values
-                  .map((port) => port.prototype)
-                  .firstWhere(
-                    startPort.prototype.compatibleWith,
-                  )
-                  .idName,
-            );
-
-            _isLinking = false;
-            _tempLink = null;
-          }
-        },
-      );
-    }).toList();
   }
 
   @override

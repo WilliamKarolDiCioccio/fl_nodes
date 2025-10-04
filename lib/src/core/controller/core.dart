@@ -414,9 +414,13 @@ class FlNodeEditorController with ChangeNotifier {
   final Map<String, Offset> unboundNodeOffsets = {};
 
   bool isNodePresent(String id) => nodes.containsKey(id);
+
   bool isLinkPresent(String id) => links.containsKey(id);
 
   bool isNodeSelected(String id) => selectedNodeIds.contains(id);
+  bool isNodeCollapsed(String id) => nodes[id]?.state.isCollapsed ?? false;
+  bool isNodeHovered(String id) => nodes[id]?.state.isHovered ?? false;
+
   bool isLinkSelected(String id) => selectedLinkIds.contains(id);
 
   FlNodeDataModel? getNodeById(String id) => nodes[id];
