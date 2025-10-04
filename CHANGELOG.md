@@ -47,7 +47,7 @@ Thanks to [playday3008](https://github.com/playday3008) for these contributions!
   - Added a callback system for custom error handling and reporting.
   - Simplified gradient link styling options.
 
-- **Fixes**:
+- **Bug Fixes**:
 
   1. Default LOD value now correctly matches zoom level.
   2. Fixed gradient links not drawing when no dirty flag was set.
@@ -68,7 +68,38 @@ Special thanks to [Blokyk](https://github.com/Blokyk) for many of these improvem
 
   - Completely redesigned state system for smoother interactions and peak performance across devices.
 
-## 0.4.0+1
+## 0.4.0+1 (Hotfix)
 
 - **Fix Layout Errors**: Fixed text layout errors from nodes beyond viewport when swithcing locale.
   ([#90](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/90))
+
+Perfect — here’s a continuation of your changelog, following your established tone and formatting style:
+
+---
+
+## 0.5.0
+
+- **Automatic Actions**
+  Introduced a new system for automatic project operations:
+
+  - _Auto-run_: graphs can now execute automatically when inputs change.
+  - _Auto-save_: projects are saved periodically or after important edits.
+  - _Auto-refresh_: rebuilds cached node data when environmental factors change.
+
+- **Improved Controller Architecture**
+  The controller now relies on a dedicated **project data model**, laying the foundation for:
+
+  - future **save file versioning**,
+  - **advanced project management** (multiple projects, snapshots, history, etc.).
+
+- **Bug Fixes**
+
+  - Fixed layout and text rendering inconsistencies on Web after opening modals or changing locales.
+    ([#101](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/101))
+  - Fixed missing text rendering in non-Latin locales (CJK, Korean, etc.).
+    ([#90](https://github.com/WilliamKarolDiCioccio/fl_nodes/pull/90))
+
+- **Internal Improvements**
+
+  - Refactored caching logic in custom render objects to ensure consistency across platforms.
+  - Improved layout synchronization and stability during portal (overlay) transitions.
