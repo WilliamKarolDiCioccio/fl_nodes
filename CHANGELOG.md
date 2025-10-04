@@ -103,3 +103,7 @@ Perfect — here’s a continuation of your changelog, following your establishe
 
   - Refactored caching logic in custom render objects to ensure consistency across platforms.
   - Improved layout synchronization and stability during portal (overlay) transitions.
+
+## 0.5.0+1
+
+- **Fixed auto-save**: Fixed project helper not checking auto-save flag but therefore ignoring configuration.

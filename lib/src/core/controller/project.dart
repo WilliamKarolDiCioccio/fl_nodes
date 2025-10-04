@@ -102,7 +102,8 @@ class FlNodeEditorProjectHelper {
             event.eventType == FlFieldEventType.submit)) {
       isSaved = false;
 
-      if (_autoSaveTimer == null || !_autoSaveTimer!.isActive) {
+      if ((_autoSaveTimer == null || !_autoSaveTimer!.isActive) &&
+          controller.config.autoSave) {
         _autoSaveTimer =
             Timer.periodic(controller.config.autoSaveInterval, (timer) {
           if (!isSaved) save();
