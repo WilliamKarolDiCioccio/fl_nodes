@@ -107,6 +107,17 @@ Import the package in your Dart file:
 import 'package:fl_nodes/fl_nodes.dart';
 ```
 
+Add the following lines to your pubspec.yaml:
+
+```yaml
+flutter:
+  uses-material-design: true
+  generate: true
+  ...
+  shaders:
+    - packages/fl_nodes/shaders/grid.frag
+```
+
 For full implementation details, check out the examples below.
 
 ---
