@@ -87,6 +87,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     return NodeEditorRenderBox(
       controller: controller,
       gridShader: gridShader,
+      isModalPresent: ModalRoute.of(context)?.isCurrent ?? false,
     );
   }
 
@@ -96,6 +97,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     NodeEditorRenderBox renderObject,
   ) {
     renderObject.gridShader = gridShader;
+    renderObject.isModalPresent = ModalRoute.of(context)?.isCurrent == false;
   }
 }
 
@@ -106,8 +108,10 @@ class NodeEditorRenderBox extends RenderBox
   NodeEditorRenderBox({
     required FlNodeEditorController controller,
     required FragmentShader gridShader,
+    required bool isModalPresent,
   })  : _controller = controller,
-        _gridShader = gridShader {
+        _gridShader = gridShader,
+        _isModalPresent = isModalPresent {
     _loadGridShader();
 
     _updateNodes();
@@ -206,6 +210,12 @@ class NodeEditorRenderBox extends RenderBox
     if (_gridShader == value) return;
     _gridShader = value;
     markNeedsPaint();
+  }
+
+  bool _isModalPresent = false;
+  set isModalPresent(bool value) {
+    if (_isModalPresent == value) return;
+    _isModalPresent = value;
   }
 
   Matrix4? _transformMatrix;
@@ -393,6 +403,19 @@ class NodeEditorRenderBox extends RenderBox
 
   @override
   void performLayout() {
+    // On Flutter Web, opening overlay portals (dialogs, modals, sheets, etc.) triggers
+    // a full layout pass rather than a simple repaint, unlike native platforms.
+    // This can desynchronize cached layout data inside custom RenderObjects,
+    // especially when locale changes occur within a modal — font fallback chains
+    // may change without property updates, causing text to render incorrectly.
+    //
+    // To ensure consistency, we detect when overlays are active and force a full
+    // layout pass. This keeps cached geometry and text metrics synchronized across
+    // modals, locale switches, and platform-specific rendering behaviors.
+    //
+    // TLDR: Flutter trickery. Don't question it.
+    if (_isModalPresent) _childrenNotLaidOut.addAll(_childrenById.keys);
+
     size = constraints.biggest;
 
     // If the child has not been laid out yet, we need to layout it.
