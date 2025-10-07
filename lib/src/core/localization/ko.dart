@@ -48,6 +48,14 @@ class FlNodeEditorLocalizationsKo extends FlNodeEditorLocalizations {
   @override
   String get portMenuLabel => "포트 메뉴";
   @override
+  String get linkMenuLabel => "링크 메뉴";
+  @override
+  String get deleteLinkAction => "링크 삭제";
+  @override
+  String get navigateToSourceAction => "소스으로 이동";
+  @override
+  String get navigateToDestinationAction => "대상으로 이동";
+  @override
   String failedToCopySelectionErrorMsg(String e) => "선택 항목 복사 실패: $e";
   @override
   String get selectionCopiedSuccessfullyMsg => "선택 항목이 성공적으로 복사되었습니다";

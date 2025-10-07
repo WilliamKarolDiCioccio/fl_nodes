@@ -273,4 +273,45 @@ class ContextMenuUtils {
       ),
     ];
   }
+
+  static List<ContextMenuEntry> linkContextMenuEntries(
+    Offset position, {
+    required BuildContext context,
+    required FlNodeEditorController controller,
+    required String linkId,
+  }) {
+    final strings = FlNodeEditorLocalizations.of(context);
+
+    return [
+      MenuHeader(text: strings.linkMenuLabel),
+      MenuItem(
+        label: strings.navigateToSourceAction,
+        icon: Icons.launch,
+        onSelected: () {
+          final link = controller.links[linkId];
+          if (link != null) {
+            controller.focusNodesById({link.fromTo.from});
+          }
+        },
+      ),
+      MenuItem(
+        label: strings.navigateToDestinationAction,
+        icon: Icons.call_received,
+        onSelected: () {
+          final link = controller.links[linkId];
+          if (link != null) {
+            controller.focusNodesById({link.fromTo.fromPort});
+          }
+        },
+      ),
+      const MenuDivider(),
+      MenuItem(
+        label: strings.deleteLinkAction,
+        icon: Icons.delete,
+        onSelected: () {
+          controller.removeLinkById(linkId);
+        },
+      ),
+    ];
+  }
 }

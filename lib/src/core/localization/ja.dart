@@ -48,6 +48,14 @@ class FlNodeEditorLocalizationsJa extends FlNodeEditorLocalizations {
   @override
   String get portMenuLabel => "ポートメニュー";
   @override
+  String get linkMenuLabel => "リンクメニュー";
+  @override
+  String get deleteLinkAction => "リンクを削除";
+  @override
+  String get navigateToSourceAction => "ソースに移動";
+  @override
+  String get navigateToDestinationAction => "宛先に移動";
+  @override
   String failedToCopySelectionErrorMsg(String e) => "選択範囲のコピーに失敗しました: $e";
   @override
   String get selectionCopiedSuccessfullyMsg => "選択範囲をコピーしました";

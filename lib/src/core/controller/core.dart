@@ -768,6 +768,8 @@ class FlNodeEditorController with ChangeNotifier {
   void drawTempLink(FlLinkStyle style, Offset from, Offset to) {
     _tempLink = TempLinkDataModel(style: style, from: from, to: to);
 
+    clearSelection();
+
     // The temp link is treated differently from regular links, so we don't need to mark the links data as dirty.
 
     eventBus.emit(FlDrawTempLinkEvent(id: const Uuid().v4(), from, to));
@@ -985,7 +987,7 @@ class FlNodeEditorController with ChangeNotifier {
     bool holdSelection = false,
     bool isHandled = false,
   }) async {
-    if (id.isEmpty) {
+    if (id.isEmpty || _tempLink != null) {
       return clearSelection();
     } else if (!holdSelection) {
       clearSelection();

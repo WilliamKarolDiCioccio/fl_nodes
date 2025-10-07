@@ -48,6 +48,14 @@ class FlNodeEditorLocalizationsEn extends FlNodeEditorLocalizations {
   @override
   String get portMenuLabel => "Port Menu";
   @override
+  String get linkMenuLabel => "Link Menu";
+  @override
+  String get deleteLinkAction => "Delete Link";
+  @override
+  String get navigateToSourceAction => "Navigate to Source";
+  @override
+  String get navigateToDestinationAction => "Navigate to Destination";
+  @override
   String failedToCopySelectionErrorMsg(String e) =>
       "Failed to copy selection: $e";
   @override

@@ -65,6 +65,10 @@ abstract class FlNodeEditorLocalizations {
   String get editorMenuLabel;
   String get nodeMenuLabel;
   String get portMenuLabel;
+  String get linkMenuLabel;
+  String get deleteLinkAction;
+  String get navigateToSourceAction;
+  String get navigateToDestinationAction;
   String failedToCopySelectionErrorMsg(String e);
   String get selectionCopiedSuccessfullyMsg;
   String failedToPasteSelectionErrorMsg(String e);

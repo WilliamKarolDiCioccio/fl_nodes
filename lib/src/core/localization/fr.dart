@@ -46,6 +46,14 @@ class FlNodeEditorLocalizationsFr extends FlNodeEditorLocalizations {
   @override
   String get nodeMenuLabel => "Menu nœud";
   @override
+  String get linkMenuLabel => "Menu lien";
+  @override
+  String get deleteLinkAction => "Supprimer le lien";
+  @override
+  String get navigateToSourceAction => "Aller à la source";
+  @override
+  String get navigateToDestinationAction => "Aller à la destination";
+  @override
   String get portMenuLabel => "Menu port";
   @override
   String failedToCopySelectionErrorMsg(String e) =>

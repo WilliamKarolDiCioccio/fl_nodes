@@ -48,6 +48,14 @@ class FlNodeEditorLocalizationsZh extends FlNodeEditorLocalizations {
   @override
   String get portMenuLabel => "端口菜单";
   @override
+  String get linkMenuLabel => "链接菜单";
+  @override
+  String get deleteLinkAction => "删除链接";
+  @override
+  String get navigateToSourceAction => "导航到源";
+  @override
+  String get navigateToDestinationAction => "导航到目标";
+  @override
   String failedToCopySelectionErrorMsg(String e) => "复制选区失败：$e";
   @override
   String get selectionCopiedSuccessfullyMsg => "选区复制成功";

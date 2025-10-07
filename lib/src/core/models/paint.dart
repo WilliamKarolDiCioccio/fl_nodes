@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:fl_nodes/src/core/utils/widgets/context_menu.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 
 class LinkPaintModel {
@@ -17,7 +18,7 @@ class LinkPaintModel {
 }
 
 class PortPaintModel {
-  final (String, String) locator;
+  final PortLocator locator;
   final bool isSelected;
   final Offset offset;
   final FlPortStyle style;

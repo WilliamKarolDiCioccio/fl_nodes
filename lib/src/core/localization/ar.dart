@@ -48,6 +48,14 @@ class FlNodeEditorLocalizationsAr extends FlNodeEditorLocalizations {
   @override
   String get portMenuLabel => "قائمة المنفذ";
   @override
+  String get linkMenuLabel => "قائمة الرابط";
+  @override
+  String get deleteLinkAction => "حذف الرابط";
+  @override
+  String get navigateToSourceAction => "الانتقال إلى المصدر";
+  @override
+  String get navigateToDestinationAction => "الانتقال إلى الوجهة";
+  @override
   String failedToCopySelectionErrorMsg(String e) => "فشل نسخ التحديد: $e";
   @override
   String get selectionCopiedSuccessfullyMsg => "تم نسخ التحديد بنجاح";

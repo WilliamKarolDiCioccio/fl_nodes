@@ -216,12 +216,12 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     return null;
   }
 
-  void _onLinkStart(PortLocator locator) {
+  void _onTmpLinkStart(PortLocator locator) {
     _portLocator = (nodeId: locator.nodeId, portId: locator.portId);
     _isLinking = true;
   }
 
-  void _onLinkUpdate(Offset position) {
+  void _onTmpLinkUpdate(Offset position) {
     final worldPosition = RenderBoxUtils.screenToWorld(
       editorKey,
       position,
@@ -241,13 +241,13 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     );
   }
 
-  void _onLinkCancel() {
+  void _onTmpLinkCancel() {
     _isLinking = false;
     _portLocator = null;
     widget.controller.clearTempLink();
   }
 
-  void _onLinkEnd(PortLocator locator) {
+  void _onTmpLinkEnd(PortLocator locator) {
     widget.controller.addLink(
       _portLocator!.nodeId,
       _portLocator!.portId,
@@ -264,7 +264,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
     if (_isDragging) {
       _onDragCancel();
     } else if (_isLinking) {
-      _onLinkCancel();
+      _onTmpLinkCancel();
     } else if (_isSelecting) {
       _onHighlightCancel();
     }
@@ -447,7 +447,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
                 if (locator != null && _portLocator == null) {
                   _isLinking = true;
-                  _onLinkStart(locator);
+                  _onTmpLinkStart(locator);
                 } else {
                   _isSelecting = true;
                   _onHighlightStart(details.focalPoint);
@@ -459,7 +459,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 if (details.scale != 1.0) {
                   if (!_isDragging) {
                     if (_isLinking) {
-                      _onLinkCancel();
+                      _onTmpLinkCancel();
                       _isLinking = false;
                     } else if (_isSelecting) {
                       _onHighlightEnd();
@@ -483,7 +483,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   }
                 } else {
                   if (_isLinking) {
-                    _onLinkUpdate(details.focalPoint);
+                    _onTmpLinkUpdate(details.focalPoint);
                   } else if (_isSelecting) {
                     _onHighlightUpdate(details.focalPoint);
                   }
@@ -497,7 +497,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   final locator = _isNearPort(_lastFocalPoint);
 
                   if (locator != null) {
-                    _onLinkEnd(locator);
+                    _onTmpLinkEnd(locator);
                   } else if (!isContextMenuVisible) {
                     ContextMenuUtils.createAndShowContextMenu(
                       context,
@@ -508,7 +508,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                         locator: _portLocator,
                       ),
                       position: _lastFocalPoint,
-                      onDismiss: (value) => _onLinkCancel(),
+                      onDismiss: (value) => _onTmpLinkCancel(),
                     );
                   }
 
@@ -537,7 +537,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                     if (locator != null &&
                         !_isLinking &&
                         _portLocator == null) {
-                      _onLinkStart(locator);
+                      _onTmpLinkStart(locator);
                     } else {
                       _onHighlightStart(event.position);
                     }
@@ -575,7 +575,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   if (_isDragging && widget.controller.config.enablePan) {
                     _onDragUpdate(event.localDelta);
                   } else if (_isLinking) {
-                    _onLinkUpdate(event.position);
+                    _onTmpLinkUpdate(event.position);
                   } else if (_isSelecting) {
                     _onHighlightUpdate(event.position);
                   }
@@ -587,7 +587,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                     final locator = _isNearPort(event.position);
 
                     if (locator != null) {
-                      _onLinkEnd(locator);
+                      _onTmpLinkEnd(locator);
                     } else if (!isContextMenuVisible) {
                       // Show the create submenu if no port is near the cursor
                       ContextMenuUtils.createAndShowContextMenu(
@@ -599,7 +599,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                           locator: _portLocator,
                         ),
                         position: event.position,
-                        onDismiss: (value) => _onLinkCancel(),
+                        onDismiss: (value) => _onTmpLinkCancel(),
                       );
                     }
                   } else if (_isSelecting) {
@@ -642,6 +642,20 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
             key: editorKey,
             controller: widget.controller,
             gridShader: gridShader,
+            showLinkContextMenu: (linkId, position) {
+              if (!isContextMenuVisible) {
+                ContextMenuUtils.createAndShowContextMenu(
+                  context,
+                  entries: ContextMenuUtils.linkContextMenuEntries(
+                    position,
+                    context: context,
+                    controller: widget.controller,
+                    linkId: linkId,
+                  ),
+                  position: position,
+                );
+              }
+            },
             headerBuilder: widget.headerBuilder,
             portBuilder: widget.portBuilder,
             fieldBuilder: widget.fieldBuilder,
