@@ -1,5 +1,5 @@
 import 'package:example/l10n/app_localizations.dart';
-import 'package:example/models/locale.dart';
+import 'package:example/visual_scripting_example/models/locale.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';

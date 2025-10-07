@@ -234,6 +234,8 @@
   "@listElementPortName": {},
   "listIndexPortName": "List Index",
   "@listIndexPortName": {},
+  "goHomeProjectActionTooltip": "Go Home",
+  "@goHomeProjectActionTooltip": {},
   "createProjectActionTooltip": "Create",
   "@createProjectActionTooltip": {},
   "openProjectActionTooltip": "Open",

@@ -1,37 +1,25 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:example/models/locale.dart';
-import 'package:example/nodes/data/handlers.dart';
-import 'package:example/nodes/prototypes/prototypes.dart';
-import 'package:example/utils/snackbar.dart';
-import 'package:example/widgets/hierarchy.dart';
-import 'package:example/widgets/instructions.dart';
-import 'package:example/widgets/settings.dart';
-import 'package:example/widgets/terminal.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:example/visual_scripting_example/models/locale.dart';
+import 'package:example/visual_scripting_example/screens/example.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 import 'l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NodeEditorExampleApp());
+  runApp(const FlNodesExampleApp());
 }
 
-class NodeEditorExampleApp extends StatefulWidget {
-  const NodeEditorExampleApp({super.key});
+class FlNodesExampleApp extends StatefulWidget {
+  const FlNodesExampleApp({super.key});
 
   @override
-  State<NodeEditorExampleApp> createState() => _NodeEditorExampleAppState();
+  State<FlNodesExampleApp> createState() => _FlNodesExampleAppState();
 }
 
-class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
+class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
   late Locale _locale;
 
   final List<LocaleDataModel> locales = [
@@ -85,12 +73,8 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
           seedColor: Colors.blue,
           brightness: Brightness.dark,
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
       ),
-      home: NodeEditorExampleScreen(
+      home: ExampleGalleryScreen(
         locales: locales,
         currentLocale: _locale,
         onLocaleChanged: _setLocale,
@@ -100,445 +84,320 @@ class _NodeEditorExampleAppState extends State<NodeEditorExampleApp> {
   }
 }
 
-class NodeEditorExampleScreen extends StatefulWidget {
-  const NodeEditorExampleScreen({
+class ExampleGalleryScreen extends StatefulWidget {
+  final List<LocaleDataModel> locales;
+  final Locale currentLocale;
+  final void Function(String) onLocaleChanged;
+
+  const ExampleGalleryScreen({
     super.key,
     required this.locales,
     required this.currentLocale,
     required this.onLocaleChanged,
   });
 
-  final List<LocaleDataModel> locales;
-  final Locale currentLocale;
-  final Function(String) onLocaleChanged;
-
   @override
-  State<NodeEditorExampleScreen> createState() =>
-      NodeEditorExampleScreenState();
+  State<ExampleGalleryScreen> createState() => _ExampleGalleryScreenState();
 }
 
-final bool isMobile = TargetPlatform.iOS == defaultTargetPlatform ||
-        TargetPlatform.android == defaultTargetPlatform
-    ? true
-    : false;
-
-class NodeEditorExampleScreenState extends State<NodeEditorExampleScreen> {
-  late final FlNodeEditorController _nodeEditorController;
-  final TerminalController _terminalController = TerminalController();
-
-  bool isHierarchyCollapsed = isMobile ? true : false;
-  bool isHierarchyFullyCollapsed = isMobile ? true : false;
-  bool isTerminalCollapsed = isMobile ? true : false;
-  bool isTerminalFullyCollapsed = isMobile ? true : false;
-
-  void _toggleHierarchy() {
-    setState(() {
-      isHierarchyCollapsed = !isHierarchyCollapsed;
-    });
-  }
-
-  void _toggleTerminal() {
-    setState(() {
-      isTerminalCollapsed = !isTerminalCollapsed;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _nodeEditorController = FlNodeEditorController(
-      projectSaver: (jsonData) async {
-        final String? outputPath = await FilePicker.platform.saveFile(
-          dialogTitle: AppLocalizations.of(context)!.saveProjectDialogTitle,
-          fileName: 'node_project.json',
-          type: FileType.custom,
-          allowedExtensions: ['json'],
-          bytes: utf8.encode(jsonEncode(jsonData)),
-        );
-
-        if (outputPath != null || kIsWeb) {
-          return true;
-        } else {
-          return false;
-        }
-      },
-      projectLoader: (isSaved) async {
-        if (!isSaved) {
-          final bool? proceed = await _showUnsavedChangesDialog();
-          if (proceed != true) return null;
-        }
-
-        final FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['json'],
-        );
-
-        if (result == null) return null;
-
-        late final String fileContent;
-
-        if (kIsWeb) {
-          final byteData = result.files.single.bytes!;
-          fileContent = utf8.decode(byteData.buffer.asUint8List());
-        } else {
-          final File file = File(result.files.single.path!);
-          fileContent = await file.readAsString();
-        }
-
-        return jsonDecode(fileContent);
-      },
-      projectCreator: (isSaved) async {
-        if (isSaved) return true;
-        return await _showUnsavedChangesDialog() == true;
-      },
-      onCallback: (type, message) =>
-          showNodeEditorSnackbar(context, message, type),
-    );
-
-    registerDataHandlers(_nodeEditorController);
-    registerNodes(context, _nodeEditorController);
-
-    _loadSampleProject();
-  }
-
-  Future<bool?> _showUnsavedChangesDialog() {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.unsavedChangesTitle),
-          content: Text(AppLocalizations.of(context)!.unsavedChangesMsg),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppLocalizations.of(context)!.cancel),
+class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
+  List<_ExampleEntry> get _examples => [
+        _ExampleEntry(
+          title: 'Visual Scripting',
+          description:
+              'Classic node graph with execution flow and visual programming capabilities.',
+          icon: Icons.memory,
+          tags: ['nodes', 'scripting', 'visual'],
+          imageUrl:
+              'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/.github/images/node_editor_example.webp',
+          builder: (ctx) => VisualScriptingExampleScreen(
+            locales: widget.locales,
+            currentLocale: widget.currentLocale,
+            onLocaleChanged: widget.onLocaleChanged,
+          ),
+        ),
+        _ExampleEntry(
+          title: 'Mind Map',
+          description: 'Classic mind map layout with draggable nodes.',
+          icon: Icons.map,
+          tags: ['nodes', 'mind map', 'layout'],
+          builder: (ctx) => const Scaffold(
+            body: Center(
+              child: Text('Coming Soon'),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(AppLocalizations.of(context)!.proceed),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _loadSampleProject() async {
-    const sampleProjectLink =
-        'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/example/assets/www/node_project.json';
-
-    try {
-      final response = await http.get(Uri.parse(sampleProjectLink));
-
-      if (response.statusCode == 200 && mounted) {
-        _nodeEditorController.project.load(
-          data: jsonDecode(response.body),
-          context: context,
-        );
-      } else {
-        if (mounted) {
-          _showErrorSnackbar(
-            AppLocalizations.of(context)!.failedToLoadSampleProject,
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showErrorSnackbar(
-          AppLocalizations.of(context)!.failedToLoadSampleProject,
-        );
-      }
-    }
-  }
-
-  void _showErrorSnackbar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
-  }
-
-  void _showSettingsPanel() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => SettingsPanel(
-        locales: widget.locales,
-        currentLocale: widget.currentLocale,
-        onLocaleChanged: widget.onLocaleChanged,
-        controller: _nodeEditorController,
-      ),
-    );
-  }
-
-  void _showInstructionsPanel() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const InstructionsPanel(),
-    );
-  }
-
-  Future<void> _launchGitHub() async {
-    const url = 'https://github.com/WilliamKarolDiCioccio/fl_nodes';
-    final uri = Uri.parse(url);
-
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      _showErrorSnackbar('Could not launch GitHub');
-    }
-  }
-
-  @override
-  void dispose() {
-    _nodeEditorController.dispose();
-    super.dispose();
-  }
+          ),
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlNodeEditorShortcutsWidget(
-        controller: _nodeEditorController,
-        child: Row(
-          children: [
-            ClipRect(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(
-                  begin: isHierarchyCollapsed ? 1.0 : 0.0,
-                  end: isHierarchyCollapsed ? 0.0 : 1.0,
-                ),
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                onEnd: () {
-                  setState(() {
-                    isHierarchyFullyCollapsed = isHierarchyCollapsed;
-                  });
-                },
-                builder: (context, widthFactor, child) {
-                  return Align(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: widthFactor.clamp(0.0, 1.0),
-                    child: child,
-                  );
-                },
-                child: SizedBox(
-                  width: 300,
-                  child: HierarchyWidget(
-                    controller: _nodeEditorController,
-                    isCollapsed: isHierarchyFullyCollapsed,
-                  ),
-                ),
+      appBar: AppBar(
+        leading: const Icon(
+          Icons.widgets,
+          color: Color(0xFF64B5F6),
+          size: 32,
+        ),
+        title: Text(
+          'FlNodes Examples',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+                fontSize: 32,
               ),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: FlNodeEditorWidget(
-                      controller: _nodeEditorController,
-                      expandToParent: true,
-                      overlay: () => [
-                        FlOverlayData(
-                          child: _buildTopToolbar(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ClipRect(
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween<double>(
-                        begin: isTerminalCollapsed ? 1.0 : 0.0,
-                        end: isTerminalCollapsed ? 0.0 : 1.0,
-                      ),
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      onEnd: () {
-                        setState(() {
-                          isTerminalFullyCollapsed = isTerminalCollapsed;
-                        });
-                      },
-                      builder: (context, heightFactor, child) {
-                        return Align(
-                          alignment: Alignment.bottomCenter,
-                          heightFactor: heightFactor.clamp(0.0, 1.0),
-                          child: child,
-                        );
-                      },
-                      child: SizedBox(
-                        height: 400,
-                        child: TerminalWidget(
-                          controller: _terminalController,
-                          isCollapsed: isTerminalFullyCollapsed,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTopToolbar() {
-    final strings = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        spacing: 16,
-        children: [
-          // Hierarchy controls
-          _buildToobarSection(
-            children: [
-              _buildToolbarButton(
-                icon: isHierarchyCollapsed ? Icons.menu_open : Icons.menu,
-                tooltip: AppLocalizations.of(context)!.toggleHierarchyTooltip,
-                onPressed: _toggleHierarchy,
-              ),
-              _buildToolbarButton(
-                icon: isTerminalCollapsed
-                    ? Icons.terminal
-                    : Icons.terminal_outlined,
-                tooltip: AppLocalizations.of(context)!.toggleTerminalTooltip,
-                onPressed: _toggleTerminal,
-              ),
-            ],
-          ),
-          // Editor controls
-          _buildToobarSection(
-            children: [
-              _buildToolbarButton(
-                icon: Icons.add,
-                tooltip: strings.createProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.create(context: context),
-              ),
-              _buildToolbarButton(
-                icon: Icons.folder_open,
-                tooltip: strings.openProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.load(context: context),
-              ),
-              _buildToolbarButton(
-                icon: Icons.save,
-                tooltip: strings.saveProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.save(context: context),
-              ),
-              _buildToolbarButton(
-                icon: Icons.undo,
-                tooltip: strings.undoActionTooltip,
-                onPressed: () => _nodeEditorController.history.undo(),
-              ),
-              _buildToolbarButton(
-                icon: Icons.redo,
-                tooltip: strings.redoActionTooltip,
-                onPressed: () => _nodeEditorController.history.redo(),
-              ),
-              _buildToolbarButton(
-                icon: _nodeEditorController.config.enableSnapToGrid
-                    ? Icons.grid_on
-                    : Icons.grid_off,
-                tooltip: AppLocalizations.of(context)!.toggleSnapToGridTooltip,
-                onPressed: () => setState(() {
-                  _nodeEditorController.enableSnapToGrid(
-                    !_nodeEditorController.config.enableSnapToGrid,
-                  );
-                }),
-              ),
-              _buildToolbarButton(
-                icon: Icons.play_arrow,
-                tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
-                onPressed: () =>
-                    _nodeEditorController.runner.executeGraph(context: context),
-                color: Colors.green,
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Miscellaneous
-          _buildToobarSection(
-            children: [
-              _buildToolbarButton(
-                icon: Icons.star_border,
-                tooltip: strings.starOnGitHubTooltip,
-                onPressed: _launchGitHub,
-                color: Colors.amber,
-              ),
-              _buildToolbarButton(
-                icon: Icons.settings,
-                tooltip: strings.settingsTooltip,
-                onPressed: _showSettingsPanel,
-              ),
-              _buildToolbarButton(
-                icon: Icons.help_outline,
-                tooltip: strings.instructionsTooltip,
-                onPressed: _showInstructionsPanel,
-              ),
-            ],
-          ),
+      body: CustomScrollView(
+        slivers: [
+          _buildExampleGrid(),
         ],
       ),
     );
   }
 
-  Widget _buildToobarSection({required List<Widget> children}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withAlpha(230),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withAlpha(51),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  Widget _buildExampleGrid() {
+    if (_examples.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 16,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 64,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurfaceVariant
+                    .withAlpha(127),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8,
-        children: children,
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      sliver: SliverLayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.crossAxisExtent;
+          int crossAxisCount;
+          double childAspectRatio;
+
+          if (width > 1200) {
+            crossAxisCount = 3;
+            childAspectRatio = 1.3;
+          } else if (width > 800) {
+            crossAxisCount = 2;
+            childAspectRatio = 1.2;
+          } else if (width > 600) {
+            crossAxisCount = 2;
+            childAspectRatio = 1.1;
+          } else {
+            crossAxisCount = 1;
+            childAspectRatio = 1.4;
+          }
+
+          return SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: childAspectRatio,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _ExampleCard(entry: _examples[index]),
+              childCount: _examples.length,
+            ),
+          );
+        },
       ),
     );
   }
+}
 
-  Widget _buildToolbarButton({
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onPressed,
-    Color? color,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
+class _ExampleEntry {
+  final String title;
+  final String description;
+  final IconData icon;
+  final List<String> tags;
+  final String? imageUrl;
+  final WidgetBuilder builder;
+
+  _ExampleEntry({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.tags,
+    required this.builder,
+    this.imageUrl,
+  });
+}
+
+class _ExampleCard extends StatefulWidget {
+  final _ExampleEntry entry;
+
+  const _ExampleCard({required this.entry});
+
+  @override
+  State<_ExampleCard> createState() => _ExampleCardState();
+}
+
+class _ExampleCardState extends State<_ExampleCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = widget.entry;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Card(
+        elevation: _isHovered ? 8 : 2,
+        shadowColor: Colors.black.withAlpha(76),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: _isHovered ? const Color(0xFF64B5F6) : Colors.transparent,
+            width: 2,
+          ),
+        ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onPressed,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: Icon(
-              icon,
-              size: 20,
-              color: color ?? Theme.of(context).colorScheme.onSurface,
-            ),
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: entry.builder),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Image/Icon section
+              Expanded(
+                flex: 3,
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: entry.imageUrl != null
+                      ? Image.network(
+                          entry.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildIconPlaceholder(),
+                        )
+                      : _buildIconPlaceholder(),
+                ),
+              ),
+              // Content section
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+                          // Title with icon
+                          Row(
+                            spacing: 8,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withAlpha(51),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Icon(
+                                  entry.icon,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  entry.title,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Description
+                          Text(
+                            entry.description,
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      // Tags
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: entry.tags.take(3).map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              tag,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withAlpha(179),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconPlaceholder() {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Icon(
+          widget.entry.icon,
+          size: 64,
+          color: Theme.of(context).colorScheme.primary.withAlpha(127),
         ),
       ),
     );

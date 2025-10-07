@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:example/l10n/app_localizations.dart';
-import 'package:example/nodes/data/types.dart';
-import 'package:example/nodes/styles/headers.dart';
-import 'package:example/nodes/styles/ports.dart';
-import 'package:example/widgets/terminal.dart';
+import 'package:example/visual_scripting_example/nodes/data/types.dart';
+import 'package:example/visual_scripting_example/nodes/styles/headers.dart';
+import 'package:example/visual_scripting_example/nodes/styles/ports.dart';
+import 'package:example/visual_scripting_example/widgets/terminal.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 

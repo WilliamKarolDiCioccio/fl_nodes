@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:example/nodes/data/types.dart';
+import 'package:example/visual_scripting_example/nodes/data/types.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 
 void registerDataHandlers(FlNodeEditorController controller) {
