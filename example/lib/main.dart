@@ -132,24 +132,45 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const Icon(
-          Icons.widgets,
-          color: Color(0xFF64B5F6),
-          size: 32,
-        ),
-        title: Text(
-          'FlNodes Examples',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w600,
-                fontSize: 32,
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline.withAlpha(51),
+                ),
               ),
-        ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          _buildExampleGrid(),
+            ),
+            child: Row(
+              spacing: 8,
+              children: [
+                Icon(
+                  Icons.account_tree,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
+                Text(
+                  "FlNodes Examples",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                _buildExampleGrid(),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -178,7 +199,7 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(16),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.crossAxisExtent;
