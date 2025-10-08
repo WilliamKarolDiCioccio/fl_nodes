@@ -1,5 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
@@ -7,18 +13,13 @@ import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/core/utils/widgets/context_menu.dart';
 import 'package:fl_nodes/src/widgets/builders.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 
-abstract class BaseNodeWidget extends StatefulWidget {
+abstract class FlBaseNodeWidget extends StatefulWidget {
   final FlNodeEditorController controller;
   final FlNodeDataModel node;
   final NodeContextMenuBuilder? contextMenuBuilder;
 
-  const BaseNodeWidget({
+  const FlBaseNodeWidget({
     super.key,
     required this.controller,
     required this.node,
@@ -26,7 +27,8 @@ abstract class BaseNodeWidget extends StatefulWidget {
   });
 }
 
-abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
+abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
+    extends State<T> {
   // Interaction state for linking ports.
   bool _isLinking = false;
 
@@ -58,7 +60,7 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      _updatePortsPosition();
+      updatePortsPosition();
     });
 
     widget.controller.eventBus.events.listen(_handleControllerEvents);
@@ -79,7 +81,7 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
       _updatePortsAndFields();
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (mounted) _updatePortsPosition();
+        if (mounted) updatePortsPosition();
       });
     }
   }
@@ -91,7 +93,7 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (mounted) _updatePortsPosition();
+        if (mounted) updatePortsPosition();
       });
     } else if (event is FlNodeSelectionEvent) {
       if (event.nodeIds.contains(widget.node.id)) _updateStyleCache();
@@ -103,7 +105,7 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
       _updateStyleCache();
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (mounted) _updatePortsPosition();
+        if (mounted) updatePortsPosition();
       });
     } else if (event is FlNodeFieldEvent) {
       if (event.nodeId == widget.node.id &&
@@ -120,7 +122,7 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
       _updateStyleCache();
 
       SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (mounted) _updatePortsPosition();
+        if (mounted) updatePortsPosition();
       });
     }
   }
@@ -452,36 +454,5 @@ abstract class BaseNodeWidgetState<T extends BaseNodeWidget> extends State<T> {
     });
   }
 
-  void _updatePortsPosition() {
-    // Early return with combined null checks
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final nodeBox =
-        widget.node.key.currentContext?.findRenderObject() as RenderBox?;
-
-    if (renderBox == null || nodeBox == null) return;
-
-    // Cache frequently used values
-    final renderBoxSize = renderBox.size;
-    final nodeOffset = nodeBox.localToGlobal(Offset.zero);
-    final isCollapsed = widget.node.state.isCollapsed;
-    final collapsedYAdjustment = isCollapsed ? -renderBoxSize.height + 8 : 0;
-
-    // Process ports
-    for (final port in widget.node.ports.values) {
-      final portBox = port.key.currentContext?.findRenderObject() as RenderBox?;
-      if (portBox == null) continue;
-
-      // Calculate relative offset with collapsed adjustment
-      final portOffset = portBox.localToGlobal(Offset.zero);
-      final relativeY = portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
-
-      // Set port offset based on direction
-      port.offset = Offset(
-        port.prototype.direction == FlPortDirection.input
-            ? 0
-            : renderBoxSize.width,
-        relativeY + portBox.size.height / 2,
-      );
-    }
-  }
+  void updatePortsPosition();
 }

@@ -65,6 +65,7 @@ export 'package:fl_nodes/src/styles/styles.dart'
         flDefaultPortStyleBuilder,
         flDefaultNodeHeaderStyleBuilder,
         flDefaultNodeStyleBuilder;
+export 'package:fl_nodes/src/widgets/base_node.dart';
 export 'package:fl_nodes/src/widgets/default_node.dart';
 export 'package:fl_nodes/src/widgets/node_editor.dart';
 export 'package:fl_nodes/src/widgets/node_editor_shortcuts.dart';
