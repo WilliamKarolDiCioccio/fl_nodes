@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:example/l10n/app_localizations.dart';
 import 'package:example/models/locale.dart';
+import 'package:example/utils/snackbar.dart';
 import 'package:example/visual_scripting_example/nodes/data/handlers.dart';
 import 'package:example/visual_scripting_example/nodes/prototypes/prototypes.dart';
-import 'package:example/visual_scripting_example/utils/snackbar.dart';
 import 'package:example/visual_scripting_example/widgets/hierarchy.dart';
 import 'package:example/visual_scripting_example/widgets/instructions.dart';
 import 'package:example/visual_scripting_example/widgets/settings.dart';
