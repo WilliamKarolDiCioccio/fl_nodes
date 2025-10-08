@@ -1,4 +1,4 @@
-import 'package:example/visual_scripting_example/models/locale.dart';
+import 'package:example/models/locale.dart';
 import 'package:example/visual_scripting_example/screens/example.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
