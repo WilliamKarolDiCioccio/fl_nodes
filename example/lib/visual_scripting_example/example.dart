@@ -157,29 +157,21 @@ class VisualScriptingExampleScreenState
           context: context,
         );
       } else {
-        if (mounted) {
-          _showErrorSnackbar(
-            AppLocalizations.of(context)!.failedToLoadSampleProject,
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showErrorSnackbar(
+        if (!mounted) return;
+        showNodeEditorSnackbar(
+          context,
           AppLocalizations.of(context)!.failedToLoadSampleProject,
+          FlCallbackType.error,
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      showNodeEditorSnackbar(
+        context,
+        AppLocalizations.of(context)!.failedToLoadSampleProject,
+        FlCallbackType.error,
+      );
     }
-  }
-
-  void _showErrorSnackbar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
   }
 
   void _showSettingsPanel() {
@@ -212,7 +204,12 @@ class VisualScriptingExampleScreenState
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      _showErrorSnackbar('Could not launch GitHub');
+      if (!mounted) return;
+      showNodeEditorSnackbar(
+        context,
+        'Could not launch GitHub',
+        FlCallbackType.error,
+      );
     }
   }
 

@@ -1,6 +1,8 @@
-import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 
+import 'package:fl_nodes/fl_nodes.dart';
+
+/// A utility to display snackbars for fl_nodes callbacks (also used for other messages).
 void showNodeEditorSnackbar(
   BuildContext context,
   String message,
