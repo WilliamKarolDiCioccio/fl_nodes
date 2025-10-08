@@ -409,6 +409,8 @@ final class FlNodePrototype {
   final NodeHeaderStyleBuilder headerStyleBuilder;
   final List<FlPortPrototype> ports;
   final List<FlFieldPrototype> fields;
+  final List<(String, Type, dynamic)> customData;
+  final List<(String, Type, dynamic)> customState;
   final OnNodeExecute? onExecute;
 
   FlNodePrototype({
@@ -419,6 +421,8 @@ final class FlNodePrototype {
     this.headerStyleBuilder = flDefaultNodeHeaderStyleBuilder,
     this.ports = const [],
     this.fields = const [],
+    this.customData = const [],
+    this.customState = const [],
     this.onExecute,
   });
 }
@@ -428,8 +432,10 @@ final class FlNodeState {
   bool isSelected; // Not saved as it is only used during rendering
   bool isCollapsed;
   bool isHovered;
+  Map<String, dynamic> customState;
 
   FlNodeState({
+    this.customState = const {},
     this.isSelected = false,
     this.isCollapsed = false,
     this.isHovered = false,
@@ -474,6 +480,7 @@ final class FlNodeDataModel {
   final FlNodePrototype prototype;
   final Map<String, FlPortDataModel> ports;
   final Map<String, FlFieldDataModel> fields;
+  final Map<String, dynamic> customData;
   final FlNodeState state;
   Offset offset; // User or system defined offset
   final GlobalKey key = GlobalKey(); // Determined by Flutter
@@ -484,6 +491,7 @@ final class FlNodeDataModel {
     required this.ports,
     required this.fields,
     required this.state,
+    this.customData = const {},
     this.offset = Offset.zero,
   });
 
@@ -514,6 +522,10 @@ final class FlNodeDataModel {
       'fields': fields.map((k, v) => MapEntry(k, v.toJson(dataHandlers))),
       'state': state.toJson(),
       'offset': [offset.dx, offset.dy],
+      'customData': customData.map((k, v) {
+        final handler = dataHandlers[v.runtimeType];
+        return MapEntry(k, handler?.toJson(v) ?? v);
+      }),
     };
   }
 
@@ -558,11 +570,26 @@ final class FlNodeDataModel {
       },
     );
 
+    final customData = (json['customData'] as Map<String, dynamic>).map((k, v) {
+      final type = prototype.customData
+          .firstWhere(
+            (element) => element.$1 == k,
+            orElse: () => ('', dynamic, null),
+          )
+          .$2;
+
+      if (type == dynamic) return MapEntry(k, v);
+
+      final handler = dataHandlers[type];
+      return MapEntry(k, handler?.fromJson(v) ?? v);
+    });
+
     final instance = FlNodeDataModel(
       id: json['id'],
       prototype: prototype,
       ports: ports,
       fields: fields,
+      customData: customData,
       state: FlNodeState(isCollapsed: json['state']['isCollapsed']),
       offset: Offset(json['offset'][0], json['offset'][1]),
     );
@@ -577,6 +604,16 @@ FlPortDataModel createPort(String idName, FlPortPrototype prototype) {
 
 FlFieldDataModel createField(String idName, FlFieldPrototype prototype) {
   return FlFieldDataModel(prototype: prototype, data: prototype.defaultData);
+}
+
+FlNodeState createNodeState(
+  FlNodePrototype prototype,
+) {
+  return FlNodeState(
+    customState: Map.fromEntries(
+      prototype.customState.map((e) => MapEntry(e.$1, e.$3)),
+    ),
+  );
 }
 
 FlNodeDataModel createNode(
@@ -599,7 +636,10 @@ FlNodeDataModel createNode(
         return MapEntry(prototype.idName, instance);
       }),
     ),
-    state: FlNodeState(),
+    customData: Map.fromEntries(
+      prototype.customData.map((e) => MapEntry(e.$1, e.$3)),
+    ),
+    state: createNodeState(prototype),
     offset: offset,
   );
 }
