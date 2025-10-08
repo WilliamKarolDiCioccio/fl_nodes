@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
+import 'package:uuid/uuid.dart';
+
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
-import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/data.dart';
 
@@ -50,34 +52,34 @@ class FlNodeEditorProjectHelper {
   final Future<bool> Function(bool isSaved)? projectCreator;
 
   // Unlike with nodes, there is no reason not to share them between node editor instances.
-  static final Map<String, DataHandler> _dataHandlers = {
-    'bool': DataHandler(
+  static final Map<Type, DataHandler> _dataHandlers = {
+    bool: DataHandler(
       (data) => data.toString(),
       (json) => json.toLowerCase() == 'true',
     ),
-    'int': DataHandler(
+    int: DataHandler(
       (data) => data.toString(),
       (json) => int.parse(json),
     ),
-    'double': DataHandler(
+    double: DataHandler(
       (data) => data.toString(),
       (json) => double.parse(json),
     ),
-    'String': DataHandler(
+    String: DataHandler(
       (data) => data,
       (json) => json,
     ),
-    'List': DataHandler(
+    List: DataHandler(
       (data) => jsonEncode(data),
       (json) => jsonDecode(json) as List<dynamic>,
     ),
-    'Map': DataHandler(
+    Map: DataHandler(
       (data) => jsonEncode(data),
       (json) => jsonDecode(json) as Map<String, dynamic>,
     ),
   };
 
-  Map<String, DataHandler> get dataHandlers => _dataHandlers;
+  Map<Type, DataHandler> get dataHandlers => _dataHandlers;
 
   /// The [projectSaver] callback is used to save the project data, should return a boolean.
   /// The [projectLoader] callback is used to load the project data, should return a JSON object.
@@ -124,7 +126,7 @@ class FlNodeEditorProjectHelper {
     required String Function(dynamic data) toJson,
     required T Function(String json) fromJson,
   }) {
-    _dataHandlers[T.toString()] = DataHandler(
+    _dataHandlers[T] = DataHandler(
       (data) => toJson(data),
       (json) => fromJson(json),
     );
@@ -136,7 +138,7 @@ class FlNodeEditorProjectHelper {
   }
 
   static void _unregisterDataHandler<T>() {
-    _dataHandlers.remove(T.toString());
+    _dataHandlers.remove(T);
   }
 
   /// Clears the history and sets the project as saved.

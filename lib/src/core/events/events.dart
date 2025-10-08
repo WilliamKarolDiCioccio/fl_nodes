@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:flutter/material.dart';
 
 ///
 /// It includes an [id] to identify the event, a [isHandled] flag to indicate if the event has been handled,
@@ -19,7 +20,7 @@ abstract base class NodeEditorEvent {
     this.isUndoable = false,
   });
 
-  Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         'id': id,
         'isHandled': isHandled,
         'isUndoable': isUndoable,

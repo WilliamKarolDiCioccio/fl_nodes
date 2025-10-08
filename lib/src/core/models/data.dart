@@ -1,10 +1,12 @@
+import 'package:flutter/material.dart';
+
+import 'package:uuid/uuid.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/helpers/single_listener_change_notifier.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
 
@@ -154,7 +156,7 @@ class FlDataOutputPortPrototype<T> extends FlPortPrototype {
   FlDataOutputPortPrototype({
     required super.idName,
     required super.displayName,
-    required super.styleBuilder,
+    super.styleBuilder,
   }) : super(
           dataType: T,
           direction: FlPortDirection.output,
@@ -357,17 +359,17 @@ class FlFieldDataModel {
     required this.data,
   });
 
-  Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
     return {
       'idName': prototype.idName,
-      'data': dataHandlers[prototype.dataType.toString()]?.toJson(data),
+      'data': dataHandlers[prototype.dataType]?.toJson(data),
     };
   }
 
   factory FlFieldDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlFieldPrototype> fieldPrototypes,
-    Map<String, DataHandler> dataHandlers,
+    Map<Type, DataHandler> dataHandlers,
   ) {
     if (!fieldPrototypes.containsKey(json['idName'].toString())) {
       throw Exception('Field prototype not found');
@@ -378,7 +380,7 @@ class FlFieldDataModel {
     return FlFieldDataModel(
       prototype: prototype,
       data: json['data'] != 'null'
-          ? dataHandlers[prototype.dataType.toString()]?.fromJson(json['data'])
+          ? dataHandlers[prototype.dataType]?.fromJson(json['data'])
           : null,
     );
   }
@@ -504,7 +506,7 @@ final class FlNodeDataModel {
     );
   }
 
-  Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
     return {
       'id': id,
       'idName': prototype.idName,
@@ -518,7 +520,7 @@ final class FlNodeDataModel {
   factory FlNodeDataModel.fromJson(
     Map<String, dynamic> json, {
     required Map<String, FlNodePrototype> nodePrototypes,
-    required Map<String, DataHandler> dataHandlers,
+    required Map<Type, DataHandler> dataHandlers,
   }) {
     if (!nodePrototypes.containsKey(json['idName'].toString())) {
       throw Exception('Node prototype not found');
@@ -644,7 +646,7 @@ class FlNodeEditorProjectDataModel {
     this.viewportZoom = 1.0,
   });
 
-  Map<String, dynamic> toJson(Map<String, DataHandler> dataHandlers) {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
     final nodesJson =
         nodes.values.map((node) => node.toJson(dataHandlers)).toList();
 
@@ -660,7 +662,7 @@ class FlNodeEditorProjectDataModel {
   factory FlNodeEditorProjectDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlNodePrototype> nodePrototypes,
-    Map<String, DataHandler> dataHandlers,
+    Map<Type, DataHandler> dataHandlers,
   ) {
     final nodesJson = json['nodes'] as List<dynamic>;
     final nodes = <String, FlNodeDataModel>{};
