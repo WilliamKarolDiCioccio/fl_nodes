@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'package:example/l10n/app_localizations.dart';
 import 'package:example/models/locale.dart';
 import 'package:example/utils/snackbar.dart';
@@ -11,11 +14,10 @@ import 'package:example/visual_scripting_example/widgets/instructions.dart';
 import 'package:example/visual_scripting_example/widgets/settings.dart';
 import 'package:example/visual_scripting_example/widgets/terminal.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fl_nodes/fl_nodes.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:fl_nodes/fl_nodes.dart';
 
 class VisualScriptingExampleScreen extends StatefulWidget {
   const VisualScriptingExampleScreen({
@@ -268,6 +270,10 @@ class VisualScriptingExampleScreenState
                           child: _buildTopToolbar(),
                         ),
                       ],
+                      nodeBuilder: (node, controller) => FlDefaultNodeWidget(
+                        node: node,
+                        controller: controller,
+                      ),
                     ),
                   ),
                   ClipRect(

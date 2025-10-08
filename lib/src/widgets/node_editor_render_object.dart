@@ -1,6 +1,17 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+
+import 'package:flutter_shaders/flutter_shaders.dart';
+import 'package:uuid/uuid.dart';
+import 'package:vector_math/vector_math.dart' as vec;
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
@@ -9,16 +20,6 @@ import 'package:fl_nodes/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes/src/core/utils/widgets/context_menu.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:fl_nodes/src/widgets/builders.dart';
-import 'package:fl_nodes/src/widgets/default_node.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_shaders/flutter_shaders.dart';
-import 'package:uuid/uuid.dart';
-import 'package:vector_math/vector_math.dart' as vec;
 
 class NodeDiffCheckData {
   String id;
@@ -52,37 +53,21 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
 class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodeEditorController controller;
   final FragmentShader gridShader;
-  final NodeHeaderBuilder? headerBuilder;
-  final NodeFieldBuilder? fieldBuilder;
-  final NodePortBuilder? portBuilder;
-  final NodeContextMenuBuilder? contextMenuBuilder;
-  final NodeBuilder? nodeBuilder;
+  final NodeBuilder nodeBuilder;
   final Function(String linkId, Offset position)? showLinkContextMenu;
 
   NodeEditorRenderObjectWidget({
     super.key,
     required this.controller,
     required this.gridShader,
+    required this.nodeBuilder,
     this.showLinkContextMenu,
-    this.headerBuilder,
-    this.fieldBuilder,
-    this.portBuilder,
-    this.contextMenuBuilder,
-    this.nodeBuilder,
   }) : super(
           children: controller.nodesAsList
               .map(
-                (node) => DefaultNodeWidget(
-                  controller: controller,
-                  node: node,
-                  headerBuilder: headerBuilder,
-                  fieldBuilder: fieldBuilder,
-                  portBuilder: portBuilder,
-                  contextMenuBuilder: contextMenuBuilder,
-                  nodeBuilder: nodeBuilder,
-                ),
+                (node) => nodeBuilder(node, controller),
               )
-              .toList() as List<Widget>,
+              .toList(),
         );
 
   @override

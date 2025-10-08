@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../../fl_nodes.dart';
@@ -48,6 +49,6 @@ typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
 ///
 /// WARNING: Only use this builder if you want to fully customize the look of the node.
 typedef NodeBuilder = Widget Function(
-  BuildContext context,
   FlNodeDataModel node,
+  FlNodeEditorController controller,
 );

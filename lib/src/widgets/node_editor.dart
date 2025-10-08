@@ -1,9 +1,11 @@
-import 'package:fl_nodes/src/core/models/overlay.dart';
-import 'package:fl_nodes/src/widgets/debug_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'package:fl_nodes/src/core/models/overlay.dart';
+import 'package:fl_nodes/src/widgets/debug_info.dart';
+
 import '../core/controller/core.dart';
+
 import 'builders.dart';
 import 'node_editor_data_layer.dart';
 
@@ -12,23 +14,15 @@ class FlNodeEditorWidget extends StatelessWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
-  final NodeHeaderBuilder? headerBuilder;
-  final NodeFieldBuilder? fieldBuilder;
-  final NodePortBuilder? portBuilder;
-  final NodeContextMenuBuilder? contextMenuBuilder;
-  final NodeBuilder? nodeBuilder;
+  final NodeBuilder nodeBuilder;
 
   const FlNodeEditorWidget({
     super.key,
     required this.controller,
+    required this.nodeBuilder,
+    required this.overlay,
     this.expandToParent = true,
     this.fixedSize,
-    required this.overlay,
-    this.headerBuilder,
-    this.fieldBuilder,
-    this.portBuilder,
-    this.contextMenuBuilder,
-    this.nodeBuilder,
   });
 
   @override
@@ -49,10 +43,6 @@ class FlNodeEditorWidget extends StatelessWidget {
               expandToParent: expandToParent,
               fixedSize: fixedSize,
               overlay: overlay,
-              headerBuilder: headerBuilder,
-              fieldBuilder: fieldBuilder,
-              portBuilder: portBuilder,
-              contextMenuBuilder: contextMenuBuilder,
               nodeBuilder: nodeBuilder,
             ),
           ),

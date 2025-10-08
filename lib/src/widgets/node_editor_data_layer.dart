@@ -1,6 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'package:flutter_shaders/flutter_shaders.dart';
+
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/models/overlay.dart';
@@ -9,14 +16,10 @@ import 'package:fl_nodes/src/core/utils/widgets/context_menu.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 import 'package:fl_nodes/src/widgets/improved_listener.dart';
 import 'package:fl_nodes/src/widgets/node_editor_render_object.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_shaders/flutter_shaders.dart';
 
 import '../constants.dart';
 import '../core/models/data.dart';
+
 import 'builders.dart';
 
 class NodeEditorDataLayer extends StatefulWidget {
@@ -24,23 +27,15 @@ class NodeEditorDataLayer extends StatefulWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final List<FlOverlayData> Function() overlay;
-  final NodeHeaderBuilder? headerBuilder;
-  final NodeFieldBuilder? fieldBuilder;
-  final NodePortBuilder? portBuilder;
-  final NodeContextMenuBuilder? contextMenuBuilder;
-  final NodeBuilder? nodeBuilder;
+  final NodeBuilder nodeBuilder;
 
   const NodeEditorDataLayer({
     super.key,
     required this.controller,
     required this.expandToParent,
     required this.fixedSize,
+    required this.nodeBuilder,
     required this.overlay,
-    this.headerBuilder,
-    this.fieldBuilder,
-    this.portBuilder,
-    this.contextMenuBuilder,
-    this.nodeBuilder,
   });
 
   @override
@@ -656,10 +651,6 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 );
               }
             },
-            headerBuilder: widget.headerBuilder,
-            portBuilder: widget.portBuilder,
-            fieldBuilder: widget.fieldBuilder,
-            contextMenuBuilder: widget.contextMenuBuilder,
             nodeBuilder: widget.nodeBuilder,
           ),
         ),
