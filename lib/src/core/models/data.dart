@@ -407,7 +407,7 @@ final class FlNodePrototype {
   final NodeHeaderStyleBuilder headerStyleBuilder;
   final List<FlPortPrototype> ports;
   final List<FlFieldPrototype> fields;
-  final OnNodeExecute onExecute;
+  final OnNodeExecute? onExecute;
 
   FlNodePrototype({
     required this.idName,
@@ -417,7 +417,7 @@ final class FlNodePrototype {
     this.headerStyleBuilder = flDefaultNodeHeaderStyleBuilder,
     this.ports = const [],
     this.fields = const [],
-    required this.onExecute,
+    this.onExecute,
   });
 }
 

@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
-import 'package:flutter/material.dart';
 
 import '../models/data.dart';
+
 import 'core.dart';
 
 /// A class that manages the execution of the node editor graph.
@@ -259,7 +261,7 @@ class FlNodeEditorExecutionHelper {
     }
 
     try {
-      await node.prototype.onExecute(
+      await node.prototype.onExecute?.call(
         node.ports.map((portId, port) => MapEntry(portId, port.data)),
         node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
         _execState.putIfAbsent(node.id, () => {}),
