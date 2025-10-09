@@ -2,15 +2,24 @@ import 'package:flutter/material.dart';
 
 import 'package:uuid/uuid.dart';
 
+import 'package:fl_nodes/src/constants.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
-import 'package:fl_nodes/src/core/controller/project.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/helpers/single_listener_change_notifier.dart';
+import 'package:fl_nodes/src/core/models/data_adapters_v1.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
 
 typedef FromTo = ({String from, String to, String fromPort, String toPort});
+
+/// A helper class that handles the conversion of data to and from JSON.
+class DataHandler {
+  final String Function(dynamic data) toJson;
+  final dynamic Function(String json) fromJson;
+
+  DataHandler(this.toJson, this.fromJson);
+}
 
 /// The state of a link painted on the canvas.
 class FlLinkState {
@@ -46,6 +55,11 @@ final class FlLinkDataModel {
     required this.state,
   });
 
+  Map<String, dynamic> toJson() => toJsonV1();
+
+  factory FlLinkDataModel.fromJson(Map<String, dynamic> json) =>
+      FlLinkDataModelV1Adapter.fromJsonV1(json);
+
   FlLinkDataModel copyWith({
     String? id,
     FromTo? fromTo,
@@ -56,29 +70,6 @@ final class FlLinkDataModel {
       id: id ?? this.id,
       fromTo: fromTo ?? this.fromTo,
       state: state ?? this.state,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'from': fromTo.from,
-      'to': fromTo.to,
-      'fromPort': fromTo.fromPort,
-      'toPort': fromTo.toPort,
-    };
-  }
-
-  factory FlLinkDataModel.fromJson(Map<String, dynamic> json) {
-    return FlLinkDataModel(
-      id: json['id'],
-      fromTo: (
-        from: json['from'],
-        to: json['to'],
-        fromPort: json['fromPort'],
-        toPort: json['toPort'],
-      ),
-      state: FlLinkState(),
     );
   }
 
@@ -258,34 +249,13 @@ final class FlPortDataModel {
   FlPortStyle? _portStyle;
   FlPortStyle get style => _portStyle ??= prototype.styleBuilder(state);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'idName': prototype.idName,
-      'links': links.map((link) => link.toJson()).toList(),
-    };
-  }
+  Map<String, dynamic> toJson() => toJsonV1();
 
   factory FlPortDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlPortPrototype> portPrototypes,
-  ) {
-    if (!portPrototypes.containsKey(json['idName'].toString())) {
-      throw Exception('Port prototype not found');
-    }
-
-    final prototype = portPrototypes[json['idName'].toString()]!;
-
-    final instance = FlPortDataModel(
-      prototype: prototype,
-      state: FlPortState.fromJson(json['state'] ?? {}),
-    );
-
-    instance.links = (json['links'] as List<dynamic>)
-        .map((linkJson) => FlLinkDataModel.fromJson(linkJson))
-        .toSet();
-
-    return instance;
-  }
+  ) =>
+      FlPortDataModelV1Adapter.fromJsonV1(json, portPrototypes);
 
   FlPortDataModel copyWith({
     dynamic data,
@@ -359,31 +329,15 @@ class FlFieldDataModel {
     required this.data,
   });
 
-  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
-    return {
-      'idName': prototype.idName,
-      'data': dataHandlers[prototype.dataType]?.toJson(data),
-    };
-  }
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) =>
+      toJsonV1(dataHandlers);
 
   factory FlFieldDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlFieldPrototype> fieldPrototypes,
     Map<Type, DataHandler> dataHandlers,
-  ) {
-    if (!fieldPrototypes.containsKey(json['idName'].toString())) {
-      throw Exception('Field prototype not found');
-    }
-
-    final prototype = fieldPrototypes[json['idName'].toString()]!;
-
-    return FlFieldDataModel(
-      prototype: prototype,
-      data: json['data'] != 'null'
-          ? dataHandlers[prototype.dataType]?.fromJson(json['data'])
-          : null,
-    );
-  }
+  ) =>
+      FlFieldDataModelV1Adapter.fromJsonV1(json, fieldPrototypes, dataHandlers);
 
   FlFieldDataModel copyWith({dynamic data}) {
     return FlFieldDataModel(prototype: prototype, data: data ?? this.data);
@@ -441,19 +395,10 @@ final class FlNodeState {
     this.isHovered = false,
   });
 
-  factory FlNodeState.fromJson(Map<String, dynamic> json) {
-    return FlNodeState(
-      isSelected: json['isSelected'],
-      isCollapsed: json['isCollapsed'],
-    );
-  }
+  Map<String, dynamic> toJson() => toJsonV1();
 
-  Map<String, dynamic> toJson() {
-    return {
-      'isSelected': isSelected,
-      'isCollapsed': isCollapsed,
-    };
-  }
+  factory FlNodeState.fromJson(Map<String, dynamic> json) =>
+      FlNodeStateV1Adapter.fromJsonV1(json);
 
   @override
   bool operator ==(Object other) =>
@@ -495,6 +440,20 @@ final class FlNodeDataModel {
     this.offset = Offset.zero,
   });
 
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) =>
+      toJsonV1(dataHandlers);
+
+  factory FlNodeDataModel.fromJson(
+    Map<String, dynamic> json, {
+    required Map<String, FlNodePrototype> nodePrototypes,
+    required Map<Type, DataHandler> dataHandlers,
+  }) =>
+      FlNodeDataModelV1Adapter.fromJsonV1(
+        json,
+        nodePrototypes: nodePrototypes,
+        dataHandlers: dataHandlers,
+      );
+
   FlNodeDataModel copyWith({
     String? id,
     Color? color,
@@ -513,89 +472,23 @@ final class FlNodeDataModel {
       offset: offset ?? this.offset,
     );
   }
+}
 
-  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
-    return {
-      'id': id,
-      'idName': prototype.idName,
-      'ports': ports.map((k, v) => MapEntry(k, v.toJson())),
-      'fields': fields.map((k, v) => MapEntry(k, v.toJson(dataHandlers))),
-      'state': state.toJson(),
-      'offset': [offset.dx, offset.dy],
-      'customData': customData.map((k, v) {
-        final handler = dataHandlers[v.runtimeType];
-        return MapEntry(k, handler?.toJson(v) ?? v);
-      }),
-    };
-  }
+final class FlNodesGroupDataModel {
+  final String id;
+  final String name;
+  final Set<String> nodeIds;
 
-  factory FlNodeDataModel.fromJson(
-    Map<String, dynamic> json, {
-    required Map<String, FlNodePrototype> nodePrototypes,
-    required Map<Type, DataHandler> dataHandlers,
-  }) {
-    if (!nodePrototypes.containsKey(json['idName'].toString())) {
-      throw Exception('Node prototype not found');
-    }
+  FlNodesGroupDataModel({
+    required this.id,
+    required this.name,
+    required this.nodeIds,
+  });
 
-    final prototype = nodePrototypes[json['idName'].toString()]!;
+  Map<String, dynamic> toJson() => toJsonV1();
 
-    final portPrototypes = Map.fromEntries(
-      prototype.ports.map(
-        (prototype) => MapEntry(prototype.idName, prototype),
-      ),
-    );
-
-    final ports = (json['ports'] as Map<String, dynamic>).map(
-      (id, portJson) {
-        return MapEntry(
-          id,
-          FlPortDataModel.fromJson(portJson, portPrototypes),
-        );
-      },
-    );
-
-    final fieldPrototypes = Map.fromEntries(
-      prototype.fields.map(
-        (prototype) => MapEntry(prototype.idName, prototype),
-      ),
-    );
-
-    final fields = (json['fields'] as Map<String, dynamic>).map(
-      (id, fieldJson) {
-        return MapEntry(
-          id,
-          FlFieldDataModel.fromJson(fieldJson, fieldPrototypes, dataHandlers),
-        );
-      },
-    );
-
-    final customData = (json['customData'] as Map<String, dynamic>).map((k, v) {
-      final type = prototype.customData
-          .firstWhere(
-            (element) => element.$1 == k,
-            orElse: () => ('', dynamic, null),
-          )
-          .$2;
-
-      if (type == dynamic) return MapEntry(k, v);
-
-      final handler = dataHandlers[type];
-      return MapEntry(k, handler?.fromJson(v) ?? v);
-    });
-
-    final instance = FlNodeDataModel(
-      id: json['id'],
-      prototype: prototype,
-      ports: ports,
-      fields: fields,
-      customData: customData,
-      state: FlNodeState(isCollapsed: json['state']['isCollapsed']),
-      offset: Offset(json['offset'][0], json['offset'][1]),
-    );
-
-    return instance;
-  }
+  factory FlNodesGroupDataModel.fromJson(Map<String, dynamic> json) =>
+      FlNodesGroupDataModelV1Adapter.fromJsonV1(json);
 }
 
 FlPortDataModel createPort(String idName, FlPortPrototype prototype) {
@@ -644,96 +537,50 @@ FlNodeDataModel createNode(
   );
 }
 
-final class FlNodeGroup {
-  final String id;
-  final String name;
-  final Set<String> nodeIds;
-
-  FlNodeGroup({
-    required this.id,
-    required this.name,
-    required this.nodeIds,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'nodeIds': nodeIds.toList(),
-    };
-  }
-
-  factory FlNodeGroup.fromJson(Map<String, dynamic> json) {
-    return FlNodeGroup(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      nodeIds: (json['nodeIds'] as List).cast<String>().toSet(),
-    );
-  }
+FlNodesGroupDataModel createNodesGroup(
+  String name,
+  Set<String> nodeIds,
+) {
+  return FlNodesGroupDataModel(
+    id: const Uuid().v4(),
+    name: name,
+    nodeIds: nodeIds,
+  );
 }
 
 /// A container for all the data in a project.
 class FlNodeEditorProjectDataModel {
+  final String packageVersion;
+  String appVersion;
   Offset viewportOffset;
   double viewportZoom;
-  Map<String, FlNodeDataModel> nodes;
-  Map<String, FlLinkDataModel> links;
+  final Map<String, FlNodeDataModel> nodes;
+  final Map<String, FlLinkDataModel> links;
 
   FlNodeEditorProjectDataModel({
+    this.packageVersion = kPackageVersion,
+    this.appVersion = '1.0.0',
     required this.nodes,
     required this.links,
     this.viewportOffset = Offset.zero,
     this.viewportZoom = 1.0,
   });
 
-  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) {
-    final nodesJson =
-        nodes.values.map((node) => node.toJson(dataHandlers)).toList();
-
-    return {
-      'viewport': {
-        'offset': [viewportOffset.dx, viewportOffset.dy],
-        'zoom': viewportZoom,
-      },
-      'nodes': nodesJson,
-    };
-  }
+  Map<String, dynamic> toJson(
+    Map<Type, DataHandler> dataHandlers,
+  ) =>
+      toJsonV1(dataHandlers);
 
   factory FlNodeEditorProjectDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlNodePrototype> nodePrototypes,
     Map<Type, DataHandler> dataHandlers,
-  ) {
-    final nodesJson = json['nodes'] as List<dynamic>;
-    final nodes = <String, FlNodeDataModel>{};
-    final links = <String, FlLinkDataModel>{};
-
-    for (final nodeJson in nodesJson) {
-      final node = FlNodeDataModel.fromJson(
-        nodeJson,
-        nodePrototypes: nodePrototypes,
-        dataHandlers: dataHandlers,
+  ) =>
+      FlNodeEditorProjectDataModelV1Adapter.fromJsonV1(
+        json,
+        nodePrototypes,
+        dataHandlers,
       );
-
-      for (final port in node.ports.values) {
-        for (final link in port.links) {
-          links[link.id] = link;
-        }
-      }
-
-      nodes[node.id] = node;
-    }
-
-    return FlNodeEditorProjectDataModel(
-      nodes: nodes,
-      links: links,
-      viewportOffset: Offset(
-        (json['viewport']['offset'][0] as num).toDouble(),
-        (json['viewport']['offset'][1] as num).toDouble(),
-      ),
-      viewportZoom: (json['viewport']['zoom'] as num).toDouble(),
-    );
-  }
 
   FlNodeEditorProjectDataModel copyWith() {
     return FlNodeEditorProjectDataModel(

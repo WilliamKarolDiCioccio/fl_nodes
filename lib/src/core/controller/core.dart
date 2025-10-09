@@ -1,5 +1,10 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+import 'package:uuid/uuid.dart';
+
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/history.dart';
 import 'package:fl_nodes/src/core/controller/project.dart';
@@ -7,12 +12,10 @@ import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/utils/dsa/spatial_hash_grid.dart';
 import 'package:fl_nodes/src/core/utils/rendering/renderbox.dart';
 import 'package:fl_nodes/src/styles/styles.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:uuid/uuid.dart';
 
 import '../events/bus.dart';
 import '../models/data.dart';
+
 import 'clipboard.dart';
 import 'config.dart';
 import 'runner.dart';
@@ -30,10 +33,12 @@ export 'config.dart';
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
 class FlNodeEditorController with ChangeNotifier {
-  FlCallback? onCallback;
-  GlobalKey editorKey;
+  final FlCallback? onCallback;
+  final GlobalKey editorKey;
+  final String appVersion;
 
   FlNodeEditorController({
+    required this.appVersion,
     this.config = const FlNodeEditorConfig(),
     this.style = const FlNodeEditorStyle(),
     ProjectSaver? projectSaver,

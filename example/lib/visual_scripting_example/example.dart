@@ -68,6 +68,7 @@ class VisualScriptingExampleScreenState
     super.initState();
 
     _nodeEditorController = FlNodeEditorController(
+      appVersion: '0.0.1',
       projectSaver: (jsonData) async {
         final String? outputPath = await FilePicker.platform.saveFile(
           dialogTitle: AppLocalizations.of(context)!.saveProjectDialogTitle,

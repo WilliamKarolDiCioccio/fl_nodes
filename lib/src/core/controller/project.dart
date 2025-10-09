@@ -9,20 +9,11 @@ import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
-
-import '../models/data.dart';
+import 'package:fl_nodes/src/core/models/data.dart';
 
 typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
 typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
 typedef ProjectCreator = Future<bool> Function(bool isSaved);
-
-/// A helper class that handles the conversion of data to and from JSON.
-class DataHandler {
-  final String Function(dynamic data) toJson;
-  final dynamic Function(String json) fromJson;
-
-  DataHandler(this.toJson, this.fromJson);
-}
 
 /// A class that manages the project data of the node editor.
 ///
