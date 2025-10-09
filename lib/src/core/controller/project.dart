@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-
-import 'package:uuid/uuid.dart';
-
 import 'package:fl_nodes/src/core/controller/callback.dart';
 import 'package:fl_nodes/src/core/controller/core.dart';
 import 'package:fl_nodes/src/core/events/events.dart';
 import 'package:fl_nodes/src/core/localization/delegate.dart';
 import 'package:fl_nodes/src/core/models/data.dart';
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
 typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
@@ -42,35 +40,10 @@ class FlNodeEditorProjectHelper {
   final Future<Map<String, dynamic>?> Function(bool isSaved)? projectLoader;
   final Future<bool> Function(bool isSaved)? projectCreator;
 
-  // Unlike with nodes, there is no reason not to share them between node editor instances.
-  static final Map<Type, DataHandler> _dataHandlers = {
-    bool: DataHandler(
-      (data) => data.toString(),
-      (json) => json.toLowerCase() == 'true',
-    ),
-    int: DataHandler(
-      (data) => data.toString(),
-      (json) => int.parse(json),
-    ),
-    double: DataHandler(
-      (data) => data.toString(),
-      (json) => double.parse(json),
-    ),
-    String: DataHandler(
-      (data) => data,
-      (json) => json,
-    ),
-    List: DataHandler(
-      (data) => jsonEncode(data),
-      (json) => jsonDecode(json) as List<dynamic>,
-    ),
-    Map: DataHandler(
-      (data) => jsonEncode(data),
-      (json) => jsonDecode(json) as Map<String, dynamic>,
-    ),
-  };
-
-  Map<Type, DataHandler> get dataHandlers => _dataHandlers;
+  // These can be shared across all instances of the project helper.
+  static final Map<(Type, String), DataHandler> _dataHandlers = {};
+  Map<Type, DataHandler> get dataHandlers =>
+      _dataHandlers.map((key, value) => MapEntry(key.$1, value));
 
   /// The [projectSaver] callback is used to save the project data, should return a boolean.
   /// The [projectLoader] callback is used to load the project data, should return a JSON object.
@@ -81,7 +54,41 @@ class FlNodeEditorProjectHelper {
     required this.projectLoader,
     required this.projectCreator,
   }) {
+    _registerDefaultDataHandlers();
     controller.eventBus.events.listen(_handleProjectEvents);
+  }
+
+  void _registerDefaultDataHandlers() {
+    registerDataHandler<bool>(
+      appVersion: controller.appVersion,
+      toJson: (data) => data.toString(),
+      fromJson: (json) => json.toLowerCase() == 'true',
+    );
+    registerDataHandler<int>(
+      appVersion: controller.appVersion,
+      toJson: (data) => data.toString(),
+      fromJson: (json) => int.parse(json),
+    );
+    registerDataHandler<double>(
+      appVersion: controller.appVersion,
+      toJson: (data) => data.toString(),
+      fromJson: (json) => double.parse(json),
+    );
+    registerDataHandler<String>(
+      appVersion: controller.appVersion,
+      toJson: (data) => data,
+      fromJson: (json) => json,
+    );
+    registerDataHandler<List<dynamic>>(
+      appVersion: controller.appVersion,
+      toJson: (data) => jsonEncode(data),
+      fromJson: (json) => jsonDecode(json) as List<dynamic>,
+    );
+    registerDataHandler<Map<String, dynamic>>(
+      appVersion: controller.appVersion,
+      toJson: (data) => jsonEncode(data),
+      fromJson: (json) => jsonDecode(json) as Map<String, dynamic>,
+    );
   }
 
   /// Handles events from the controller and manages the project state accordingly.
@@ -107,29 +114,21 @@ class FlNodeEditorProjectHelper {
 
   /// Registers a custom data handler for a specific type.
   void registerDataHandler<T>({
+    String? appVersion,
     required String Function(dynamic data) toJson,
     required T Function(String json) fromJson,
   }) {
-    _registerDataHandler<T>(toJson: toJson, fromJson: fromJson);
-  }
-
-  static void _registerDataHandler<T>({
-    required String Function(dynamic data) toJson,
-    required T Function(String json) fromJson,
-  }) {
-    _dataHandlers[T] = DataHandler(
+    _dataHandlers[(T, appVersion ?? controller.appVersion)] = DataHandler(
       (data) => toJson(data),
       (json) => fromJson(json),
     );
   }
 
   /// Unregisters a custom data handler for a specific type.
-  void unregisterDataHandler<T>() {
-    _unregisterDataHandler<T>();
-  }
-
-  static void _unregisterDataHandler<T>() {
-    _dataHandlers.remove(T);
+  void unregisterDataHandler<T>({String? appVersion}) {
+    _dataHandlers.remove(
+      (T, appVersion ?? controller.appVersion),
+    );
   }
 
   /// Clears the history and sets the project as saved.
