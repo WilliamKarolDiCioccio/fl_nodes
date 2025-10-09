@@ -532,6 +532,7 @@ FlNodeDataModel createNode(
   FlNodePrototype prototype, {
   required FlNodeEditorController controller,
   required Offset offset,
+  required Map<String, dynamic>? customData,
 }) {
   return FlNodeDataModel(
     id: const Uuid().v4(),
@@ -548,9 +549,10 @@ FlNodeDataModel createNode(
         return MapEntry(prototype.idName, instance);
       }),
     ),
-    customData: Map.fromEntries(
-      prototype.customData.map((e) => MapEntry(e.$1, e.$3)),
-    ),
+    customData: customData ??
+        Map.fromEntries(
+          prototype.customData.map((e) => MapEntry(e.$1, e.$3)),
+        ),
     state: createNodeState(prototype),
     offset: offset,
   );

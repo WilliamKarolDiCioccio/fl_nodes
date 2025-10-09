@@ -462,7 +462,11 @@ class FlNodeEditorController with ChangeNotifier {
   /// See [SpatialHashGrid] and [selectNodesByArea].
   ///
   /// Emits an [FlAddNodeEvent] event.
-  FlNodeDataModel addNode(String name, {Offset offset = Offset.zero}) {
+  FlNodeDataModel addNode(
+    String name, {
+    Offset offset = Offset.zero,
+    Map<String, dynamic>? customData,
+  }) {
     if (!nodePrototypes.containsKey(name)) {
       throw Exception('Node prototype $name does not exist.');
     }
@@ -478,6 +482,7 @@ class FlNodeEditorController with ChangeNotifier {
       nodePrototypes[name]!,
       controller: this,
       offset: offset,
+      customData: customData,
     );
 
     nodes.putIfAbsent(instance.id, () => instance);
