@@ -1,9 +1,12 @@
-import 'package:example/models/locale.dart';
-import 'package:example/visual_scripting_example/example.dart';
-import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:example/mind_map_example/example.dart';
+import 'package:example/models/locale.dart';
+import 'package:example/visual_scripting_example/example.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'package:fl_nodes/fl_nodes.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -121,10 +124,10 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
           description: 'Classic mind map layout with draggable nodes.',
           icon: Icons.map,
           tags: ['nodes', 'mind map', 'layout'],
-          builder: (ctx) => const Scaffold(
-            body: Center(
-              child: Text('Coming Soon'),
-            ),
+          builder: (ctx) => MindMapExampleScreen(
+            locales: widget.locales,
+            currentLocale: widget.currentLocale,
+            onLocaleChanged: widget.onLocaleChanged,
           ),
         ),
       ];
