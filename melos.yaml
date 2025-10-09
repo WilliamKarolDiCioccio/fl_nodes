@@ -1,0 +1,10 @@
+name: fl_nodes
+
+packages:
+  - packages/**
+  - plugins/**
+  - example
+
+command:
+  bootstrap:
+    runPubGetInParallel: true

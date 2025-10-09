@@ -1,41 +1,24 @@
 name: fl_nodes
-description: A lightweight, scalable, and highly customizable package that empowers Flutter developers to create dynamic, interactive, and visually appealing node-based UIs.
-version: 0.5.0+1
-maintainer: William Karol Di Cioccio
-
-homepage: https://williamkaroldicioccio.github.io/fl_nodes/
-repository: https://github.com/WilliamKarolDiCioccio/fl_nodes
-issue_tracker: https://github.com/WilliamKarolDiCioccio/fl_nodes/issues
-
-platforms:
-  android:
-  ios:
-  linux:
-  macos:
-  web:
-  windows:
-
-topics:
-  - visual-scripting
-  - workflow-editor
-  - node-editor
-
-funding:
-  - https://studio.buymeacoffee.com/dashboard
+description: Monorepo workspace for the FlNodes framework.
+publish_to: none
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_context_menu: ">=0.2.0 <0.4.0"
-  flutter_shaders: ^0.1.3
-  uuid: ^4.5.1
-  vector_math: ^2.1.4
+  sdk: ">=3.9.0 <4.0.0"
 
 dev_dependencies:
+  melos: ^7.1.1
+  flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ">=4.0.0 <7.0.0"
-  test_coverage_badge: ^0.3.2
+
+melos:
+  scripts:
+    analyze: melos exec -- flutter analyze
+    format: melos exec -- dart format .
+    test: melos exec -- flutter test
+    example: cd example && flutter run -d chrome
+    example:profile: cd example && flutter run --profile -d chrome
+    example:release: cd example && flutter run --release -d chrome
+
+flutter:
+  uses-material-design: false
