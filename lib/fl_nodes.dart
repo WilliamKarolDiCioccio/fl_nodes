@@ -40,6 +40,7 @@ export 'package:fl_nodes/src/core/models/data.dart'
         FlDataOutputPortPrototype,
         FlControlInputPortPrototype,
         FlControlOutputPortPrototype,
+        FlGenericPortPrototype,
         FlFieldPrototype,
         FlPortDataModel,
         FlFieldDataModel,

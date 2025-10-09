@@ -97,9 +97,17 @@ class TempLinkDataModel {
   });
 }
 
-enum FlPortDirection { input, output }
+enum FlPortDirection {
+  input,
+  output,
+  ignore,
+}
 
-enum FlPortType { data, control }
+enum FlPortType {
+  data,
+  control,
+  ignore,
+}
 
 /// A port prototype is the blueprint for a port instance.
 ///
@@ -192,6 +200,17 @@ class FlControlOutputPortPrototype extends FlPortPrototype {
   @override
   bool compatibleWith(FlPortPrototype other) =>
       other is FlControlInputPortPrototype;
+}
+
+class FlGenericPortPrototype extends FlPortPrototype {
+  FlGenericPortPrototype({
+    required super.idName,
+    required super.displayName,
+    super.styleBuilder,
+  }) : super(direction: FlPortDirection.ignore, type: FlPortType.ignore);
+
+  @override
+  bool compatibleWith(FlPortPrototype other) => true;
 }
 
 /// The state of a port painted on the canvas.
