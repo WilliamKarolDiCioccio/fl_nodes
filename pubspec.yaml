@@ -13,13 +13,11 @@ dev_dependencies:
 
 workspace:
   - example
+  - benchmarks
   - packages/fl_nodes
   - packages/fl_nodes_core
 
 melos:
-  version:
-    updateGitTagRefs: true
-
   publish:
     git:
       enabled: true
@@ -27,6 +25,11 @@ melos:
   command:
     bootstrap:
       runPubGetInParallel: true
+      usePubspecOverrides: true
+    version:
+      linkToVersion: true
+      updateDependents: true
+      updateGitTagRefs: true
 
   scripts:
     analyze: melos exec -- flutter analyze
