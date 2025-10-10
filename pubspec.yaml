@@ -1,4 +1,4 @@
-name: fl_nodes
+name: fl_nodes_workspace
 description: Monorepo workspace for the FlNodes framework.
 publish_to: none
 
@@ -7,11 +7,26 @@ environment:
 
 dev_dependencies:
   melos: ^7.1.1
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
+workspace:
+  - example
+  - packages/fl_nodes
+
 melos:
+  version:
+    updateGitTagRefs: true
+
+  publish:
+    git:
+      enabled: true
+
+  command:
+    bootstrap:
+      runPubGetInParallel: true
+
   scripts:
     analyze: melos exec -- flutter analyze
     format: melos exec -- dart format .

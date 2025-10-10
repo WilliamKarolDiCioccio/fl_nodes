@@ -4,14 +4,14 @@ publish_to: "none"
 version: 1.0.0
 license: MIT
 
+resolution: workspace
+
 environment:
   sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  fl_nodes:
-    path: ../packages/fl_nodes
   gap: ^3.0.1
   uuid: ^4.5.1
   file_picker: ^10.3.2

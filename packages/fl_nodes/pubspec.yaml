@@ -4,6 +4,8 @@ version: 0.5.0+1
 maintainer: William Karol Di Cioccio
 license: MIT
 
+resolution: workspace
+
 homepage: https://williamkaroldicioccio.github.io/fl_nodes/
 repository: https://github.com/WilliamKarolDiCioccio/fl_nodes
 issue_tracker: https://github.com/WilliamKarolDiCioccio/fl_nodes/issues
