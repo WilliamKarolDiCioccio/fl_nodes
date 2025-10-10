@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../constants.dart';
+import '../../constants.dart';
 
 /// A `SpatialHashGrid` is a utility class that provides a spatial hashing system.
 /// It organizes and queries rectangular objects (`Rect`) within a 2D grid,

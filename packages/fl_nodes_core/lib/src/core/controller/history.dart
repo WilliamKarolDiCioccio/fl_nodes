@@ -1,7 +1,7 @@
 import '../../constants.dart';
+import '../containers/stack.dart';
 import '../events/events.dart';
 import '../models/data.dart';
-import '../utils/dsa/stack.dart';
 import 'core.dart';
 
 /// A class that manages the undo and redo history of the node editor.

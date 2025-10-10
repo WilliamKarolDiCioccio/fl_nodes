@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:fl_nodes_core/src/core/utils/dsa/sparse_set.dart';
+import 'package:fl_nodes_core/src/core/containers/sparse_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -5,10 +5,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
+import '../containers/spatial_hash_grid.dart';
 import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
-import '../utils/dsa/spatial_hash_grid.dart';
 import '../utils/rendering/renderbox.dart';
 import 'callback.dart';
 import 'clipboard.dart';
