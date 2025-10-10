@@ -48,10 +48,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   void _onNodeTap(FlNodeDataModel node) {
-    widget.controller.focusNodesById(
-      {node.id},
-      holdSelection: HardwareKeyboard.instance.isControlPressed,
-    );
+    widget.controller.focusNodesById({
+      node.id,
+    }, holdSelection: HardwareKeyboard.instance.isControlPressed);
   }
 
   List<FlNodeDataModel> _getFilteredAndSortedNodes() {
@@ -83,9 +82,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
         break;
       case HierarchySortOption.type:
         nodes.sort(
-          (a, b) => a.prototype.runtimeType
-              .toString()
-              .compareTo(b.prototype.runtimeType.toString()),
+          (a, b) => a.prototype.runtimeType.toString().compareTo(
+            b.prototype.runtimeType.toString(),
+          ),
         );
         break;
       case HierarchySortOption.position:
@@ -123,9 +122,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
           _buildHeader(),
           _buildSearchAndFilters(),
           _buildNodeStats(),
-          Expanded(
-            child: _buildNodeList(),
-          ),
+          Expanded(child: _buildNodeList()),
         ],
       ),
     );
@@ -155,9 +152,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -217,7 +214,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
               Expanded(
                 child: DropdownButtonFormField<HierarchySortOption>(
                   isExpanded: true,
-                  value: _sortOption,
+                  initialValue: _sortOption,
                   decoration: InputDecoration(
                     labelText: strings.sortByLabel,
                     border: OutlineInputBorder(
@@ -225,8 +222,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 8,
@@ -270,8 +268,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                       _showOnlySelected = selected;
                     });
                   },
-                  backgroundColor:
-                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
                   selectedColor: Theme.of(context).colorScheme.primary,
                   checkmarkColor: Theme.of(context).colorScheme.onPrimary,
                 ),
@@ -292,10 +291,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withAlpha(127),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withAlpha(127),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outline.withAlpha(25),
@@ -310,8 +308,8 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           if (selectedCount > 0)
             Container(
@@ -323,9 +321,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
               child: Text(
                 strings.selectedCount(selectedCount),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 10,
-                    ),
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 10,
+                ),
               ),
             ),
         ],
@@ -347,8 +345,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
             Icon(
               _searchQuery.isNotEmpty ? Icons.search_off : Icons.account_tree,
               size: 48,
-              color:
-                  Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(127),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withAlpha(127),
             ),
             Text(
               _searchQuery.isNotEmpty
@@ -357,21 +356,19 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withAlpha(179),
-                  ),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withAlpha(179),
+              ),
             ),
             if (_searchQuery.isNotEmpty)
               Text(
                 strings.tryDifferentSearchTerm,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant
-                          .withAlpha(127),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withAlpha(127),
+                ),
               ),
           ],
         ),
@@ -396,10 +393,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary.withAlpha(51)
-                    : Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withAlpha(76),
+                    : Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest.withAlpha(76),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected
@@ -434,13 +430,13 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface,
-                            ),
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
 
                       // Selection indicator
@@ -461,10 +457,9 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                       Icon(
                         Icons.location_on,
                         size: 12,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withAlpha(127),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withAlpha(127),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -472,11 +467,10 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant
-                                  .withAlpha(205),
-                            ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withAlpha(205),
+                        ),
                       ),
                     ],
                   ),

@@ -5,7 +5,7 @@ class Stack<T> {
 
   Stack([this._maxSize]) {
     assert(
-      _maxSize == null || _maxSize! > 0,
+      _maxSize == null || _maxSize > 0,
       "Max size must be null or a positive integer.",
     );
   }
@@ -13,7 +13,7 @@ class Stack<T> {
   /// Pushes an element to the end of the stack.
   /// Throws an exception if the stack is at its size limit.
   void push(T element) {
-    if (_maxSize != null && _list.length >= _maxSize!) {
+    if (_maxSize != null && _list.length >= _maxSize) {
       throw StateError(
         "Stack overflow: Cannot add more elements, stack is full.",
       );
@@ -65,5 +65,5 @@ class Stack<T> {
   int get length => _list.length;
 
   /// Checks if the stack is full (only applicable if a max size is set).
-  bool get isFull => _maxSize != null && _list.length >= _maxSize!;
+  bool get isFull => _maxSize != null && _list.length >= _maxSize;
 }

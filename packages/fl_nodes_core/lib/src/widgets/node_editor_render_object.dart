@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import '../core/controller/core.dart';
 import '../core/events/events.dart';
@@ -503,9 +503,9 @@ class NodeEditorRenderBox extends RenderBox
     }
 
     _transformMatrix = Matrix4.identity()
-      ..translate(size.width / 2, size.height / 2)
-      ..scale(_zoom, _zoom, 1.0)
-      ..translate(_offset.dx, _offset.dy);
+      ..translateByVector3(Vector3(size.width / 2, size.height / 2, 0))
+      ..scaleByDouble(_zoom, _zoom, 1.0, 1.0)
+      ..translateByVector3(Vector3(_offset.dx, _offset.dy, 0));
 
     return _transformMatrix!;
   }
@@ -1301,7 +1301,7 @@ class NodeEditorRenderBox extends RenderBox
     if (event is PointerDownEvent) {
       if (event.buttons == kSecondaryMouseButton) {
         if (_showLinkContextMenu != null) {
-          _showLinkContextMenu!(linkId, event.position);
+          _showLinkContextMenu(linkId, event.position);
         }
       }
 
