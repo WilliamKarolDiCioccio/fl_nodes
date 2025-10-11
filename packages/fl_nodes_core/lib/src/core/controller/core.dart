@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
@@ -53,6 +54,7 @@ class FlNodeEditorController with ChangeNotifier {
       projectLoader: projectLoader,
       projectCreator: projectCreator,
     );
+    overlay = FlNodeEditorOverlayHelper(this);
   }
 
   /// This method is used to dispose of the node editor controller and all of its resources, subsystems and members.
@@ -62,6 +64,7 @@ class FlNodeEditorController with ChangeNotifier {
     history.clear();
     project.clear();
     runner.clear();
+    overlay.clear();
 
     clear();
 
@@ -91,6 +94,7 @@ class FlNodeEditorController with ChangeNotifier {
   late final FlNodeEditorExecutionHelper runner;
   late final FlNodeEditorHistoryHelper history;
   late final FlNodeEditorProjectHelper project;
+  late final FlNodeEditorOverlayHelper overlay;
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Animation properties are used to manage animations in the node editor.

@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 import 'package:example/l10n/app_localizations.dart';
 import 'package:example/mind_map_example/nodes/prototypes/prototypes.dart';
 import 'package:example/mind_map_example/nodes/widgets/mind_map_node.dart';
 import 'package:example/models/locale.dart';
 import 'package:example/utils/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MindMapExampleScreen extends StatefulWidget {
   const MindMapExampleScreen({
@@ -30,7 +28,8 @@ class MindMapExampleScreen extends StatefulWidget {
   State<MindMapExampleScreen> createState() => MindMapExampleScreenState();
 }
 
-final bool isMobile = TargetPlatform.iOS == defaultTargetPlatform ||
+final bool isMobile =
+    TargetPlatform.iOS == defaultTargetPlatform ||
         TargetPlatform.android == defaultTargetPlatform
     ? true
     : false;
@@ -90,6 +89,18 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
       },
       onCallback: (type, message) =>
           showNodeEditorSnackbar(context, message, type),
+    );
+
+    _controller.overlay.add(
+      'top_toolbar',
+      data: FlOverlayData(
+        builder: (context, data) => _buildTopToolbar(),
+        top: 16,
+        left: 16,
+        right: 16,
+        isVisible: true,
+        opacity: 1.0,
+      ),
     );
 
     registerNodes(context, _controller);
@@ -153,15 +164,8 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
         child: FlNodeEditorWidget(
           controller: _controller,
           expandToParent: true,
-          overlay: () => [
-            FlOverlayData(
-              child: _buildTopToolbar(),
-            ),
-          ],
-          nodeBuilder: (node, controller) => MindMapNodeWidget(
-            node: node,
-            controller: controller,
-          ),
+          nodeBuilder: (node, controller) =>
+              MindMapNodeWidget(node: node, controller: controller),
         ),
       ),
     );

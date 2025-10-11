@@ -11,7 +11,6 @@ import '../constants.dart';
 import '../core/controller/core.dart';
 import '../core/events/events.dart';
 import '../core/models/data.dart';
-import '../core/models/overlay.dart';
 import '../core/utils/rendering/renderbox.dart';
 import '../core/utils/widgets/context_menu.dart';
 import '../styles/styles.dart';
@@ -23,7 +22,6 @@ class NodeEditorDataLayer extends StatefulWidget {
   final FlNodeEditorController controller;
   final bool expandToParent;
   final Size? fixedSize;
-  final List<FlOverlayData> Function() overlay;
   final NodeBuilder nodeBuilder;
 
   const NodeEditorDataLayer({
@@ -32,7 +30,6 @@ class NodeEditorDataLayer extends StatefulWidget {
     required this.expandToParent,
     required this.fixedSize,
     required this.nodeBuilder,
-    required this.overlay,
   });
 
   @override
