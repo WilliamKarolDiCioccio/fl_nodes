@@ -12,6 +12,8 @@ typedef LocalizedString = String Function(BuildContext context);
 
 typedef FromTo = ({String from, String to, String fromPort, String toPort});
 
+typedef PortLocator = ({String nodeId, String portId});
+
 /// A helper class that handles the conversion of data to and from JSON.
 class DataHandler {
   final String Function(dynamic data) toJson;

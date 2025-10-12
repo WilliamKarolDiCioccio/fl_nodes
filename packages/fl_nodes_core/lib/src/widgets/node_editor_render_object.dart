@@ -7,6 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
+import 'package:fl_nodes_core/src/painters/links.dart';
+import 'package:fl_nodes_core/src/painters/selection_area.dart';
+import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
@@ -17,8 +21,8 @@ import '../core/events/events.dart';
 import '../core/models/data.dart';
 import '../core/models/paint.dart';
 import '../core/utils/rendering/paths.dart';
-import '../core/utils/widgets/context_menu.dart';
 import '../styles/styles.dart';
+
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -102,19 +106,21 @@ class NodeEditorRenderBox extends RenderBox
   })  : _controller = controller,
         _gridShader = gridShader,
         _isModalPresent = isModalPresent,
-        _showLinkContextMenu = showLinkContextMenu {
+        _showLinkContextMenu = showLinkContextMenu,
+        _selectionAreaPainter = SelectionAreaCustomPainter(controller),
+        _tmpLinkCustomPainter = TmpLinkCustomPainter(controller),
+        _linksCustomPainter = LinksCustomPainter(controller) {
     _loadGridShader();
 
     _updateNodes();
 
     _offset = _controller.viewportOffset;
     _zoom = _controller.viewportZoom;
-    _highlightArea = _controller.highlightArea;
 
-    _controller.eventBus.events.listen(_handleEvent);
+    _controller.eventBus.events.listen(_handleControllerEvent);
   }
 
-  void _handleEvent(NodeEditorEvent event) {
+  void _handleControllerEvent(NodeEditorEvent event) {
     if (event.isHandled) return;
 
     // In the following code we must account for the possibility of events affecting nodes outside the viewport
@@ -124,17 +130,17 @@ class NodeEditorRenderBox extends RenderBox
 
     if (event is FlViewportOffsetEvent) {
       _offset = event.offset;
-      _transformMatrixDirty = true;
+      _transformChanged = true;
       markNeedsPaint();
     } else if (event is FlViewportZoomEvent) {
       _zoom = event.zoom;
-      _transformMatrixDirty = true;
+      _transformChanged = true;
       markNeedsPaint();
     } else if (event is FlAreaHighlightEvent) {
-      _highlightArea = event.area;
+      _selectionAreaPainter.highlightArea = event.area;
       markNeedsPaint();
     } else if (event is FlDrawTempLinkEvent) {
-      _tmpLinkData = _getTmpLinkData();
+      _tmpLinkCustomPainter.tmpLinkData = _getTmpLinkData();
       markNeedsPaint();
     } else if (event is FlDragSelectionEvent) {
       _updateNodes();
@@ -171,7 +177,7 @@ class NodeEditorRenderBox extends RenderBox
         // need recalculation for proper node rendering. This forces an additional repaint.
         _controller.linksDataDirty = true;
         _controller.nodesDataDirty = true;
-        _portsPositionsDirty = true;
+        _portsChanged = true;
 
         _childrenNotPainted.addAll(_childrenById.keys);
 
@@ -179,7 +185,7 @@ class NodeEditorRenderBox extends RenderBox
       });
     } else if (event is FlLoadProjectEvent || event is FlNewProjectEvent) {
       _transformMatrix = null;
-      _transformMatrixDirty = true;
+      _transformChanged = true;
 
       _childrenNotLaidOut.addAll(_childrenById.keys);
       _updateNodes();
@@ -212,15 +218,17 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   Matrix4? _transformMatrix;
-  bool _transformMatrixDirty = true;
+  bool _transformChanged = true;
 
   Set<String> _visibleNodes = {};
   int get lodLevel => _controller.lodLevel;
 
   late Offset _offset;
   late double _zoom;
-  LinkPaintModel? _tmpLinkData;
-  Rect? _highlightArea;
+
+  final SelectionAreaCustomPainter _selectionAreaPainter;
+  final TmpLinkCustomPainter _tmpLinkCustomPainter;
+  final LinksCustomPainter _linksCustomPainter;
 
   List<NodeDiffCheckData> _nodesDiffCheckData = [];
 
@@ -461,7 +469,7 @@ class NodeEditorRenderBox extends RenderBox
   void paint(PaintingContext context, Offset offset) {
     if (_lastViewportSize != size) {
       _lastViewportSize = size;
-      _transformMatrixDirty = true;
+      _transformChanged = true;
     }
 
     final viewport = _prepareCanvas(context.canvas, size);
@@ -477,13 +485,18 @@ class NodeEditorRenderBox extends RenderBox
 
     _paintGrid(context.canvas, viewport);
 
-    _paintLinks(context.canvas, viewport);
+    _linksCustomPainter.paint(
+      context.canvas,
+      viewport,
+      transformChanged: _transformChanged,
+      portsChanged: _portsChanged,
+    );
 
     _paintChildren(context);
 
-    _paintTemporaryLink(context.canvas);
+    _tmpLinkCustomPainter.paint(context.canvas, viewport);
 
-    _paintHighlightArea(context.canvas, viewport);
+    _selectionAreaPainter.paint(context.canvas, viewport);
 
     if (kDebugMode) {
       paintDebugViewport(context.canvas, viewport);
@@ -492,13 +505,13 @@ class NodeEditorRenderBox extends RenderBox
 
     _controller.nodesDataDirty = false;
     _controller.linksDataDirty = false;
-    _transformMatrixDirty = false;
+    _transformChanged = false;
 
     _childrenNotPainted.clear();
   }
 
   Matrix4 _getTransformMatrix() {
-    if (_transformMatrix != null && !_transformMatrixDirty) {
+    if (_transformMatrix != null && !_transformChanged) {
       return _transformMatrix!;
     }
 
@@ -534,123 +547,7 @@ class NodeEditorRenderBox extends RenderBox
     canvas.drawRect(viewport, Paint()..shader = gridShader);
   }
 
-  bool _portsPositionsDirty = true;
-
-  final List<(Path, Paint)> _gradientLinks = [];
-  final Map<FlLinkStyle, (Path, Paint)> _solidColorsLinksBatches = {};
-
-  final List<(String, Path)> _linksHitTestData = [];
-
-  void _paintLinks(Canvas canvas, Rect viewport) {
-    // Here we collect data also for ports and children to avoid multiple loops
-
-    if (_controller.linksDataDirty ||
-        _controller.nodesDataDirty ||
-        _transformMatrixDirty ||
-        _portsPositionsDirty) {
-      final Set<LinkPaintModel> linkData = {};
-
-      // We cannot just reset the paths because the link styles are stateful that change hash code
-      _gradientLinks.clear();
-      _solidColorsLinksBatches.clear();
-      _linksHitTestData.clear();
-
-      for (final link in _controller.links.values) {
-        final outNode = _controller.getNodeById(link.fromTo.from)!;
-        final inNode = _controller.getNodeById(link.fromTo.fromPort)!;
-        final outPort = outNode.ports[link.fromTo.to]!;
-        final inPort = inNode.ports[link.fromTo.toPort]!;
-
-        final Rect pathBounds = Rect.fromPoints(
-          outNode.offset + outPort.offset,
-          inNode.offset + inPort.offset,
-        );
-
-        if (!viewport.overlaps(pathBounds)) continue;
-
-        // NOTE: The port offset is relative to the node
-        linkData.add(
-          LinkPaintModel(
-            id: link.id,
-            outPortOffset: outNode.offset + outPort.offset,
-            inPortOffset: inNode.offset + inPort.offset,
-            linkStyle: outPort.style.linkStyleBuilder(link.state),
-          ),
-        );
-      }
-
-      // We don't draw the temporary link here because it should be on top of the nodes
-
-      for (final data in linkData) {
-        if (data.linkStyle.gradient != null) {
-          late Path path;
-
-          switch (data.linkStyle.curveType) {
-            case FlLinkCurveType.straight:
-              path = PathUtils.computeStraightLinkPath(data);
-              break;
-            case FlLinkCurveType.bezier:
-              path = PathUtils.computeBezierLinkPath(data);
-              break;
-            case FlLinkCurveType.ninetyDegree:
-              path = PathUtils.computeNinetyDegreesLinkPath(data);
-              break;
-          }
-
-          _linksHitTestData.add((data.id, path));
-
-          final shader = data.linkStyle.gradient!.createShader(
-            Rect.fromPoints(data.outPortOffset, data.inPortOffset),
-          );
-
-          final Paint paint = Paint()
-            ..shader = shader
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = data.linkStyle.lineWidth;
-
-          _gradientLinks.add((path, paint));
-        } else {
-          final style = data.linkStyle;
-          _solidColorsLinksBatches.putIfAbsent(style, () {
-            return (
-              Path(),
-              Paint()
-                ..color = style.color!
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = style.lineWidth
-            );
-          });
-
-          late Path path;
-
-          switch (style.curveType) {
-            case FlLinkCurveType.straight:
-              path = PathUtils.computeStraightLinkPath(data);
-              break;
-            case FlLinkCurveType.bezier:
-              path = PathUtils.computeBezierLinkPath(data);
-              break;
-            case FlLinkCurveType.ninetyDegree:
-              path = PathUtils.computeNinetyDegreesLinkPath(data);
-              break;
-          }
-
-          _linksHitTestData.add((data.id, path));
-
-          _solidColorsLinksBatches[style]!.$1.addPath(path, Offset.zero);
-        }
-      }
-    }
-
-    for (final (path, paint) in _gradientLinks) {
-      canvas.drawPath(path, paint);
-    }
-
-    for (final entry in _solidColorsLinksBatches.entries) {
-      final (path, paint) = entry.value;
-      canvas.drawPath(path, paint);
-    }
-  }
+  bool _portsChanged = true;
 
   final List<RenderBox> selectedChildren = [];
   final Path selectedShadowPath = Path();
@@ -665,8 +562,8 @@ class NodeEditorRenderBox extends RenderBox
   void _paintChildren(PaintingContext context) {
     if (_controller.nodesDataDirty ||
         _controller.linksDataDirty ||
-        _transformMatrixDirty ||
-        _portsPositionsDirty) {
+        _transformChanged ||
+        _portsChanged) {
       // Clear the old frame data
 
       selectedChildren.clear();
@@ -767,14 +664,14 @@ class NodeEditorRenderBox extends RenderBox
         batchPortByStyle[style]!.$1.addPath(path, Offset.zero);
       }
 
-      if (!_portsPositionsDirty) {
-        _portsPositionsDirty = true;
+      if (!_portsChanged) {
+        _portsChanged = true;
 
         SchedulerBinding.instance.addPostFrameCallback((_) {
           markNeedsPaint();
         });
       } else {
-        _portsPositionsDirty = false;
+        _portsChanged = false;
       }
     }
 
@@ -823,66 +720,6 @@ class NodeEditorRenderBox extends RenderBox
         context.canvas.drawPath(path, paint);
       }
     }
-  }
-
-  void _paintTemporaryLink(Canvas canvas) {
-    if (_tmpLinkData == null) return;
-
-    late Path path;
-
-    switch (_tmpLinkData!.linkStyle.curveType) {
-      case FlLinkCurveType.straight:
-        path = PathUtils.computeStraightLinkPath(_tmpLinkData!);
-        break;
-      case FlLinkCurveType.bezier:
-        path = PathUtils.computeBezierLinkPath(_tmpLinkData!);
-        break;
-      case FlLinkCurveType.ninetyDegree:
-        path = PathUtils.computeNinetyDegreesLinkPath(_tmpLinkData!);
-        break;
-    }
-
-    final Paint paint = Paint();
-
-    if (_tmpLinkData!.linkStyle.gradient != null) {
-      final shader = _tmpLinkData!.linkStyle.gradient!.createShader(
-        Rect.fromPoints(
-          _tmpLinkData!.outPortOffset,
-          _tmpLinkData!.inPortOffset,
-        ),
-      );
-
-      paint
-        ..shader = shader
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _tmpLinkData!.linkStyle.lineWidth;
-    } else {
-      paint
-        ..color = _tmpLinkData!.linkStyle.color!
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _tmpLinkData!.linkStyle.lineWidth;
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  void _paintHighlightArea(Canvas canvas, Rect viewport) {
-    if (_highlightArea == null) return;
-
-    final style = _controller.style.highlightAreaStyle;
-
-    final Paint selectionPaint = Paint()
-      ..color = style.color
-      ..style = PaintingStyle.fill;
-
-    canvas.drawRect(_highlightArea!, selectionPaint);
-
-    final Paint borderPaint = Paint()
-      ..color = style.borderColor
-      ..strokeWidth = style.borderWidth
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawRect(_highlightArea!, borderPaint);
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -942,23 +779,6 @@ class NodeEditorRenderBox extends RenderBox
       }
     }
 
-    return false;
-  }
-
-  //////////////////////////////////////////////////////////////////
-  /// Hit testing utility methods
-  //////////////////////////////////////////////////////////////////
-
-  /// Checks if a point is near a path within the given tolerance
-  bool isPointNearPath(Path path, Offset point, double tolerance) {
-    for (final metric in path.computeMetrics()) {
-      for (double t = 0; t < metric.length; t += 1.0) {
-        final pos = metric.getTangentForOffset(t)?.position;
-        if (pos != null && (point - pos).distance <= tolerance) {
-          return true;
-        }
-      }
-    }
     return false;
   }
 
@@ -1110,13 +930,14 @@ class NodeEditorRenderBox extends RenderBox
   String? _findHitLink(Offset transformedPosition, Rect checkRect) {
     const tolerance = 4.0;
 
-    for (final (id, path) in _linksHitTestData) {
+    for (final (id, path) in _linksCustomPainter.linksHitTestData) {
       if (checkRect.overlaps(path.getBounds())) {
-        if (isPointNearPath(path, transformedPosition, tolerance)) {
+        if (PathUtils.isPointNearPath(path, transformedPosition, tolerance)) {
           return id;
         }
       }
     }
+
     return null;
   }
 
@@ -1289,14 +1110,12 @@ class NodeEditorRenderBox extends RenderBox
 
   /// Handles node hit events (click/hover)
   void _handleNodeHit(String nodeId, PointerEvent event) {
-    if (event is PointerHoverEvent) {
-      _setNodeHover(nodeId);
-    }
+    if (event is PointerHoverEvent) _setNodeHover(nodeId);
   }
 
   /// Handles link hit events (click/hover)
   void _handleLinkHit(String linkId, PointerEvent event) {
-    if (_tmpLinkData != null) return;
+    if (_tmpLinkCustomPainter.tmpLinkData != null) return;
 
     if (event is PointerDownEvent) {
       if (event.buttons == kSecondaryMouseButton) {

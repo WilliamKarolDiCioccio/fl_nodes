@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import '../utils/widgets/context_menu.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+
 import '../../styles/styles.dart';
 
 class LinkPaintModel {

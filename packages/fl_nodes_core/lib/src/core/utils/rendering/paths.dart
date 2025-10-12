@@ -179,4 +179,17 @@ final class PathUtils {
       ) // Bottom-left
       ..close();
   }
+
+  /// Checks if a point is near a path within the given tolerance
+  static bool isPointNearPath(Path path, Offset point, double tolerance) {
+    for (final metric in path.computeMetrics()) {
+      for (double t = 0; t < metric.length; t += 1.0) {
+        final pos = metric.getTangentForOffset(t)?.position;
+        if (pos != null && (point - pos).distance <= tolerance) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

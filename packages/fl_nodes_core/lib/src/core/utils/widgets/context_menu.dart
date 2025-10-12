@@ -1,13 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_context_menu/flutter_context_menu.dart';
+
 import '../../controller/core.dart';
 import '../../localization/delegate.dart';
 import '../../models/data.dart';
 import '../rendering/renderbox.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 bool isContextMenuVisible = false;
-
-typedef PortLocator = ({String nodeId, String portId});
 
 class ContextMenuUtils {
   static void createAndShowContextMenu(
