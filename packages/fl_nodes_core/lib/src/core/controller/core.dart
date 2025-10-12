@@ -1099,6 +1099,9 @@ class FlNodeEditorController with ChangeNotifier {
       nodeEditorSize.height / encompassingRect.height,
     );
 
+    // Check if the fitZoom is valid (might be infinite or NaN if the encompassingRect has zero width or height)
+    if (fitZoom.isInfinite || fitZoom.isNaN) return;
+
     setViewportZoom(
       fitZoom,
       absolute: true,
