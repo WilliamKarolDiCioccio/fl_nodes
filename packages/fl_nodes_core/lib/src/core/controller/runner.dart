@@ -1,11 +1,10 @@
 import 'dart:async';
 
+import 'package:fl_nodes_core/fl_nodes_core.dart';
 import 'package:flutter/material.dart';
 
 import '../events/events.dart';
 import '../models/data.dart';
-
-import 'core.dart';
 
 /// A class that manages the execution of the node editor graph.
 ///
@@ -200,6 +199,8 @@ class FlNodeEditorExecutionHelper {
     FlNodeDataModel node, {
     BuildContext? context,
   }) async {
+    final strings = FlNodeEditorLocalizations.of(context);
+
     /// A function that forwards events to connected nodes through control ports.
     ///
     /// The function takes a [Set] of unique IDs of the ports to forward events to and
@@ -256,13 +257,22 @@ class FlNodeEditorExecutionHelper {
       await _executeNode(nodes[dep]!);
     }
 
-    await node.prototype.onExecute?.call(
-      node.ports.map((portId, port) => MapEntry(portId, port.data)),
-      node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
-      _execState.putIfAbsent(node.id, () => {}),
-      forward,
-      put,
-    );
+    try {
+      await node.prototype.onExecute?.call(
+        node.ports.map((portId, port) => MapEntry(portId, port.data)),
+        node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
+        _execState.putIfAbsent(node.id, () => {}),
+        forward,
+        put,
+      );
+    } catch (e) {
+      controller.focusNodesById({node.id});
+      controller.onCallback?.call(
+        FlCallbackType.error,
+        strings.failedToExecuteNodeErrorMsg(e.toString()),
+      );
+      return;
+    }
 
     _execState.remove(node.id);
   }
