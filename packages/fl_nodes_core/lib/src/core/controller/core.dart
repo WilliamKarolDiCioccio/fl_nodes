@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+
+import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -11,6 +12,7 @@ import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
 import '../utils/rendering/renderbox.dart';
+
 import 'callback.dart';
 import 'clipboard.dart';
 import 'config.dart';
@@ -633,37 +635,35 @@ class FlNodeEditorController with ChangeNotifier {
     // if this exact link already exists, don't do anything
     if (port1.links.any(
           (link) =>
-              link.fromTo.from == node2Id && link.fromTo.to == port2IdName,
+              link.ports.from.nodeId == node2Id &&
+              link.ports.to.portId == port2IdName,
         ) ||
         port2.links.any(
           (link) =>
-              link.fromTo.from == node1Id && link.fromTo.to == port1IdName,
+              link.ports.from.nodeId == node1Id &&
+              link.ports.to.portId == port1IdName,
         )) {
       return null;
     }
 
-    late FromTo fromTo;
+    late ({PortLocator from, PortLocator to}) portLocators;
 
     // Determine the order to insert the node references in the link based on the port direction.
     if (port1.prototype.direction == FlPortDirection.output) {
-      fromTo = (
-        from: node1Id,
-        to: port1IdName,
-        fromPort: node2Id,
-        toPort: port2IdName
+      portLocators = (
+        from: (nodeId: node1Id, portId: port1IdName),
+        to: (nodeId: node2Id, portId: port2IdName),
       );
     } else {
-      fromTo = (
-        from: node2Id,
-        to: port2IdName,
-        fromPort: node1Id,
-        toPort: port1IdName
+      portLocators = (
+        from: (nodeId: node2Id, portId: port2IdName),
+        to: (nodeId: node1Id, portId: port1IdName),
       );
     }
 
     final link = FlLinkDataModel(
       id: const Uuid().v4(),
-      fromTo: fromTo,
+      ports: portLocators,
       state: FlLinkState(),
     );
 
@@ -695,22 +695,22 @@ class FlNodeEditorController with ChangeNotifier {
     String? eventId,
     bool isHandled = false,
   }) {
-    if (!nodes.containsKey(link.fromTo.from) ||
-        !nodes.containsKey(link.fromTo.fromPort)) {
+    if (!nodes.containsKey(link.ports.from.nodeId) ||
+        !nodes.containsKey(link.ports.to.nodeId)) {
       return;
     }
 
-    final fromNode = nodes[link.fromTo.from]!;
-    final toNode = nodes[link.fromTo.fromPort]!;
+    final fromNode = nodes[link.ports.from.nodeId]!;
+    final toNode = nodes[link.ports.to.nodeId]!;
 
-    if (!fromNode.ports.containsKey(link.fromTo.to) ||
-        !toNode.ports.containsKey(link.fromTo.toPort)) {
+    if (!fromNode.ports.containsKey(link.ports.from.portId) ||
+        !toNode.ports.containsKey(link.ports.to.portId)) {
       return;
     }
 
-    final fromPort = nodes[link.fromTo.from]!.ports[link.fromTo.to]!;
-    final toPort = project
-        .projectData.nodes[link.fromTo.fromPort]!.ports[link.fromTo.toPort]!;
+    final fromPort =
+        nodes[link.ports.from.nodeId]!.ports[link.ports.from.portId]!;
+    final toPort = nodes[link.ports.to.nodeId]!.ports[link.ports.to.portId]!;
 
     fromPort.links.add(link);
     toPort.links.add(link);
@@ -746,8 +746,9 @@ class FlNodeEditorController with ChangeNotifier {
     final link = links[id]!;
 
     // Remove the link from its associated ports
-    final fromPort = nodes[link.fromTo.from]?.ports[link.fromTo.to];
-    final toPort = nodes[link.fromTo.fromPort]?.ports[link.fromTo.toPort];
+    final fromPort =
+        nodes[link.ports.from.nodeId]?.ports[link.ports.from.portId];
+    final toPort = nodes[link.ports.to.nodeId]?.ports[link.ports.to.portId];
 
     fromPort?.links.remove(link);
     toPort?.links.remove(link);

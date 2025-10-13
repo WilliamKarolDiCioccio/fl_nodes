@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:uuid/uuid.dart';
 
 import '../../constants.dart';
@@ -6,11 +7,10 @@ import '../../styles/styles.dart';
 import '../controller/core.dart';
 import '../events/events.dart';
 import '../helpers/single_listener_change_notifier.dart';
+
 import 'data_adapters_v1.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
-
-typedef FromTo = ({String from, String to, String fromPort, String toPort});
 
 typedef PortLocator = ({String nodeId, String portId});
 
@@ -47,12 +47,12 @@ class FlLinkState {
 /// A link is a connection between two ports.
 final class FlLinkDataModel {
   final String id;
-  final FromTo fromTo;
+  final ({PortLocator from, PortLocator to}) ports;
   final FlLinkState state;
 
   FlLinkDataModel({
     required this.id,
-    required this.fromTo,
+    required this.ports,
     required this.state,
   });
 
@@ -63,13 +63,13 @@ final class FlLinkDataModel {
 
   FlLinkDataModel copyWith({
     String? id,
-    FromTo? fromTo,
+    ({PortLocator from, PortLocator to})? ports,
     FlLinkState? state,
     List<Offset>? joints,
   }) {
     return FlLinkDataModel(
       id: id ?? this.id,
-      fromTo: fromTo ?? this.fromTo,
+      ports: ports ?? this.ports,
       state: state ?? this.state,
     );
   }
@@ -80,10 +80,10 @@ final class FlLinkDataModel {
       other is FlLinkDataModel &&
           runtimeType == other.runtimeType &&
           id == other.id &&
-          fromTo == other.fromTo;
+          ports == other.ports;
 
   @override
-  int get hashCode => id.hashCode ^ fromTo.hashCode;
+  int get hashCode => id.hashCode ^ ports.hashCode;
 }
 
 class TempLinkDataModel {
@@ -227,10 +227,6 @@ class FlPortState with SingleListenerChangeNotifier {
   FlPortState({
     bool isHovered = false,
   }) : _isHovered = isHovered;
-
-  // since isHovered is only meaningful during rendering, no need to save/restore it
-  factory FlPortState.fromJson(Map<String, dynamic> json) => FlPortState();
-  Map<String, dynamic> toJson() => {};
 
   FlPortState copyWith({bool? isHovered}) =>
       FlPortState(isHovered: isHovered ?? this.isHovered);

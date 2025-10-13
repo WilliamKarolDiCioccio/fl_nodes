@@ -4,20 +4,67 @@ import 'data.dart';
 import 'data_adapters_legacy.dart';
 
 extension FlLinkDataModelV1Adapter on FlLinkDataModel {
-  Map<String, dynamic> toJsonV1() => toJsonLegacy();
+  Map<String, dynamic> toJsonV1() {
+    return {
+      'id': id,
+      'from': {
+        'nodeId': ports.from.nodeId,
+        'portId': ports.from.portId,
+      },
+      'to': {
+        'nodeId': ports.to.nodeId,
+        'portId': ports.to.portId,
+      }
+    };
+  }
 
-  static FlLinkDataModel fromJsonV1(Map<String, dynamic> json) =>
-      FlLinkDataModelLegacyAdapter.fromJsonLegacy(json);
+  static FlLinkDataModel fromJsonV1(Map<String, dynamic> json) {
+    return FlLinkDataModel(
+      id: json['id'],
+      ports: (
+        from: (
+          nodeId: json['from']['nodeId'],
+          portId: json['from']['portId'],
+        ),
+        to: (
+          nodeId: json['to']['nodeId'],
+          portId: json['to']['portId'],
+        ),
+      ),
+      state: FlLinkState(),
+    );
+  }
 }
 
 extension FlPortDataModelV1Adapter on FlPortDataModel {
-  Map<String, dynamic> toJsonV1() => toJsonLegacy();
+  Map<String, dynamic> toJsonV1() {
+    return {
+      'idName': prototype.idName,
+      'links': links.map((link) => link.toJsonV1()).toList(),
+    };
+  }
 
   static FlPortDataModel fromJsonV1(
     Map<String, dynamic> json,
     Map<String, FlPortPrototype> portPrototypes,
-  ) =>
-      FlPortDataModelLegacyAdapter.fromJsonLegacy(json, portPrototypes);
+  ) {
+    if (!portPrototypes.containsKey(json['idName'].toString())) {
+      throw Exception('Port prototype not found');
+    }
+
+    final prototype = portPrototypes[json['idName'].toString()]!;
+
+    final instance = FlPortDataModel(
+      prototype: prototype,
+      state: FlPortState(),
+    );
+
+    instance.links = (json['links'] as List<dynamic>)
+        .map((linkJson) => FlLinkDataModelV1Adapter.fromJsonV1(linkJson))
+        .toSet();
+
+    return instance;
+  }
 }
 
 extension FlFieldDataModelV1Adapter on FlFieldDataModel {
@@ -48,9 +95,9 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
     return {
       'id': id,
       'idName': prototype.idName,
-      'ports': ports.map((k, v) => MapEntry(k, v.toJson())),
-      'fields': fields.map((k, v) => MapEntry(k, v.toJson(dataHandlers))),
-      'state': state.toJson(),
+      'ports': ports.map((k, v) => MapEntry(k, v.toJsonV1())),
+      'fields': fields.map((k, v) => MapEntry(k, v.toJsonV1(dataHandlers))),
+      'state': state.toJsonV1(),
       'offset': [offset.dx, offset.dy],
       'customData': customData.map((k, v) {
         final handler = dataHandlers[v.runtimeType];
@@ -152,7 +199,7 @@ extension FlNodeEditorProjectDataModelV1Adapter
     on FlNodeEditorProjectDataModel {
   Map<String, dynamic> toJsonV1(Map<Type, DataHandler> dataHandlers) {
     final nodesJson =
-        nodes.values.map((node) => node.toJson(dataHandlers)).toList();
+        nodes.values.map((node) => node.toJsonV1(dataHandlers)).toList();
 
     return {
       'version': 1,

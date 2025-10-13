@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../events/events.dart';
-import '../localization/delegate.dart';
 import '../models/data.dart';
-import 'callback.dart';
+
 import 'core.dart';
 
 /// A class that manages the execution of the node editor graph.
@@ -133,8 +132,9 @@ class FlNodeEditorExecutionHelper {
     for (final link in port.links) {
       final connectedNode = nodes[
           port.prototype.direction == FlPortDirection.input
-              ? link.fromTo.from
-              : link.fromTo.fromPort]!;
+              ? link.ports.from.nodeId
+              : link.ports.to.nodeId]!;
+
       connectedNodeIds.add(connectedNode.id);
     }
 
@@ -200,8 +200,6 @@ class FlNodeEditorExecutionHelper {
     FlNodeDataModel node, {
     BuildContext? context,
   }) async {
-    final strings = FlNodeEditorLocalizations.of(context);
-
     /// A function that forwards events to connected nodes through control ports.
     ///
     /// The function takes a [Set] of unique IDs of the ports to forward events to and
@@ -243,8 +241,8 @@ class FlNodeEditorExecutionHelper {
         }
 
         for (final link in port.links) {
-          final connectedNode = nodes[link.fromTo.fromPort]!;
-          final connectedPort = connectedNode.ports[link.fromTo.toPort]!;
+          final connectedNode = nodes[link.ports.to.nodeId]!;
+          final connectedPort = connectedNode.ports[link.ports.to.portId]!;
 
           connectedPort.data = data;
         }
@@ -258,22 +256,13 @@ class FlNodeEditorExecutionHelper {
       await _executeNode(nodes[dep]!);
     }
 
-    try {
-      await node.prototype.onExecute?.call(
-        node.ports.map((portId, port) => MapEntry(portId, port.data)),
-        node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
-        _execState.putIfAbsent(node.id, () => {}),
-        forward,
-        put,
-      );
-    } catch (e) {
-      controller.focusNodesById({node.id});
-      controller.onCallback?.call(
-        FlCallbackType.error,
-        strings.failedToExecuteNodeErrorMsg(e.toString()),
-      );
-      return;
-    }
+    await node.prototype.onExecute?.call(
+      node.ports.map((portId, port) => MapEntry(portId, port.data)),
+      node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
+      _execState.putIfAbsent(node.id, () => {}),
+      forward,
+      put,
+    );
 
     _execState.remove(node.id);
   }

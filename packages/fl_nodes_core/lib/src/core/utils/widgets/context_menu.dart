@@ -289,7 +289,7 @@ class ContextMenuUtils {
         onSelected: () {
           final link = controller.links[linkId];
           if (link != null) {
-            controller.focusNodesById({link.fromTo.from});
+            controller.focusNodesById({link.ports.from.nodeId});
           }
         },
       ),
@@ -299,7 +299,7 @@ class ContextMenuUtils {
         onSelected: () {
           final link = controller.links[linkId];
           if (link != null) {
-            controller.focusNodesById({link.fromTo.fromPort});
+            controller.focusNodesById({link.ports.to.nodeId});
           }
         },
       ),

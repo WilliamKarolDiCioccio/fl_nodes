@@ -6,21 +6,26 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
   Map<String, dynamic> toJsonLegacy() {
     return {
       'id': id,
-      'from': fromTo.from,
-      'to': fromTo.to,
-      'fromPort': fromTo.fromPort,
-      'toPort': fromTo.toPort,
+      'from': ports.from.nodeId,
+      'to': ports.to.nodeId,
+      'fromPort': ports.from.portId,
+      'toPort': ports.to.portId,
     };
   }
 
   static FlLinkDataModel fromJsonLegacy(Map<String, dynamic> json) {
     return FlLinkDataModel(
       id: json['id'],
-      fromTo: (
-        from: json['from'],
-        to: json['to'],
-        fromPort: json['fromPort'],
-        toPort: json['toPort'],
+      // What you see here is a mistake in the legacy format that we have to keep for compatibility
+      ports: (
+        from: (
+          nodeId: json['from'],
+          portId: json['to'],
+        ),
+        to: (
+          nodeId: json['fromPort'],
+          portId: json['toPort'],
+        ),
       ),
       state: FlLinkState(),
     );
@@ -31,7 +36,7 @@ extension FlPortDataModelLegacyAdapter on FlPortDataModel {
   Map<String, dynamic> toJsonLegacy() {
     return {
       'idName': prototype.idName,
-      'links': links.map((link) => link.toJson()).toList(),
+      'links': links.map((link) => link.toJsonLegacy()).toList(),
     };
   }
 
@@ -47,11 +52,12 @@ extension FlPortDataModelLegacyAdapter on FlPortDataModel {
 
     final instance = FlPortDataModel(
       prototype: prototype,
-      state: FlPortState.fromJson(json['state'] ?? {}),
+      state: FlPortState(),
     );
 
     instance.links = (json['links'] as List<dynamic>)
-        .map((linkJson) => FlLinkDataModel.fromJson(linkJson))
+        .map(
+            (linkJson) => FlLinkDataModelLegacyAdapter.fromJsonLegacy(linkJson))
         .toSet();
 
     return instance;
@@ -107,9 +113,9 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
     return {
       'id': id,
       'idName': prototype.idName,
-      'ports': ports.map((k, v) => MapEntry(k, v.toJson())),
-      'fields': fields.map((k, v) => MapEntry(k, v.toJson(dataHandlers))),
-      'state': state.toJson(),
+      'ports': ports.map((k, v) => MapEntry(k, v.toJsonLegacy())),
+      'fields': fields.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
+      'state': state.toJsonLegacy(),
       'offset': [offset.dx, offset.dy],
       'customData': customData.map((k, v) {
         final handler = dataHandlers[v.runtimeType];
@@ -181,7 +187,7 @@ extension FlNodeEditorProjectDataModelLegacyAdapter
     on FlNodeEditorProjectDataModel {
   Map<String, dynamic> toJsonLegacy(Map<Type, DataHandler> dataHandlers) {
     final nodesJson =
-        nodes.values.map((node) => node.toJson(dataHandlers)).toList();
+        nodes.values.map((node) => node.toJsonLegacy(dataHandlers)).toList();
 
     return {
       'viewport': {

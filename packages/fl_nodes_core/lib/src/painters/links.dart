@@ -29,10 +29,10 @@ class LinksCustomPainter extends FlCustomPainter {
       linksHitTestData.clear();
 
       for (final link in controller.links.values) {
-        final outNode = controller.getNodeById(link.fromTo.from)!;
-        final inNode = controller.getNodeById(link.fromTo.fromPort)!;
-        final outPort = outNode.ports[link.fromTo.to]!;
-        final inPort = inNode.ports[link.fromTo.toPort]!;
+        final outNode = controller.getNodeById(link.ports.from.nodeId)!;
+        final inNode = controller.getNodeById(link.ports.to.nodeId)!;
+        final outPort = outNode.ports[link.ports.from.portId]!;
+        final inPort = inNode.ports[link.ports.to.portId]!;
 
         final Rect pathBounds = Rect.fromPoints(
           outNode.offset + outPort.offset,
