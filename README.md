@@ -1,6 +1,17 @@
 # **🏗️ FlNodes Framework**
 
-[![melos](https://img.shields.io/badge/maintained%20with-melos-f700ff.svg?style=flat-square)](https://github.com/invertase/melos)
+![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=flutter&logoColor=white)
+![Maintained](https://img.shields.io/badge/maintained%3F-yes-green?style=for-the-badge)
+![Melos](https://img.shields.io/badge/monorepo-managed%20with%20Melos-magenta?style=for-the-badge)
+
+[![Pub](https://img.shields.io/pub/v/fl_nodes.svg?style=for-the-badge)](https://pub.dev/packages/fl_nodes)
+![Downloads](https://img.shields.io/pub/dm/fl_nodes.svg?style=for-the-badge)
+![Likes](https://img.shields.io/pub/likes/fl_nodes?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/WilliamKarolDiCioccio/fl_nodes?style=for-the-badge)
+![Repo Size](https://img.shields.io/github/repo-size/WilliamKarolDiCioccio/fl_nodes?style=for-the-badge)
+
+> What do you think of badges? **YES!**
 
 The **FlNodes Framework** is a modular, scalable ecosystem for building sophisticated node-based applications in Flutter. Designed for developers who need professional-grade visual editors, workflow tools, and graph-based interfaces, FlNodes provides a complete solution from low-level rendering to high-level abstractions.
 
@@ -42,8 +53,8 @@ The FlNodes Framework is organized as a monorepo with specialized packages:
 
 ### 🔌 Coming Soon
 
-- **`fl_nodes_visual_scripting`** 
-- **`fl_nodes_mind_maps`** 
+- **`fl_nodes_visual_scripting`**
+- **`fl_nodes_mind_maps`**
 - **`fl_nodes_flow_graphs`**
 
 ---
@@ -104,16 +115,16 @@ Explore fully working examples:
 - 🧪 Untested
 
 | 🖥️Desktop and 💻 laptop: | Windows | Linux | macOS |
-| ------------------------- | ------- | ----- | ----- |
-| **native/mouse**          | ✅       | ✅     | ✅     |
-| **native/trackpad**       | ✅       | ⚠️    | ✅     |
-| **web/mouse**             | ✅       | ✅     | ✅     |
-| **web/trackpad**          | ❌       | ❌     | ❌     |
+| ------------------------ | ------- | ----- | ----- |
+| **native/mouse**         | ✅      | ✅    | ✅    |
+| **native/trackpad**      | ✅      | ⚠️    | ✅    |
+| **web/mouse**            | ✅      | ✅    | ✅    |
+| **web/trackpad**         | ❌      | ❌    | ❌    |
 
 | 📱Mobile   | Android | iOS |
 | ---------- | ------- | --- |
-| **native** | ✅       | 🧪  |
-| **web**    | ✅       | 🧪  |
+| **native** | ✅      | 🧪  |
+| **web**    | ✅      | 🧪  |
 
 ---
 

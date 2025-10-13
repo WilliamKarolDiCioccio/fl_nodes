@@ -1,6 +1,9 @@
 # **fl_nodes**
 
-[![pub package](https://img.shields.io/pub/v/fl_nodes.svg)](https://pub.dev/packages/fl_nodes)
+[![Pub](https://img.shields.io/pub/v/fl_nodes.svg?style=for-the-badge)](https://pub.dev/packages/fl_nodes)
+![Maintained](https://img.shields.io/badge/maintained%3F-yes-green?style=for-the-badge)
+![Melos](https://img.shields.io/badge/monorepo-managed%20with%20Melos-magenta?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/WilliamKarolDiCioccio/fl_nodes?style=for-the-badge)
 
 > **Migration Notice**: This package now serves as a compatibility layer for the FlNodes Framework. It re-exports functionality from `fl_nodes_core` to ensure a smooth migration path for existing projects.
 
@@ -126,16 +129,16 @@ Explore fully working examples:
 - 🧪 Untested
 
 | 🖥️Desktop and 💻 laptop: | Windows | Linux | macOS |
-| ------------------------- | ------- | ----- | ----- |
-| **native/mouse**          | ✅       | ✅     | ✅     |
-| **native/trackpad**       | ✅       | ⚠️    | ✅     |
-| **web/mouse**             | ✅       | ✅     | ✅     |
-| **web/trackpad**          | ❌       | ❌     | ❌     |
+| ------------------------ | ------- | ----- | ----- |
+| **native/mouse**         | ✅      | ✅    | ✅    |
+| **native/trackpad**      | ✅      | ⚠️    | ✅    |
+| **web/mouse**            | ✅      | ✅    | ✅    |
+| **web/trackpad**         | ❌      | ❌    | ❌    |
 
 | 📱Mobile   | Android | iOS |
 | ---------- | ------- | --- |
-| **native** | ✅       | 🧪  |
-| **web**    | ✅       | 🧪  |
+| **native** | ✅      | 🧪  |
+| **web**    | ✅      | 🧪  |
 
 ---
 

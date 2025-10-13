@@ -1,6 +1,9 @@
 # **fl_nodes_core**
 
-[![pub package](https://img.shields.io/pub/v/fl_nodes_core.svg)](https://pub.dev/packages/fl_nodes_core)
+[![Pub](https://img.shields.io/pub/v/fl_nodes_core.svg?style=for-the-badge)](https://pub.dev/packages/fl_nodes_core)
+![Maintained](https://img.shields.io/badge/maintained%3F-yes-green?style=for-the-badge)
+![Melos](https://img.shields.io/badge/monorepo-managed%20with%20Melos-magenta?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/WilliamKarolDiCioccio/fl_nodes?style=for-the-badge)
 
 > **Advanced Package**: This is the foundational core of the FlNodes Framework. Most users should use **Domain Packages** (coming soon, pre-built for specific use cases) such as `fl_nodes_visual_scripting` and `fl_nodes_mind_maps`. Use `fl_nodes_core` directly only if you have specialized low-level requirements.
 
