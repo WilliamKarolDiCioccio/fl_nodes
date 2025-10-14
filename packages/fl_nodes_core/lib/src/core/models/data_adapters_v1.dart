@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'data.dart';
 import 'data_adapters_legacy.dart';
 
-extension FlLinkDataModelV1Adapter on FlLinkDataModel {
+extension FlLinkDataModelV1Adapter<T> on FlLinkDataModel {
   Map<String, dynamic> toJsonV1() {
     return {
       'id': id,
@@ -14,11 +14,13 @@ extension FlLinkDataModelV1Adapter on FlLinkDataModel {
       'to': {
         'nodeId': ports.to.nodeId,
         'portId': ports.to.portId,
-      }
+      },
+      'labelData': null,
     };
   }
 
-  static FlLinkDataModel fromJsonV1(Map<String, dynamic> json) {
+  static FlLinkDataModel fromJsonV1(
+      Map<String, dynamic> json, Map<Type, DataHandler> dataHandlers) {
     return FlLinkDataModel(
       id: json['id'],
       ports: (
@@ -46,6 +48,7 @@ extension FlPortDataModelV1Adapter on FlPortDataModel {
 
   static FlPortDataModel fromJsonV1(
     Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
     Map<String, FlPortPrototype> portPrototypes,
   ) {
     if (!portPrototypes.containsKey(json['idName'].toString())) {
@@ -60,7 +63,8 @@ extension FlPortDataModelV1Adapter on FlPortDataModel {
     );
 
     instance.links = (json['links'] as List<dynamic>)
-        .map((linkJson) => FlLinkDataModelV1Adapter.fromJsonV1(linkJson))
+        .map((linkJson) =>
+            FlLinkDataModelV1Adapter.fromJsonV1(linkJson, dataHandlers))
         .toSet();
 
     return instance;
@@ -118,7 +122,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
     final prototype = nodePrototypes[json['idName'].toString()]!;
 
     final portPrototypes = Map.fromEntries(
-      prototype.ports.map(
+      prototype.portPrototypes.map(
         (prototype) => MapEntry(prototype.idName, prototype),
       ),
     );
@@ -127,13 +131,14 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       (id, portJson) {
         return MapEntry(
           id,
-          FlPortDataModelV1Adapter.fromJsonV1(portJson, portPrototypes),
+          FlPortDataModelV1Adapter.fromJsonV1(
+              portJson, dataHandlers, portPrototypes),
         );
       },
     );
 
     final fieldPrototypes = Map.fromEntries(
-      prototype.fields.map(
+      prototype.fieldPrototypes.map(
         (prototype) => MapEntry(prototype.idName, prototype),
       ),
     );

@@ -1,29 +1,28 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 import 'package:example/l10n/app_localizations.dart';
 import 'package:example/visual_scripting_example/nodes/data/types.dart';
 import 'package:example/visual_scripting_example/nodes/styles/headers.dart';
 import 'package:example/visual_scripting_example/nodes/styles/ports.dart';
 import 'package:example/visual_scripting_example/widgets/terminal.dart';
 import 'package:fl_nodes/fl_nodes.dart';
-import 'package:flutter/material.dart';
 
 FlNodePrototype createValueNode<T>({
   required String idName,
   required String Function(BuildContext context) displayName,
   required T defaultValue,
   required Widget Function(T data) visualizerBuilder,
-  Function(
-    dynamic data,
-    Function(dynamic data) setData,
-  )? onVisualizerTap,
+  Function(dynamic data, Function(dynamic data) setData)? onVisualizerTap,
   Widget Function(
     BuildContext context,
     Function() removeOverlay,
     dynamic data,
     Function(dynamic data, {required FlFieldEventType eventType}) setData,
-  )? editorBuilder,
+  )?
+  editorBuilder,
 }) {
   return FlNodePrototype(
     idName: 'value.$idName',
@@ -31,7 +30,7 @@ FlNodePrototype createValueNode<T>({
     description: (context) =>
         AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
     headerStyleBuilder: NodeHeaderStyles.value,
-    ports: [
+    portPrototypes: [
       FlControlOutputPortPrototype(
         idName: 'completed',
         displayName: (context) =>
@@ -40,11 +39,12 @@ FlNodePrototype createValueNode<T>({
       ),
       FlDataOutputPortPrototype<T>(
         idName: 'value',
+        linkPrototype: FlLinkPrototype(label: (_) => T.toString()),
         displayName: (context) => AppLocalizations.of(context)!.valuePortName,
         styleBuilder: PortStyles.dataOutput,
       ),
     ],
-    fields: [
+    fieldPrototypes: [
       FlFieldPrototype(
         idName: 'value',
         displayName: (context) => AppLocalizations.of(context)!.valueFieldName,
@@ -106,11 +106,8 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       displayName: (context) =>
           AppLocalizations.of(context)!.booleanValueNodeName,
       defaultValue: false,
-      visualizerBuilder: (data) => Icon(
-        data ? Icons.check : Icons.close,
-        color: Colors.white,
-        size: 18,
-      ),
+      visualizerBuilder: (data) =>
+          Icon(data ? Icons.check : Icons.close, color: Colors.white, size: 18),
       onVisualizerTap: (data, setData) => setData(!data),
     ),
   );
@@ -133,16 +130,10 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         child: TextFormField(
           initialValue: data,
           onChanged: (value) {
-            setData(
-              value,
-              eventType: FlFieldEventType.change,
-            );
+            setData(value, eventType: FlFieldEventType.change);
           },
           onFieldSubmitted: (value) {
-            setData(
-              value,
-              eventType: FlFieldEventType.submit,
-            );
+            setData(value, eventType: FlFieldEventType.submit);
             removeOverlay();
           },
         ),
@@ -260,10 +251,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
             eventType: FlFieldEventType.change,
           ),
           onFieldSubmitted: (value) {
-            setData(
-              parseStringList(value),
-              eventType: FlFieldEventType.submit,
-            );
+            setData(parseStringList(value), eventType: FlFieldEventType.submit);
             removeOverlay();
           },
         ),
@@ -278,7 +266,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.operatorNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.math,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -302,12 +290,13 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'result',
+          linkPrototype: FlLinkPrototype(label: (_) => 'double'),
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
         ),
       ],
-      fields: [
+      fieldPrototypes: [
         FlFieldPrototype(
           idName: 'operation',
           displayName: (context) =>
@@ -322,39 +311,40 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
           editorBuilder: (context, removeOverlay, data, setData) =>
               SegmentedButton<Operator>(
-            segments: [
-              ButtonSegment(
-                value: Operator.add,
-                label: Text(
-                  AppLocalizations.of(context)!.addFieldOption,
-                ),
+                segments: [
+                  ButtonSegment(
+                    value: Operator.add,
+                    label: Text(AppLocalizations.of(context)!.addFieldOption),
+                  ),
+                  ButtonSegment(
+                    value: Operator.subtract,
+                    label: Text(
+                      AppLocalizations.of(context)!.subtractFieldOption,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: Operator.multiply,
+                    label: Text(
+                      AppLocalizations.of(context)!.multiplyFieldOption,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: Operator.divide,
+                    label: Text(
+                      AppLocalizations.of(context)!.divideFieldOption,
+                    ),
+                  ),
+                ],
+                selected: {data as Operator},
+                onSelectionChanged: (newSelection) {
+                  setData(
+                    newSelection.first,
+                    eventType: FlFieldEventType.submit,
+                  );
+                  removeOverlay();
+                },
+                direction: Axis.horizontal,
               ),
-              ButtonSegment(
-                value: Operator.subtract,
-                label: Text(
-                  AppLocalizations.of(context)!.subtractFieldOption,
-                ),
-              ),
-              ButtonSegment(
-                value: Operator.multiply,
-                label: Text(
-                  AppLocalizations.of(context)!.multiplyFieldOption,
-                ),
-              ),
-              ButtonSegment(
-                value: Operator.divide,
-                label: Text(
-                  AppLocalizations.of(context)!.divideFieldOption,
-                ),
-              ),
-            ],
-            selected: {data as Operator},
-            onSelectionChanged: (newSelection) {
-              setData(newSelection.first, eventType: FlFieldEventType.submit);
-              removeOverlay();
-            },
-            direction: Axis.horizontal,
-          ),
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -385,7 +375,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.randomNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.generator,
-      ports: [
+      portPrototypes: [
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
@@ -394,6 +384,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'value',
+          linkPrototype: FlLinkPrototype(label: (_) => 'double'),
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
           styleBuilder: PortStyles.dataOutput,
         ),
@@ -412,7 +403,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       displayName: (context) => AppLocalizations.of(context)!.ifNodeName,
       description: (context) => AppLocalizations.of(context)!.ifNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.flow,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -453,7 +444,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.forEachLoopNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.flow,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -478,12 +469,14 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
         FlDataOutputPortPrototype(
           idName: 'listElem',
+          linkPrototype: FlLinkPrototype(label: (_) => 'dynamic'),
           displayName: (context) =>
               AppLocalizations.of(context)!.listElementPortName,
           styleBuilder: PortStyles.dataOutput,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'listIdx',
+          linkPrototype: FlLinkPrototype(label: (_) => 'int'),
           displayName: (context) =>
               AppLocalizations.of(context)!.listIndexPortName,
           styleBuilder: PortStyles.dataOutput,
@@ -519,7 +512,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.comparatorNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.logic,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -543,12 +536,13 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
         FlDataOutputPortPrototype<bool>(
           idName: 'result',
+          linkPrototype: FlLinkPrototype(label: (_) => 'bool'),
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
         ),
       ],
-      fields: [
+      fieldPrototypes: [
         FlFieldPrototype(
           idName: 'comparator',
           displayName: (context) =>
@@ -563,21 +557,27 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
           editorBuilder: (context, removeOverlay, data, setData) =>
               SegmentedButton<Comparator>(
-            segments: const [
-              ButtonSegment(value: Comparator.equal, label: Text('==')),
-              ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
-              ButtonSegment(value: Comparator.greater, label: Text('>')),
-              ButtonSegment(value: Comparator.greaterEqual, label: Text('>=')),
-              ButtonSegment(value: Comparator.less, label: Text('<')),
-              ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
-            ],
-            selected: {data as Comparator},
-            onSelectionChanged: (newSelection) {
-              setData(newSelection.first, eventType: FlFieldEventType.submit);
-              removeOverlay();
-            },
-            direction: Axis.horizontal,
-          ),
+                segments: const [
+                  ButtonSegment(value: Comparator.equal, label: Text('==')),
+                  ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
+                  ButtonSegment(value: Comparator.greater, label: Text('>')),
+                  ButtonSegment(
+                    value: Comparator.greaterEqual,
+                    label: Text('>='),
+                  ),
+                  ButtonSegment(value: Comparator.less, label: Text('<')),
+                  ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
+                ],
+                selected: {data as Comparator},
+                onSelectionChanged: (newSelection) {
+                  setData(
+                    newSelection.first,
+                    eventType: FlFieldEventType.submit,
+                  );
+                  removeOverlay();
+                },
+                direction: Axis.horizontal,
+              ),
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -612,7 +612,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.printNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.io,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -645,7 +645,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
       description: (context) =>
           AppLocalizations.of(context)!.roundNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.math,
-      ports: [
+      portPrototypes: [
         FlControlInputPortPrototype(
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
@@ -664,12 +664,13 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'rounded',
+          linkPrototype: FlLinkPrototype(label: (_) => 'int'),
           displayName: (context) =>
               AppLocalizations.of(context)!.roundedPortName,
           styleBuilder: PortStyles.dataOutput,
         ),
       ],
-      fields: [
+      fieldPrototypes: [
         FlFieldPrototype(
           idName: 'decimals',
           displayName: (context) =>
@@ -684,25 +685,25 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           ),
           editorBuilder: (context, removeOverlay, data, setData) =>
               ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 100),
-            child: TextFormField(
-              initialValue: data.toString(),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                setData(
-                  int.tryParse(value) ?? 0,
-                  eventType: FlFieldEventType.change,
-                );
-              },
-              onFieldSubmitted: (value) {
-                setData(
-                  int.tryParse(value) ?? 0,
-                  eventType: FlFieldEventType.submit,
-                );
-                removeOverlay();
-              },
-            ),
-          ),
+                constraints: const BoxConstraints(maxWidth: 100),
+                child: TextFormField(
+                  initialValue: data.toString(),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    setData(
+                      int.tryParse(value) ?? 0,
+                      eventType: FlFieldEventType.change,
+                    );
+                  },
+                  onFieldSubmitted: (value) {
+                    setData(
+                      int.tryParse(value) ?? 0,
+                      eventType: FlFieldEventType.submit,
+                    );
+                    removeOverlay();
+                  },
+                ),
+              ),
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {

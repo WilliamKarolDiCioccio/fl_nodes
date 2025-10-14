@@ -22,6 +22,17 @@ class DataHandler {
   DataHandler(this.toJson, this.fromJson);
 }
 
+/// A link prototype is the blueprint for a link instance.
+class FlLinkPrototype {
+  final String idName;
+  final LocalizedString label;
+
+  const FlLinkPrototype({
+    this.idName = 'default',
+    required this.label,
+  });
+}
+
 /// The state of a link painted on the canvas.
 class FlLinkState {
   bool isHovered; // Not saved as it is only used during rendering
@@ -58,8 +69,15 @@ final class FlLinkDataModel {
 
   Map<String, dynamic> toJson() => toJsonV1();
 
-  factory FlLinkDataModel.fromJson(Map<String, dynamic> json) =>
-      FlLinkDataModelV1Adapter.fromJsonV1(json);
+  factory FlLinkDataModel.fromJson(
+    Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
+    FlLinkPrototype prototype,
+  ) =>
+      FlLinkDataModelV1Adapter.fromJsonV1(
+        json,
+        dataHandlers,
+      );
 
   FlLinkDataModel copyWith({
     String? id,
@@ -117,6 +135,7 @@ abstract class FlPortPrototype {
   final String idName;
   final LocalizedString displayName;
   final PortStyleBuilder styleBuilder;
+  final FlLinkPrototype linkPrototype;
   final Type dataType;
   final FlPortDirection direction;
   final FlPortType type;
@@ -128,6 +147,7 @@ abstract class FlPortPrototype {
     this.dataType = dynamic,
     required this.direction,
     required this.type,
+    required this.linkPrototype,
   });
 
   bool compatibleWith(FlPortPrototype other);
@@ -139,6 +159,7 @@ class FlDataInputPortPrototype<T> extends FlPortPrototype {
     required super.displayName,
     super.styleBuilder,
   }) : super(
+          linkPrototype: FlLinkPrototype(label: (_) => ''),
           dataType: T,
           direction: FlPortDirection.input,
           type: FlPortType.data,
@@ -156,6 +177,7 @@ class FlDataOutputPortPrototype<T> extends FlPortPrototype {
   FlDataOutputPortPrototype({
     required super.idName,
     required super.displayName,
+    required super.linkPrototype,
     super.styleBuilder,
   }) : super(
           dataType: T,
@@ -184,7 +206,11 @@ class FlControlInputPortPrototype extends FlPortPrototype {
     required super.idName,
     required super.displayName,
     required super.styleBuilder,
-  }) : super(direction: FlPortDirection.input, type: FlPortType.control);
+  }) : super(
+          linkPrototype: FlLinkPrototype(label: (_) => ''),
+          direction: FlPortDirection.input,
+          type: FlPortType.control,
+        );
 
   @override
   bool compatibleWith(FlPortPrototype other) =>
@@ -196,7 +222,11 @@ class FlControlOutputPortPrototype extends FlPortPrototype {
     required super.idName,
     required super.displayName,
     required super.styleBuilder,
-  }) : super(direction: FlPortDirection.output, type: FlPortType.control);
+  }) : super(
+          linkPrototype: FlLinkPrototype(label: (_) => ''),
+          direction: FlPortDirection.output,
+          type: FlPortType.control,
+        );
 
   @override
   bool compatibleWith(FlPortPrototype other) =>
@@ -208,7 +238,11 @@ class FlGenericPortPrototype extends FlPortPrototype {
     required super.idName,
     required super.displayName,
     super.styleBuilder,
-  }) : super(direction: FlPortDirection.ignore, type: FlPortType.ignore);
+  }) : super(
+          linkPrototype: FlLinkPrototype(label: (_) => ''),
+          direction: FlPortDirection.ignore,
+          type: FlPortType.ignore,
+        );
 
   @override
   bool compatibleWith(FlPortPrototype other) => true;
@@ -269,9 +303,10 @@ final class FlPortDataModel {
 
   factory FlPortDataModel.fromJson(
     Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
     Map<String, FlPortPrototype> portPrototypes,
   ) =>
-      FlPortDataModelV1Adapter.fromJsonV1(json, portPrototypes);
+      FlPortDataModelV1Adapter.fromJsonV1(json, dataHandlers, portPrototypes);
 
   FlPortDataModel copyWith({
     dynamic data,
@@ -377,8 +412,8 @@ final class FlNodePrototype {
   final LocalizedString description;
   final NodeStyleBuilder styleBuilder;
   final NodeHeaderStyleBuilder headerStyleBuilder;
-  final List<FlPortPrototype> ports;
-  final List<FlFieldPrototype> fields;
+  final List<FlPortPrototype> portPrototypes;
+  final List<FlFieldPrototype> fieldPrototypes;
   final List<(String, Type, dynamic)> customData;
   final List<(String, Type, dynamic)> customState;
   final OnNodeExecute? onExecute;
@@ -389,8 +424,8 @@ final class FlNodePrototype {
     required this.description,
     this.styleBuilder = flDefaultNodeStyleBuilder,
     this.headerStyleBuilder = flDefaultNodeHeaderStyleBuilder,
-    this.ports = const [],
-    this.fields = const [],
+    this.portPrototypes = const [],
+    this.fieldPrototypes = const [],
     this.customData = const [],
     this.customState = const [],
     this.onExecute,
@@ -444,6 +479,7 @@ final class FlNodeDataModel {
   final Map<String, dynamic> customData;
   final FlNodeState state;
   Offset offset; // User or system defined offset
+  Rect cachedRenderboxRect; // Determined by Flutter
   final GlobalKey key = GlobalKey(); // Determined by Flutter
 
   FlNodeDataModel({
@@ -454,6 +490,7 @@ final class FlNodeDataModel {
     required this.state,
     this.customData = const {},
     this.offset = Offset.zero,
+    this.cachedRenderboxRect = Rect.zero,
   });
 
   Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) =>
@@ -535,13 +572,13 @@ FlNodeDataModel createNode(
     id: const Uuid().v4(),
     prototype: prototype,
     ports: Map.fromEntries(
-      prototype.ports.map((prototype) {
+      prototype.portPrototypes.map((prototype) {
         final instance = createPort(prototype.idName, prototype);
         return MapEntry(prototype.idName, instance);
       }),
     ),
     fields: Map.fromEntries(
-      prototype.fields.map((prototype) {
+      prototype.fieldPrototypes.map((prototype) {
         final instance = createField(prototype.idName, prototype);
         return MapEntry(prototype.idName, instance);
       }),

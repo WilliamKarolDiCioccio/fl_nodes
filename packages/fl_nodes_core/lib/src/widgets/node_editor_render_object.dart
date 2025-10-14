@@ -1,16 +1,15 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes_core/src/painters/links.dart';
+import 'package:fl_nodes_core/src/painters/selection_area.dart';
+import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
-import 'package:fl_nodes_core/src/painters/links.dart';
-import 'package:fl_nodes_core/src/painters/selection_area.dart';
-import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
@@ -22,7 +21,6 @@ import '../core/models/data.dart';
 import '../core/models/paint.dart';
 import '../core/utils/rendering/paths.dart';
 import '../styles/styles.dart';
-
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -165,6 +163,8 @@ class NodeEditorRenderBox extends RenderBox
     } else if (event is FlNodeFieldEvent) {
       _childrenNotLaidOut.add(event.nodeId);
       markNeedsLayout();
+    } else if (event is FlLinkLabelEvent) {
+      markNeedsPaint();
     } else if (event is FlConfigurationChangeEvent) {
       _updateNodes();
     } else if (event is FlLocaleChangeEvent || event is FlStyleChangeEvent) {
@@ -445,6 +445,8 @@ class NodeEditorRenderBox extends RenderBox
 
       _controller.nodesSpatialHashGrid
           .update((id: nodeId, rect: renderBoxRect));
+
+      _controller.getNodeById(nodeId)!.cachedRenderboxRect = renderBoxRect;
     }
 
     _childrenNotLaidOut.clear();

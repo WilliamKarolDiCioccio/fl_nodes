@@ -321,9 +321,17 @@ final class FlAddLinkEvent extends NodeEditorEvent {
         'link': link.toJson(),
       };
 
-  factory FlAddLinkEvent.fromJson(Map<String, dynamic> json) {
+  factory FlAddLinkEvent.fromJson(
+    Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
+    FlLinkPrototype prototype,
+  ) {
     return FlAddLinkEvent(
-      FlLinkDataModel.fromJson(json['link'] as Map<String, dynamic>),
+      FlLinkDataModel.fromJson(
+        json['link'] as Map<String, dynamic>,
+        dataHandlers,
+        prototype,
+      ),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -343,9 +351,17 @@ final class FlRemoveLinkEvent extends NodeEditorEvent {
         'link': link.toJson(),
       };
 
-  factory FlRemoveLinkEvent.fromJson(Map<String, dynamic> json) {
+  factory FlRemoveLinkEvent.fromJson(
+    Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
+    FlLinkPrototype prototype,
+  ) {
     return FlRemoveLinkEvent(
-      FlLinkDataModel.fromJson(json['link'] as Map<String, dynamic>),
+      FlLinkDataModel.fromJson(
+        json['link'] as Map<String, dynamic>,
+        dataHandlers,
+        prototype,
+      ),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -381,6 +397,19 @@ final class FlNodeFieldEvent extends NodeEditorEvent {
     this.nodeId,
     this.value,
     this.eventType, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when the user changes the label of a link.
+final class FlLinkLabelEvent extends NodeEditorEvent {
+  final String linkId;
+  final String label;
+
+  const FlLinkLabelEvent(
+    this.linkId,
+    this.label, {
     required super.id,
     super.isHandled,
   });

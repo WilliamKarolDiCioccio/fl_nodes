@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'data.dart';
 
 extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
-  Map<String, dynamic> toJsonLegacy() {
+  Map<String, dynamic> toJsonLegacy(Map<Type, DataHandler> dataHandlers) {
     return {
       'id': id,
       'from': ports.from.nodeId,
@@ -13,7 +13,10 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
     };
   }
 
-  static FlLinkDataModel fromJsonLegacy(Map<String, dynamic> json) {
+  static FlLinkDataModel fromJsonLegacy(
+    Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
+  ) {
     return FlLinkDataModel(
       id: json['id'],
       // What you see here is a mistake in the legacy format that we have to keep for compatibility
@@ -33,15 +36,16 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
 }
 
 extension FlPortDataModelLegacyAdapter on FlPortDataModel {
-  Map<String, dynamic> toJsonLegacy() {
+  Map<String, dynamic> toJsonLegacy(Map<Type, DataHandler> dataHandlers) {
     return {
       'idName': prototype.idName,
-      'links': links.map((link) => link.toJsonLegacy()).toList(),
+      'links': links.map((link) => link.toJsonLegacy(dataHandlers)).toList(),
     };
   }
 
   static FlPortDataModel fromJsonLegacy(
     Map<String, dynamic> json,
+    Map<Type, DataHandler> dataHandlers,
     Map<String, FlPortPrototype> portPrototypes,
   ) {
     if (!portPrototypes.containsKey(json['idName'].toString())) {
@@ -56,8 +60,8 @@ extension FlPortDataModelLegacyAdapter on FlPortDataModel {
     );
 
     instance.links = (json['links'] as List<dynamic>)
-        .map(
-            (linkJson) => FlLinkDataModelLegacyAdapter.fromJsonLegacy(linkJson))
+        .map((linkJson) =>
+            FlLinkDataModelLegacyAdapter.fromJsonLegacy(linkJson, dataHandlers))
         .toSet();
 
     return instance;
@@ -113,7 +117,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
     return {
       'id': id,
       'idName': prototype.idName,
-      'ports': ports.map((k, v) => MapEntry(k, v.toJsonLegacy())),
+      'ports': ports.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
       'fields': fields.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
       'state': state.toJsonLegacy(),
       'offset': [offset.dx, offset.dy],
@@ -136,7 +140,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
     final prototype = nodePrototypes[json['idName'].toString()]!;
 
     final portPrototypes = Map.fromEntries(
-      prototype.ports.map(
+      prototype.portPrototypes.map(
         (prototype) => MapEntry(prototype.idName, prototype),
       ),
     );
@@ -145,13 +149,17 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
       (id, portJson) {
         return MapEntry(
           id,
-          FlPortDataModelLegacyAdapter.fromJsonLegacy(portJson, portPrototypes),
+          FlPortDataModelLegacyAdapter.fromJsonLegacy(
+            portJson,
+            dataHandlers,
+            portPrototypes,
+          ),
         );
       },
     );
 
     final fieldPrototypes = Map.fromEntries(
-      prototype.fields.map(
+      prototype.fieldPrototypes.map(
         (prototype) => MapEntry(prototype.idName, prototype),
       ),
     );

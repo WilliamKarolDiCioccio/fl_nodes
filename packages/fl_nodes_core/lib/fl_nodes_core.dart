@@ -32,6 +32,7 @@ export 'package:fl_nodes_core/src/core/events/events.dart'
 export 'package:fl_nodes_core/src/core/localization/delegate.dart';
 export 'package:fl_nodes_core/src/core/models/data.dart'
     show
+        FlLinkPrototype,
         FlLinkDataModel,
         FlPortType,
         FlPortDirection,

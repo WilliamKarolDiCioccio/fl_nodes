@@ -140,7 +140,7 @@ class ContextMenuUtils {
           controller.getNodeById(locator.nodeId)!.ports[locator.portId]!;
 
       controller.nodePrototypes.forEach((key, value) {
-        if (value.ports.any(
+        if (value.portPrototypes.any(
           startPort.prototype.compatibleWith,
         )) {
           compatiblePrototypes.add(MapEntry(key, value));
