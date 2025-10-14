@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide Size;
 import 'package:flutter_shaders/flutter_shaders.dart';
 
 import '../constants.dart';
@@ -122,7 +122,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         details.focalPoint,
         isTrackpadInput: true,
       );
-    } else if (details.focalPointDelta != const Offset(10, 10)) {
+    } else if (details.focalPointDelta != Offset.zero) {
       _onDragUpdate(details.focalPointDelta);
     }
   }
@@ -327,28 +327,32 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     late double targetZoom;
 
-    // Mobile: simple linear/multiplicative scaling - no logarithms
     if (isMobile) {
       const platformWeight = 0.1;
 
       final double delta = defaultTargetPlatform == TargetPlatform.android
-          ? -amount * platformWeight * sensitivity // Flip for Android
-          : amount * platformWeight * sensitivity; // Keep as-is for iOS
+          ? -amount * platformWeight * sensitivity
+          : amount * platformWeight * sensitivity;
 
       targetZoom = zoom * (1.0 + delta);
-    }
-    // Desktop: use logarithmic scaling for smooth trackpad/mouse wheel input
-    else {
+    } else {
       final double logZoom = log(zoom);
       late double delta;
 
       if (isTrackpadInput) {
-        final platformWeight = switch (defaultTargetPlatform) {
-          TargetPlatform.macOS => 1.0,
-          TargetPlatform.windows => 10.0,
-          TargetPlatform.linux => 5.0,
-          _ => 1.0
-        };
+        late double platformWeight;
+
+        if (kIsWeb) {
+          platformWeight = 3;
+        } else {
+          platformWeight = switch (defaultTargetPlatform) {
+            TargetPlatform.macOS => 0.3,
+            TargetPlatform.windows => 2.0,
+            TargetPlatform.linux => 1.0,
+            _ => 0.6
+          };
+        }
+
         delta = log(amount) * sensitivity * platformWeight;
       } else {
         const platformWeight = 0.01;
@@ -356,11 +360,23 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         delta = amount * platformWeight * sensitivity;
       }
 
-      final double targetLogZoom = isTrackpadInput
-          ? logZoom + delta // Normal for trackpad
-          : logZoom - delta; // Invert for mouse wheel
+      final double targetLogZoom =
+          isTrackpadInput ? logZoom + delta : logZoom - delta;
 
       targetZoom = exp(targetLogZoom);
+    }
+
+    // Clamp zoom to reasonable bounds
+    targetZoom = targetZoom.clamp(0.1, 10.0);
+
+    if (isTrackpadInput && !kIsWeb) {
+      widget.controller.setViewportZoom(
+        targetZoom,
+        absolute: true,
+        animate: false,
+      );
+
+      return;
     }
 
     final localFocalPoint = RenderBoxUtils.screenToWorld(
@@ -597,14 +613,32 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 },
                 onPointerSignalReceived: (event) {
                   if (event is PointerScrollEvent &&
-                      widget.controller.config.enablePan &&
-                      event.scrollDelta != const Offset(10, 10)) {
-                    _setZoomFromRawInput(
-                      event.scrollDelta.dy,
-                      event.position,
-                    );
+                      widget.controller.config.enablePan) {
+                    if (kIsWeb) {
+                      final isZoomModifier =
+                          HardwareKeyboard.instance.isControlPressed ||
+                              HardwareKeyboard.instance.isMetaPressed;
+
+                      if (isZoomModifier &&
+                          widget.controller.config.enableZoom) {
+                        _setZoomFromRawInput(
+                          event.scrollDelta.dy,
+                          event.position,
+                        );
+                      } else {
+                        _setOffsetFromRawInput(-event.scrollDelta);
+                      }
+                    } else {
+                      if (widget.controller.config.enableZoom) {
+                        _setZoomFromRawInput(
+                          event.scrollDelta.dy,
+                          event.position,
+                        );
+                      }
+                    }
                   }
-                  if (event is PointerScaleEvent) {
+                  if (event is PointerScaleEvent &&
+                      widget.controller.config.enableZoom) {
                     if (kIsWeb) {
                       _setZoomFromRawInput(
                         event.scale,
