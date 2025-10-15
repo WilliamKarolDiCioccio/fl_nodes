@@ -821,19 +821,34 @@ class NodeEditorRenderBox extends RenderBox
       final child = _childrenById[nodeId]!;
       final childParentData = child.parentData as _ParentData;
 
-      final childRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(
+      // Based on the level of detail, we use reduce the complexity of the hit testing.
+      if (lodLevel >= 3) {
+        final childRect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            childParentData.offset.dx,
+            childParentData.offset.dy,
+            child.size.width,
+            child.size.height,
+          ),
+          Radius.circular(childParentData.borderRadius),
+        );
+
+        if (childRect.contains(transformedPosition)) {
+          hitNodeId = nodeId;
+          break;
+        }
+      } else {
+        final childRect = Rect.fromLTWH(
           childParentData.offset.dx,
           childParentData.offset.dy,
           child.size.width,
           child.size.height,
-        ),
-        Radius.circular(childParentData.borderRadius),
-      );
+        );
 
-      if (childRect.contains(transformedPosition)) {
-        hitNodeId = nodeId;
-        break; // Take the first (topmost) hit
+        if (childRect.contains(transformedPosition)) {
+          hitNodeId = nodeId;
+          break;
+        }
       }
     }
 
