@@ -131,9 +131,9 @@ Explore fully working examples:
 | 🖥️Desktop and 💻 laptop: | Windows | Linux | macOS |
 | ------------------------ | ------- | ----- | ----- |
 | **native/mouse**         | ✅      | ✅    | ✅    |
-| **native/trackpad**      | ✅      | ⚠️    | ✅    |
+| **native/trackpad**      | ✅      | 🧪    | ✅    |
 | **web/mouse**            | ✅      | ✅    | ✅    |
-| **web/trackpad**         | ❌      | ❌    | ❌    |
+| **web/trackpad**         | ✅      | ✅    | 🧪    |
 
 | 📱Mobile   | Android | iOS |
 | ---------- | ------- | --- |
