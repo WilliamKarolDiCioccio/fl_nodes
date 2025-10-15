@@ -8,10 +8,7 @@ class LinksCustomPainter extends FlCustomPainter {
   final List<(Path, Paint)> _unbatchableLinks = [];
   final Map<FlLinkStyle, (Path, Paint)> _solidColorLinkBatches = {};
 
-  final List<(String, Path)> linksHitTestData = [];
-
-  // Map to store bounding rectangles for link paths
-  final Map<String, Rect> linkPathBounds = {};
+  final Map<String, (Rect, Path)> linksHitTestData = {};
 
   // Map to cache text painters for link labels
   final Map<String, TextPainter> _labelTextPainters = {};
@@ -33,7 +30,6 @@ class LinksCustomPainter extends FlCustomPainter {
       _unbatchableLinks.clear();
       _solidColorLinkBatches.clear();
       linksHitTestData.clear();
-      linkPathBounds.clear();
       _labelTextPainters.clear();
 
       for (final link in controller.links.values) {
@@ -75,8 +71,7 @@ class LinksCustomPainter extends FlCustomPainter {
               break;
           }
 
-          linksHitTestData.add((data.id, path));
-          linkPathBounds[data.id] = path.getBounds();
+          linksHitTestData[data.id] = (path.getBounds(), path);
 
           _cacheTextPainter(data.id);
 
@@ -116,8 +111,7 @@ class LinksCustomPainter extends FlCustomPainter {
               break;
           }
 
-          linksHitTestData.add((data.id, path));
-          linkPathBounds[data.id] = path.getBounds();
+          linksHitTestData[data.id] = (path.getBounds(), path);
 
           _cacheTextPainter(data.id);
 
@@ -175,17 +169,17 @@ class LinksCustomPainter extends FlCustomPainter {
   }
 
   void _drawLinkLabels(Canvas canvas) {
-    for (final entry in linkPathBounds.entries) {
-      final linkId = entry.key;
-      final bounds = entry.value;
+    for (final entry in linksHitTestData.entries) {
+      final id = entry.key;
+      final pathData = entry.value.$1;
 
       // Defensive: skip invalid link bounds
-      if (bounds.isEmpty) continue;
+      if (pathData.isEmpty) continue;
 
-      final textPainter = _labelTextPainters[linkId];
+      final textPainter = _labelTextPainters[id];
       if (textPainter == null) continue;
 
-      final controllerLink = controller.links[linkId];
+      final controllerLink = controller.links[id];
       if (controllerLink == null) continue;
 
       final fromNode = controller.getNodeById(controllerLink.ports.from.nodeId);
@@ -196,7 +190,7 @@ class LinksCustomPainter extends FlCustomPainter {
       final toNodeBounds = toNode.cachedRenderboxRect;
 
       // Compute center safely
-      final center = bounds.center;
+      final center = pathData.center;
 
       // Margin around nodes & label
       const margin = 8.0;
@@ -242,8 +236,7 @@ class LinksCustomPainter extends FlCustomPainter {
 
   // Helper method to get the bounding rect center position for a link path
   Offset? getLinkLabelCenter(String linkId) {
-    final bounds = linkPathBounds[linkId];
-    if (bounds == null) return null;
-    return bounds.center;
+    final pathData = linksHitTestData[linkId]!.$1;
+    return pathData.center;
   }
 }

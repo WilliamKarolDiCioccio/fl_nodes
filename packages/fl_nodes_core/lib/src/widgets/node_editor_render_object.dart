@@ -1,15 +1,16 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:fl_nodes_core/src/painters/links.dart';
-import 'package:fl_nodes_core/src/painters/selection_area.dart';
-import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
+import 'package:fl_nodes_core/src/painters/links.dart';
+import 'package:fl_nodes_core/src/painters/selection_area.dart';
+import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
@@ -21,6 +22,7 @@ import '../core/models/data.dart';
 import '../core/models/paint.dart';
 import '../core/utils/rendering/paths.dart';
 import '../styles/styles.dart';
+
 import 'builders.dart';
 
 class NodeDiffCheckData {
@@ -932,9 +934,16 @@ class NodeEditorRenderBox extends RenderBox
   String? _findHitLink(Offset transformedPosition, Rect checkRect) {
     const tolerance = 4.0;
 
-    for (final (id, path) in _linksCustomPainter.linksHitTestData) {
-      if (checkRect.overlaps(path.getBounds())) {
-        if (PathUtils.isPointNearPath(path, transformedPosition, tolerance)) {
+    for (final entry in _linksCustomPainter.linksHitTestData.entries) {
+      final id = entry.key;
+      final pathData = entry.value;
+
+      if (checkRect.overlaps(pathData.$1)) {
+        if (PathUtils.isPointNearPath(
+          pathData.$2,
+          transformedPosition,
+          tolerance,
+        )) {
           return id;
         }
       }
