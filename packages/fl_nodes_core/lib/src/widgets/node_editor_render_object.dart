@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/painters/links.dart';
 import 'package:fl_nodes_core/src/painters/selection_area.dart';
 import 'package:fl_nodes_core/src/painters/tmp_link.dart';
@@ -1110,8 +1111,14 @@ class NodeEditorRenderBox extends RenderBox
       radius: 6.0,
     );
 
-    // Test in priority order: Ports (highest) > Nodes > Links (lowest)
-    // Each method returns true if it handled the event
+    // Skip link and port hit testing at very low zoom levels
+    if (_zoom <= kLowZoomThreshold) {
+      // Only test nodes when zoomed out this far
+      hitTestNodes(transformedPosition, checkRect, event);
+      return;
+    }
+
+    // Normal hit test order (Ports > Nodes > Links)
     if (!hitTestPorts(transformedPosition, checkRect, event)) {
       if (!hitTestNodes(transformedPosition, checkRect, event)) {
         hitTestLinks(transformedPosition, checkRect, event);

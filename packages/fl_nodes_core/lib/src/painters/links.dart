@@ -16,8 +16,12 @@ class LinksCustomPainter extends FlCustomPainter {
   LinksCustomPainter(super.controller);
 
   @override
-  void paint(Canvas canvas, Rect viewport,
-      {bool transformChanged = false, bool portsChanged = false}) {
+  void paint(
+    Canvas canvas,
+    Rect viewport, {
+    bool transformChanged = false,
+    bool portsChanged = false,
+  }) {
     // Here we collect data also for ports and children to avoid multiple loops
 
     if (controller.linksDataDirty ||
@@ -113,7 +117,9 @@ class LinksCustomPainter extends FlCustomPainter {
 
           linksHitTestData[data.id] = (path.getBounds(), path);
 
-          _cacheTextPainter(data.id);
+          if (controller.lodLevel >= 3) {
+            _cacheTextPainter(data.id);
+          }
 
           _solidColorLinkBatches[style]!.$1.addPath(path, Offset.zero);
         }
@@ -131,7 +137,9 @@ class LinksCustomPainter extends FlCustomPainter {
       canvas.drawPath(path, paint);
     }
 
-    _drawLinkLabels(canvas);
+    if (controller.lodLevel >= 3) {
+      _drawLinkLabels(canvas);
+    }
 
     canvas.restore();
   }
@@ -165,6 +173,7 @@ class LinksCustomPainter extends FlCustomPainter {
     );
 
     textPainter.layout();
+
     _labelTextPainters[linkId] = textPainter;
   }
 
