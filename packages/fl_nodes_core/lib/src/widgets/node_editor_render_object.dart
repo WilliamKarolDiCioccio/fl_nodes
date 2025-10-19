@@ -26,12 +26,12 @@ import '../styles/styles.dart';
 
 import 'builders.dart';
 
-class NodeDiffCheckData {
+class _NodeDiffCheckData {
   String id;
   Offset offset;
   FlNodeState state;
 
-  NodeDiffCheckData({
+  _NodeDiffCheckData({
     required this.id,
     required this.offset,
     required this.state,
@@ -233,12 +233,12 @@ class NodeEditorRenderBox extends RenderBox
   final TmpLinkCustomPainter _tmpLinkCustomPainter;
   final LinksCustomPainter _linksCustomPainter;
 
-  List<NodeDiffCheckData> _nodesDiffCheckData = [];
+  List<_NodeDiffCheckData> _nodesDiffCheckData = [];
 
-  List<NodeDiffCheckData> _getNodeDiffData() {
+  List<_NodeDiffCheckData> _getNodeDiffData() {
     return _controller.nodesAsList
         .map(
-          (node) => NodeDiffCheckData(
+          (node) => _NodeDiffCheckData(
             id: node.id,
             offset: node.offset,
             state: node.state,

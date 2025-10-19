@@ -47,4 +47,25 @@ class FlNodeEditorUtils {
 
     return newIds;
   }
+
+  /// Get link IDs connected to the given nodes IDs.
+  static Set<String> getConnectedLinkIds(
+    Set<String> nodeIds,
+    Map<String, FlNodeDataModel> nodes,
+  ) {
+    final Set<String> linkIds = {};
+
+    for (final nodeId in nodeIds) {
+      final node = nodes[nodeId];
+      if (node == null) continue;
+
+      for (final port in node.ports.values) {
+        for (final link in port.links) {
+          linkIds.add(link.id);
+        }
+      }
+    }
+
+    return linkIds;
+  }
 }

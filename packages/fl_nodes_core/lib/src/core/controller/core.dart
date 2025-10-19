@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:uuid/uuid.dart';
 
@@ -416,7 +417,9 @@ class FlNodeEditorController with ChangeNotifier {
       project.projectData.links.values.toList();
   int get linkCount => links.length;
 
-  final SpatialHashGrid nodesSpatialHashGrid = SpatialHashGrid();
+  final SpatialHashGrid nodesSpatialHashGrid = SpatialHashGrid(
+    cellSize: kNodesSpatialHashingCellSize,
+  );
 
   /// This map holds the raw nodes offsets before they are snapped to the grid.
   final Map<String, Offset> unboundNodeOffsets = {};

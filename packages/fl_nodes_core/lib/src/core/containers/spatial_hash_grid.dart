@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../constants.dart';
-
 /// A `SpatialHashGrid` is a utility class that provides a spatial hashing system.
 /// It organizes and queries rectangular objects (`Rect`) within a 2D grid,
 /// allowing for efficient spatial lookups.
@@ -22,7 +20,7 @@ class SpatialHashGrid {
   final Map<String, Set<({int x, int y})>> nodeToCells = {};
 
   /// Constructs a `SpatialHashGrid` using a predefined cell size defined in `constants.dart`.
-  SpatialHashGrid() : cellSize = kSpatialHashingCellSize;
+  SpatialHashGrid({required this.cellSize});
 
   /// Calculates the grid cell index for a given point in 2D space.
   ({int x, int y}) _getGridIndex(Offset point) {

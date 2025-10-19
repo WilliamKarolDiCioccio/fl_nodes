@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide Size;
+
 import 'package:flutter_shaders/flutter_shaders.dart';
 
 import '../constants.dart';
@@ -14,6 +15,7 @@ import '../core/models/data.dart';
 import '../core/utils/rendering/renderbox.dart';
 import '../core/utils/widgets/context_menu.dart';
 import '../styles/styles.dart';
+
 import 'builders.dart';
 import 'improved_listener.dart';
 import 'node_editor_render_object.dart';
@@ -184,8 +186,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
     final near = Rect.fromCenter(
       center: worldPosition!,
-      width: kSpatialHashingCellSize,
-      height: kSpatialHashingCellSize,
+      width: kNodesSpatialHashingCellSize,
+      height: kNodesSpatialHashingCellSize,
     );
 
     final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
@@ -196,7 +198,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
 
-        if ((worldPosition - absolutePortPosition).distance < 12) {
+        if ((worldPosition - absolutePortPosition).distance <
+            kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }

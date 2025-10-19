@@ -28,7 +28,7 @@ class InsertBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    grid = SpatialHashGrid();
+    grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
   }
 
@@ -50,7 +50,7 @@ class RemoveBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    grid = SpatialHashGrid();
+    grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
     for (var node in nodes) {
       grid.insert(node);
@@ -75,7 +75,7 @@ class DirectUpdateBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    grid = SpatialHashGrid();
+    grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
     for (var node in nodes) {
       grid.insert(node);
@@ -115,7 +115,7 @@ class UpdateMethodBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    grid = SpatialHashGrid();
+    grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
     for (var node in nodes) {
       grid.insert(node);

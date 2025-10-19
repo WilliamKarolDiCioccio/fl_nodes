@@ -1,17 +1,19 @@
 import 'dart:async';
 
-import 'package:fl_nodes_core/fl_nodes_core.dart';
-import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'package:fl_nodes_core/fl_nodes_core.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+
 import '../constants.dart';
 import '../core/events/events.dart';
 import '../core/utils/rendering/renderbox.dart';
 import '../core/utils/widgets/context_menu.dart';
+
 import 'builders.dart';
 import 'improved_listener.dart';
 
@@ -176,8 +178,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
     final near = Rect.fromCenter(
       center: worldPosition!,
-      width: kSpatialHashingCellSize,
-      height: kSpatialHashingCellSize,
+      width: kNodesSpatialHashingCellSize,
+      height: kNodesSpatialHashingCellSize,
     );
 
     final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
@@ -186,7 +188,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       final node = widget.controller.getNodeById(nodeId)!;
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
-        if ((worldPosition - absolutePortPosition).distance < 4) {
+        if ((worldPosition - absolutePortPosition).distance <
+            kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
