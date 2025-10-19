@@ -22,63 +22,77 @@ class LinksCustomPainter extends FlCustomPainter {
     bool transformChanged = false,
     bool portsChanged = false,
   }) {
-    // Here we collect data also for ports and children to avoid multiple loops
+    final shouldDrawLabels = controller.lodLevel >= 3;
 
     if (controller.linksDataDirty ||
         controller.nodesDataDirty ||
         transformChanged ||
         portsChanged) {
-      final Set<LinkPaintModel> linkData = {};
+      final List<LinkPaintModel> linkDrawData = [];
 
-      // We cannot just reset the paths because the link styles are stateful that change hash code
       _unbatchableLinks.clear();
       _solidColorLinkBatches.clear();
       linksHitTestData.clear();
-      _labelTextPainters.clear();
+
+      if (controller.linksDataDirty) {
+        _labelTextPainters.clear();
+      }
 
       for (final link in controller.links.values) {
-        final outNode = controller.getNodeById(link.ports.from.nodeId)!;
-        final inNode = controller.getNodeById(link.ports.to.nodeId)!;
-        final outPort = outNode.ports[link.ports.from.portId]!;
-        final inPort = inNode.ports[link.ports.to.portId]!;
+        final outNode = controller.getNodeById(link.ports.from.nodeId);
+        final inNode = controller.getNodeById(link.ports.to.nodeId);
+        if (outNode == null || inNode == null) continue;
 
-        final Rect pathBounds = Rect.fromPoints(
-          outNode.offset + outPort.offset,
-          inNode.offset + inPort.offset,
-        );
+        final outPort = outNode.ports[link.ports.from.portId];
+        final inPort = inNode.ports[link.ports.to.portId];
+        if (outPort == null || inPort == null) continue;
+
+        final outPortOffset = outNode.offset + outPort.offset;
+        final inPortOffset = inNode.offset + inPort.offset;
+        final outPortGeometricOrientation =
+            outPort.prototype.geometricOrientation;
+        final inPortGeometricOrientation =
+            inPort.prototype.geometricOrientation;
+
+        final Rect pathBounds = Rect.fromPoints(outPortOffset, inPortOffset);
 
         if (!viewport.overlaps(pathBounds)) continue;
 
-        linkData.add(
-          LinkPaintModel(
-            id: link.id,
-            outPortOffset: outNode.offset + outPort.offset,
-            inPortOffset: inNode.offset + inPort.offset,
-            linkStyle: outPort.style.linkStyleBuilder(link.state),
-          ),
-        );
+        final linkStyle = outPort.style.linkStyleBuilder(link.state);
+
+        String? labelText;
+        Rect? fromNodeBounds;
+        Rect? toNodeBounds;
+
+        if (shouldDrawLabels) {
+          labelText = outPort.prototype.linkPrototype
+              .label(controller.editorKey.currentContext!);
+
+          if (labelText.isNotEmpty) {
+            fromNodeBounds = outNode.cachedRenderboxRect;
+            toNodeBounds = inNode.cachedRenderboxRect;
+          }
+        }
+
+        linkDrawData.add(LinkPaintModel(
+          linkId: link.id,
+          outPortOffset: outPortOffset,
+          inPortOffset: inPortOffset,
+          outPortGeometricOrientation: outPortGeometricOrientation,
+          inPortGeometricOrientation: inPortGeometricOrientation,
+          linkStyle: linkStyle,
+          labelText: labelText,
+          fromNodeBounds: fromNodeBounds,
+          toNodeBounds: toNodeBounds,
+        ));
       }
 
-      for (final data in linkData) {
+      for (final data in linkDrawData) {
+        final path = _computeLinkPath(data.linkStyle.curveType, data);
+
+        linksHitTestData[data.linkId] = (path.getBounds(), path);
+
         if (data.linkStyle.gradient != null) {
-          late Path path;
-
-          switch (data.linkStyle.curveType) {
-            case FlLinkCurveType.straight:
-              path = PathUtils.computeStraightLinkPath(data);
-              break;
-            case FlLinkCurveType.bezier:
-              path = PathUtils.computeBezierLinkPath(data);
-              break;
-            case FlLinkCurveType.ninetyDegree:
-              path = PathUtils.computeNinetyDegreesLinkPath(data);
-              break;
-          }
-
-          linksHitTestData[data.id] = (path.getBounds(), path);
-
-          _cacheTextPainter(data.id);
-
           final shader = data.linkStyle.gradient!.createShader(
             Rect.fromPoints(data.outPortOffset, data.inPortOffset),
           );
@@ -89,6 +103,12 @@ class LinksCustomPainter extends FlCustomPainter {
             ..strokeWidth = data.linkStyle.lineWidth;
 
           _unbatchableLinks.add((path, paint));
+
+          if (shouldDrawLabels &&
+              data.labelText != null &&
+              data.labelText!.isNotEmpty) {
+            _cacheTextPainter(data.linkId, data.labelText!);
+          }
         } else {
           final style = data.linkStyle;
           _solidColorLinkBatches.putIfAbsent(style, () {
@@ -101,62 +121,58 @@ class LinksCustomPainter extends FlCustomPainter {
             );
           });
 
-          late Path path;
-
-          switch (style.curveType) {
-            case FlLinkCurveType.straight:
-              path = PathUtils.computeStraightLinkPath(data);
-              break;
-            case FlLinkCurveType.bezier:
-              path = PathUtils.computeBezierLinkPath(data);
-              break;
-            case FlLinkCurveType.ninetyDegree:
-              path = PathUtils.computeNinetyDegreesLinkPath(data);
-              break;
-          }
-
-          linksHitTestData[data.id] = (path.getBounds(), path);
-
-          if (controller.lodLevel >= 3) {
-            _cacheTextPainter(data.id);
-          }
-
           _solidColorLinkBatches[style]!.$1.addPath(path, Offset.zero);
+
+          if (shouldDrawLabels &&
+              data.labelText != null &&
+              data.labelText!.isNotEmpty) {
+            _cacheTextPainter(data.linkId, data.labelText!);
+          }
         }
       }
     }
 
     canvas.saveLayer(viewport, Paint());
 
-    for (final (path, paint) in _unbatchableLinks) {
-      canvas.drawPath(path, paint);
-    }
-
     for (final entry in _solidColorLinkBatches.entries) {
       final (path, paint) = entry.value;
       canvas.drawPath(path, paint);
     }
 
-    if (controller.lodLevel >= 3) {
+    for (final (path, paint) in _unbatchableLinks) {
+      canvas.drawPath(path, paint);
+    }
+
+    if (shouldDrawLabels) {
       _drawLinkLabels(canvas);
     }
 
     canvas.restore();
   }
 
-  void _cacheTextPainter(String linkId) {
-    final link = controller.links[linkId];
+  Path _computeLinkPath(FlLinkCurveType curveType, LinkPaintModel data) {
+    return switch (curveType) {
+      FlLinkCurveType.straight => PathUtils.computeStraightLinkPath(
+          outPortOffset: data.outPortOffset,
+          inPortOffset: data.inPortOffset,
+        ),
+      FlLinkCurveType.bezier => PathUtils.computeBezierLinkPath(
+          outPortOffset: data.outPortOffset,
+          inPortOffset: data.inPortOffset,
+          outPortGeometricOrientation: data.outPortGeometricOrientation,
+          inPortGeometricOrientation: data.inPortGeometricOrientation,
+        ),
+      FlLinkCurveType.ninetyDegree => PathUtils.computeNinetyDegreesLinkPath(
+          outPortOffset: data.outPortOffset,
+          inPortOffset: data.inPortOffset,
+          outPortGeometricOrientation: data.outPortGeometricOrientation,
+          inPortGeometricOrientation: data.inPortGeometricOrientation,
+        ),
+    };
+  }
 
-    if (link == null) return;
-
-    final outNode = controller.getNodeById(link.ports.from.nodeId);
-    final outPort = outNode?.ports[link.ports.from.portId];
-
-    final String labelText = outPort?.prototype.linkPrototype
-            .label(controller.editorKey.currentContext!) ??
-        '';
-
-    if (labelText.isEmpty) return;
+  void _cacheTextPainter(String linkId, String labelText) {
+    if (_labelTextPainters.containsKey(linkId)) return;
 
     final textSpan = TextSpan(
       text: labelText,
@@ -178,12 +194,13 @@ class LinksCustomPainter extends FlCustomPainter {
   }
 
   void _drawLinkLabels(Canvas canvas) {
+    const margin = 8.0;
+    const padding = 4.0;
+    final clearPaint = Paint()..blendMode = BlendMode.clear;
+
     for (final entry in linksHitTestData.entries) {
       final id = entry.key;
       final pathData = entry.value.$1;
-
-      // Defensive: skip invalid link bounds
-      if (pathData.isEmpty) continue;
 
       final textPainter = _labelTextPainters[id];
       if (textPainter == null) continue;
@@ -197,12 +214,7 @@ class LinksCustomPainter extends FlCustomPainter {
 
       final fromNodeBounds = fromNode.cachedRenderboxRect;
       final toNodeBounds = toNode.cachedRenderboxRect;
-
-      // Compute center safely
       final center = pathData.center;
-
-      // Margin around nodes & label
-      const margin = 8.0;
 
       // Define the rect that the label would occupy (with margin)
       final textRect = Rect.fromCenter(
@@ -216,7 +228,6 @@ class LinksCustomPainter extends FlCustomPainter {
           toNodeBounds.inflate(margin).overlaps(textRect);
 
       if (overlapsNode) {
-        // Optionally skip or adjust position (depending on desired behavior)
         continue;
       }
 
@@ -226,8 +237,6 @@ class LinksCustomPainter extends FlCustomPainter {
         center.dy - textPainter.height / 2,
       );
 
-      // Slight padding for the clear rect
-      const padding = 4.0;
       final labelRect = Rect.fromLTWH(
         offset.dx - padding,
         offset.dy - padding,
@@ -236,16 +245,14 @@ class LinksCustomPainter extends FlCustomPainter {
       );
 
       // Clear underlying link segment for better readability
-      final clearPaint = Paint()..blendMode = BlendMode.clear;
-
       canvas.drawRect(labelRect, clearPaint);
+
       textPainter.paint(canvas, offset);
     }
   }
 
-  // Helper method to get the bounding rect center position for a link path
   Offset? getLinkLabelCenter(String linkId) {
-    final pathData = linksHitTestData[linkId]!.$1;
-    return pathData.center;
+    final pathData = linksHitTestData[linkId]?.$1;
+    return pathData?.center;
   }
 }

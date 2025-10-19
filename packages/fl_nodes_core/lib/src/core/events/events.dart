@@ -440,12 +440,12 @@ final class FlNewProjectEvent extends NodeEditorEvent {
 
 /// Event produced to update the path of the link being drawn when the user drags from a port to create a new link.
 final class FlDrawTempLinkEvent extends NodeEditorEvent {
-  final Offset from;
-  final Offset to;
+  final Offset startOffset;
+  final Offset endOffset;
 
   const FlDrawTempLinkEvent(
-    this.from,
-    this.to, {
+    this.startOffset,
+    this.endOffset, {
     required super.id,
     super.isHandled,
   });

@@ -615,8 +615,8 @@ class FlNodeEditorController with ChangeNotifier {
       }
 
       // display a specific message if they're incompatible because they're both the same direction (e.g. input & input)
-      if (port1.direction == port2.direction) {
-        return 'Cannot connect two ${port1.direction.name} ports';
+      if (port1.logicalOrientation == port2.logicalOrientation) {
+        return 'Cannot connect two ${port1.logicalOrientation.name} ports';
       }
 
       if (port1.dataType != port2.dataType) {
@@ -652,7 +652,7 @@ class FlNodeEditorController with ChangeNotifier {
     late ({PortLocator from, PortLocator to}) portLocators;
 
     // Determine the order to insert the node references in the link based on the port direction.
-    if (port1.prototype.direction == FlPortDirection.output) {
+    if (port1.prototype.logicalOrientation == FlPortLogicalOrientation.output) {
       portLocators = (
         from: (nodeId: node1Id, portId: port1IdName),
         to: (nodeId: node2Id, portId: port2IdName),
@@ -780,14 +780,26 @@ class FlNodeEditorController with ChangeNotifier {
   /// Usually, this method is called when the user is dragging a link from a port to another port.
   ///
   /// Emits a [FlDrawTempLinkEvent] event.
-  void drawTempLink(FlLinkStyle style, Offset from, Offset to) {
-    _tempLink = TempLinkDataModel(style: style, from: from, to: to);
+  void drawTempLink(FlLinkStyle style, Offset startOffset, Offset endOffset) {
+    _tempLink = TempLinkDataModel(
+      startOffset: startOffset,
+      endOffset: endOffset,
+      outPortGeometricOrientation: FlPortGeometricOrientation.right,
+      inPortGeometricOrientation: FlPortGeometricOrientation.left,
+      linkStyle: style,
+    );
 
     clearSelection();
 
     // The temp link is treated differently from regular links, so we don't need to mark the links data as dirty.
 
-    eventBus.emit(FlDrawTempLinkEvent(id: const Uuid().v4(), from, to));
+    eventBus.emit(
+      FlDrawTempLinkEvent(
+        id: const Uuid().v4(),
+        startOffset,
+        endOffset,
+      ),
+    );
   }
 
   /// This method is used to clear the temporary link from the node editor.

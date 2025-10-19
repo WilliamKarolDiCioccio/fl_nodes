@@ -105,18 +105,22 @@ final class FlLinkDataModel {
 }
 
 class TempLinkDataModel {
-  final FlLinkStyle style;
-  final Offset from;
-  final Offset to;
+  final Offset startOffset;
+  final Offset endOffset;
+  final FlPortGeometricOrientation outPortGeometricOrientation;
+  final FlPortGeometricOrientation inPortGeometricOrientation;
+  final FlLinkStyle linkStyle;
 
   TempLinkDataModel({
-    required this.style,
-    required this.from,
-    required this.to,
+    required this.startOffset,
+    required this.endOffset,
+    required this.outPortGeometricOrientation,
+    required this.inPortGeometricOrientation,
+    required this.linkStyle,
   });
 }
 
-enum FlPortDirection {
+enum FlPortLogicalOrientation {
   input,
   output,
   ignore,
@@ -128,6 +132,13 @@ enum FlPortType {
   ignore,
 }
 
+enum FlPortGeometricOrientation {
+  top,
+  bottom,
+  left,
+  right,
+}
+
 /// A port prototype is the blueprint for a port instance.
 ///
 /// It defines the name, data type, direction, and if it allows multiple links.
@@ -137,7 +148,8 @@ abstract class FlPortPrototype {
   final PortStyleBuilder styleBuilder;
   final FlLinkPrototype linkPrototype;
   final Type dataType;
-  final FlPortDirection direction;
+  final FlPortLogicalOrientation logicalOrientation;
+  final FlPortGeometricOrientation geometricOrientation;
   final FlPortType type;
 
   FlPortPrototype({
@@ -145,7 +157,8 @@ abstract class FlPortPrototype {
     required this.displayName,
     this.styleBuilder = flDefaultPortStyleBuilder,
     this.dataType = dynamic,
-    required this.direction,
+    required this.logicalOrientation,
+    required this.geometricOrientation,
     required this.type,
     required this.linkPrototype,
   });
@@ -157,11 +170,12 @@ class FlDataInputPortPrototype<T> extends FlPortPrototype {
   FlDataInputPortPrototype({
     required super.idName,
     required super.displayName,
+    required super.geometricOrientation,
     super.styleBuilder,
   }) : super(
           linkPrototype: FlLinkPrototype(label: (_) => ''),
           dataType: T,
-          direction: FlPortDirection.input,
+          logicalOrientation: FlPortLogicalOrientation.input,
           type: FlPortType.data,
         );
 
@@ -178,10 +192,11 @@ class FlDataOutputPortPrototype<T> extends FlPortPrototype {
     required super.idName,
     required super.displayName,
     required super.linkPrototype,
+    required super.geometricOrientation,
     super.styleBuilder,
   }) : super(
           dataType: T,
-          direction: FlPortDirection.output,
+          logicalOrientation: FlPortLogicalOrientation.output,
           type: FlPortType.data,
         );
 
@@ -205,10 +220,11 @@ class FlControlInputPortPrototype extends FlPortPrototype {
   FlControlInputPortPrototype({
     required super.idName,
     required super.displayName,
+    required super.geometricOrientation,
     required super.styleBuilder,
   }) : super(
           linkPrototype: FlLinkPrototype(label: (_) => ''),
-          direction: FlPortDirection.input,
+          logicalOrientation: FlPortLogicalOrientation.input,
           type: FlPortType.control,
         );
 
@@ -221,10 +237,11 @@ class FlControlOutputPortPrototype extends FlPortPrototype {
   FlControlOutputPortPrototype({
     required super.idName,
     required super.displayName,
+    required super.geometricOrientation,
     required super.styleBuilder,
   }) : super(
           linkPrototype: FlLinkPrototype(label: (_) => ''),
-          direction: FlPortDirection.output,
+          logicalOrientation: FlPortLogicalOrientation.output,
           type: FlPortType.control,
         );
 
@@ -237,10 +254,11 @@ class FlGenericPortPrototype extends FlPortPrototype {
   FlGenericPortPrototype({
     required super.idName,
     required super.displayName,
+    required super.geometricOrientation,
     super.styleBuilder,
   }) : super(
           linkPrototype: FlLinkPrototype(label: (_) => ''),
-          direction: FlPortDirection.ignore,
+          logicalOrientation: FlPortLogicalOrientation.ignore,
           type: FlPortType.ignore,
         );
 

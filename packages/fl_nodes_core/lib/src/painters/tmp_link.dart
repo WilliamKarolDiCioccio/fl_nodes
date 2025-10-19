@@ -17,13 +17,26 @@ class TmpLinkCustomPainter extends FlCustomPainter {
 
     switch (tmpLinkData!.linkStyle.curveType) {
       case FlLinkCurveType.straight:
-        path = PathUtils.computeStraightLinkPath(tmpLinkData!);
+        path = PathUtils.computeStraightLinkPath(
+          outPortOffset: tmpLinkData!.outPortOffset,
+          inPortOffset: tmpLinkData!.inPortOffset,
+        );
         break;
       case FlLinkCurveType.bezier:
-        path = PathUtils.computeBezierLinkPath(tmpLinkData!);
+        path = PathUtils.computeBezierLinkPath(
+          outPortOffset: tmpLinkData!.outPortOffset,
+          inPortOffset: tmpLinkData!.inPortOffset,
+          outPortGeometricOrientation: tmpLinkData!.outPortGeometricOrientation,
+          inPortGeometricOrientation: tmpLinkData!.inPortGeometricOrientation,
+        );
         break;
       case FlLinkCurveType.ninetyDegree:
-        path = PathUtils.computeNinetyDegreesLinkPath(tmpLinkData!);
+        path = PathUtils.computeNinetyDegreesLinkPath(
+          outPortOffset: tmpLinkData!.outPortOffset,
+          inPortOffset: tmpLinkData!.inPortOffset,
+          outPortGeometricOrientation: tmpLinkData!.outPortGeometricOrientation,
+          inPortGeometricOrientation: tmpLinkData!.inPortGeometricOrientation,
+        );
         break;
     }
 

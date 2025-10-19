@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
+
 import 'package:example/mind_map_example/nodes/data/types.dart';
 import 'package:fl_nodes/fl_nodes.dart';
-import 'package:flutter/material.dart';
 
 void registerNodes(BuildContext context, FlNodeEditorController controller) {
   controller.registerNodePrototype(
@@ -11,15 +12,22 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
         FlGenericPortPrototype(
           idName: 'left',
           displayName: (context) => 'Left',
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlGenericPortPrototype(
           idName: 'right',
           displayName: (context) => 'Right',
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
-        FlGenericPortPrototype(idName: 'top', displayName: (context) => 'Top'),
+        FlGenericPortPrototype(
+          idName: 'top',
+          displayName: (context) => 'Top',
+          geometricOrientation: FlPortGeometricOrientation.top,
+        ),
         FlGenericPortPrototype(
           idName: 'bottom',
           displayName: (context) => 'Bottom',
+          geometricOrientation: FlPortGeometricOrientation.bottom,
         ),
       ],
       customData: [('shape', ShapeType, ShapeType.roundedRectangle)],

@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_nodes_core/fl_nodes_core.dart';
 import 'package:flutter/material.dart';
+
+import 'package:fl_nodes_core/fl_nodes_core.dart';
 
 import '../events/events.dart';
 import '../models/data.dart';
@@ -93,7 +94,9 @@ class FlNodeEditorExecutionHelper {
 
     for (final node in projectData.nodes.values) {
       if (!node.ports.values.every(
-        (port) => port.prototype.direction == FlPortDirection.output,
+        (port) =>
+            port.prototype.logicalOrientation ==
+            FlPortLogicalOrientation.output,
       )) {
         continue;
       }
@@ -109,13 +112,13 @@ class FlNodeEditorExecutionHelper {
 
     _dataDeps[nodeId] = _getConnectedNodeIdsFromNode(
       nodes[nodeId]!,
-      FlPortDirection.input,
+      FlPortLogicalOrientation.input,
       FlPortType.data,
     );
 
     final connectedOutputNodeIds = _getConnectedNodeIdsFromNode(
       nodes[nodeId]!,
-      FlPortDirection.output,
+      FlPortLogicalOrientation.output,
       FlPortType.control,
     );
 
@@ -130,7 +133,7 @@ class FlNodeEditorExecutionHelper {
 
     for (final link in port.links) {
       final connectedNode = nodes[
-          port.prototype.direction == FlPortDirection.input
+          port.prototype.logicalOrientation == FlPortLogicalOrientation.input
               ? link.ports.from.nodeId
               : link.ports.to.nodeId]!;
 
@@ -143,14 +146,15 @@ class FlNodeEditorExecutionHelper {
   /// Returns the unique IDs of nodes connected to a given node's input or output ports.
   Set<String> _getConnectedNodeIdsFromNode(
     FlNodeDataModel node,
-    FlPortDirection direction,
+    FlPortLogicalOrientation logicalOrientation,
     FlPortType type,
   ) {
     final connectedNodeIds = <String>{};
 
     final ports = node.ports.values.where(
       (port) =>
-          port.prototype.direction == direction && port.prototype.type == type,
+          port.prototype.logicalOrientation == logicalOrientation &&
+          port.prototype.type == type,
     );
 
     for (final port in ports) {
@@ -180,7 +184,9 @@ class FlNodeEditorExecutionHelper {
 
     for (final node in nodes.values) {
       if (!node.ports.values.every(
-        (port) => port.prototype.direction == FlPortDirection.output,
+        (port) =>
+            port.prototype.logicalOrientation ==
+            FlPortLogicalOrientation.output,
       )) {
         continue;
       }

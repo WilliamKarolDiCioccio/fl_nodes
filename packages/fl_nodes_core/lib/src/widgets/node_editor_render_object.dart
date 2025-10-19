@@ -253,10 +253,12 @@ class NodeEditorRenderBox extends RenderBox
     final link = _controller.tempLink!;
 
     return LinkPaintModel(
-      id: "", // Temporary link doesn't need an ID
-      outPortOffset: link.from,
-      inPortOffset: link.to,
-      linkStyle: link.style,
+      linkId: 'temp_link',
+      outPortOffset: link.startOffset,
+      inPortOffset: link.endOffset,
+      outPortGeometricOrientation: link.outPortGeometricOrientation,
+      inPortGeometricOrientation: link.inPortGeometricOrientation,
+      linkStyle: link.linkStyle,
     );
   }
 

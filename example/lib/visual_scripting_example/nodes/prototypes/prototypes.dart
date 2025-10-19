@@ -36,12 +36,14 @@ FlNodePrototype createValueNode<T>({
         displayName: (context) =>
             AppLocalizations.of(context)!.completedPortName,
         styleBuilder: PortStyles.controlOutput,
+        geometricOrientation: FlPortGeometricOrientation.right,
       ),
       FlDataOutputPortPrototype<T>(
         idName: 'value',
         linkPrototype: FlLinkPrototype(label: (_) => T.toString()),
         displayName: (context) => AppLocalizations.of(context)!.valuePortName,
         styleBuilder: PortStyles.dataOutput,
+        geometricOrientation: FlPortGeometricOrientation.right,
       ),
     ],
     fieldPrototypes: [
@@ -271,22 +273,26 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'a',
           displayName: (context) => 'A',
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'b',
           displayName: (context) => 'B',
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'result',
@@ -294,6 +300,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       fieldPrototypes: [
@@ -381,12 +388,14 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'value',
           linkPrototype: FlLinkPrototype(label: (_) => 'double'),
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -408,22 +417,26 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype<bool>(
           idName: 'condition',
           displayName: (context) =>
               AppLocalizations.of(context)!.conditionPortName,
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'trueBranch',
           displayName: (context) => AppLocalizations.of(context)!.truePortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlControlOutputPortPrototype(
           idName: 'falseBranch',
           displayName: (context) => AppLocalizations.of(context)!.falsePortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -449,23 +462,27 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype(
           idName: 'list',
           displayName: (context) => AppLocalizations.of(context)!.listPortName,
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'loopBody',
           displayName: (context) =>
               AppLocalizations.of(context)!.loopBodyPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype(
           idName: 'listElem',
@@ -473,6 +490,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.listElementPortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'listIdx',
@@ -480,6 +498,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.listIndexPortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -517,22 +536,26 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype(
           idName: 'a',
           displayName: (context) => 'A',
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype(
           idName: 'b',
           displayName: (context) => 'B',
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<bool>(
           idName: 'result',
@@ -540,6 +563,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       fieldPrototypes: [
@@ -617,17 +641,20 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       onExecute: (ports, fields, state, f, p) async {
@@ -650,17 +677,20 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           idName: 'exec',
           displayName: (context) => AppLocalizations.of(context)!.execPortName,
           styleBuilder: PortStyles.controlInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlDataInputPortPrototype<double>(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
           styleBuilder: PortStyles.dataInput,
+          geometricOrientation: FlPortGeometricOrientation.left,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
           displayName: (context) =>
               AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'rounded',
@@ -668,6 +698,7 @@ void registerNodes(BuildContext context, FlNodeEditorController controller) {
           displayName: (context) =>
               AppLocalizations.of(context)!.roundedPortName,
           styleBuilder: PortStyles.dataOutput,
+          geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
       fieldPrototypes: [

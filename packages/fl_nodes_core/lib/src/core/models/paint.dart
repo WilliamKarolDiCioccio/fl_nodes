@@ -5,16 +5,26 @@ import 'package:fl_nodes_core/src/core/models/data.dart';
 import '../../styles/styles.dart';
 
 class LinkPaintModel {
-  final String id;
+  final String linkId;
   final Offset outPortOffset;
   final Offset inPortOffset;
+  final FlPortGeometricOrientation outPortGeometricOrientation;
+  final FlPortGeometricOrientation inPortGeometricOrientation;
   final FlLinkStyle linkStyle;
+  final String? labelText;
+  final Rect? fromNodeBounds;
+  final Rect? toNodeBounds;
 
   LinkPaintModel({
-    required this.id,
+    required this.linkId,
     required this.outPortOffset,
     required this.inPortOffset,
+    required this.outPortGeometricOrientation,
+    required this.inPortGeometricOrientation,
     required this.linkStyle,
+    this.labelText,
+    this.fromNodeBounds,
+    this.toNodeBounds,
   });
 }
 

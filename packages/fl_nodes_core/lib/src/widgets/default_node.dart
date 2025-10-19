@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../core/controller/core.dart';
 import '../core/events/events.dart';
-import 'base_node.dart';
-
 import '../core/models/data.dart';
+
+import 'base_node.dart';
 
 /// The main NodeWidget which represents a node in the editor.
 /// It now ensures that fields (regardless of whether a custom fieldBuilder is used)
@@ -130,7 +130,7 @@ class _FlDefaultNodeWidgetState
 
       // Set port offset based on direction
       port.offset = Offset(
-        port.prototype.direction == FlPortDirection.input
+        port.prototype.logicalOrientation == FlPortLogicalOrientation.input
             ? 0
             : renderBoxSize.width,
         relativeY + portBox.size.height / 2,
@@ -197,7 +197,8 @@ class _PortWidget extends StatelessWidget {
       return SizedBox(key: port.key, height: 0, width: 0);
     }
 
-    final isInput = port.prototype.direction == FlPortDirection.input;
+    final isInput =
+        port.prototype.logicalOrientation == FlPortLogicalOrientation.input;
 
     return Row(
       mainAxisAlignment:

@@ -448,10 +448,14 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   void _updatePortsAndFields() {
     setState(() {
       inPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == FlPortDirection.input)
+          .where((port) =>
+              port.prototype.logicalOrientation ==
+              FlPortLogicalOrientation.input)
           .toList();
       outPorts = widget.node.ports.values
-          .where((port) => port.prototype.direction == FlPortDirection.output)
+          .where((port) =>
+              port.prototype.logicalOrientation ==
+              FlPortLogicalOrientation.output)
           .toList();
 
       fields = widget.node.fields.values.toList();
