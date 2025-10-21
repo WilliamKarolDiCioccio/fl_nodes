@@ -81,7 +81,7 @@ class _OverlayLayerState extends State<_OverlayLayer> {
   void _handleControllerEvents(NodeEditorEvent event) {
     if (!mounted || event.isHandled) return;
 
-    if (event is OverlayChangedEvent) setState(() {});
+    if (event is FlOverlayChangedEvent) setState(() {});
   }
 
   @override

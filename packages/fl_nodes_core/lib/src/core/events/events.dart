@@ -479,8 +479,9 @@ final class FlLocaleChangeEvent extends NodeEditorEvent {
   const FlLocaleChangeEvent(this.locale, {required super.id});
 }
 
-final class OverlayChangedEvent extends NodeEditorEvent {
-  final String idName;
+/// Event produced when an overlay element changes (position, visibility, opacity, etc.).
+final class FlOverlayChangedEvent extends NodeEditorEvent {
+  final Set<String> idNames;
 
-  const OverlayChangedEvent(this.idName, {required super.id});
+  const FlOverlayChangedEvent(this.idNames, {required super.id});
 }

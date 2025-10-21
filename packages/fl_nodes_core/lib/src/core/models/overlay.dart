@@ -7,10 +7,10 @@ typedef OverlayBuilder = Widget Function(
 
 class FlOverlayData {
   final OverlayBuilder builder;
-  final double? top;
-  final double? left;
-  final double? bottom;
-  final double? right;
+  double? top;
+  double? left;
+  double? bottom;
+  double? right;
   bool isVisible;
   double opacity;
 

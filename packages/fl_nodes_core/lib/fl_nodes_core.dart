@@ -28,7 +28,8 @@ export 'package:fl_nodes_core/src/core/events/events.dart'
         FlLoadProjectEvent,
         FlConfigurationChangeEvent,
         FlLocaleChangeEvent,
-        FlStyleChangeEvent;
+        FlStyleChangeEvent,
+        FlOverlayChangedEvent;
 export 'package:fl_nodes_core/src/core/localization/delegate.dart';
 export 'package:fl_nodes_core/src/core/models/data.dart'
     show
