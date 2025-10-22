@@ -1,9 +1,10 @@
 import 'dart:math';
 
-import 'package:fl_nodes_core/src/constants.dart';
-import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -12,6 +13,7 @@ import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
 import '../utils/rendering/renderbox.dart';
+
 import 'callback.dart';
 import 'clipboard.dart';
 import 'config.dart';
@@ -469,6 +471,7 @@ class FlNodesController with ChangeNotifier {
   FlNodeDataModel addNode(
     String name, {
     Offset offset = Offset.zero,
+    Map<String, PortLocator>? links,
     Map<String, dynamic>? customData,
   }) {
     if (!nodePrototypes.containsKey(name)) {
@@ -491,6 +494,28 @@ class FlNodesController with ChangeNotifier {
 
     nodes.putIfAbsent(instance.id, () => instance);
     unboundNodeOffsets.putIfAbsent(instance.id, () => instance.offset);
+
+    if (links != null) {
+      for (final entry in links.entries) {
+        final fromPortIdName = entry.key;
+        final toPortLocator = entry.value;
+
+        final link = addLink(
+          instance.id,
+          fromPortIdName,
+          toPortLocator.nodeId,
+          toPortLocator.portId,
+        );
+
+        if (link == null) {
+          onCallback?.call(
+            FlCallbackType.error,
+            'Failed to create link from node ${instance.id} port $fromPortIdName '
+            'to node ${toPortLocator.nodeId} port ${toPortLocator.portId}',
+          );
+        }
+      }
+    }
 
     nodesDataDirty = true;
 
