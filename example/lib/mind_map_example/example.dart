@@ -35,13 +35,13 @@ final bool isMobile =
     : false;
 
 class MindMapExampleScreenState extends State<MindMapExampleScreen> {
-  late final FlNodeEditorController _controller;
+  late final FlNodesController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = FlNodeEditorController(
+    _controller = FlNodesController(
       appVersion: '0.0.1',
       projectSaver: (jsonData) async {
         final String? outputPath = await FilePicker.platform.saveFile(
@@ -159,9 +159,9 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlNodeEditorShortcutsWidget(
+      body: FlNodesShortcutsWidget(
         controller: _controller,
-        child: FlNodeEditorWidget(
+        child: FlNodesWidget(
           controller: _controller,
           expandToParent: true,
           nodeBuilder: (node, controller) =>

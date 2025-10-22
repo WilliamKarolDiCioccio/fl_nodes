@@ -3,7 +3,7 @@
 /// This class is responsible for handling the interactions and
 /// behaviors associated with a node editor, such as node selection,
 /// movement, and other editor-specific functionalities.
-class FlNodeEditorConfig {
+class FlNodesConfig {
   final bool enableZoom;
   final double zoomSensitivity;
   final double minZoom;
@@ -26,7 +26,7 @@ class FlNodeEditorConfig {
   final Duration autoBuildGraphDelay;
   final Duration autoRunGraphDelay;
 
-  const FlNodeEditorConfig({
+  const FlNodesConfig({
     this.enableZoom = true,
     this.zoomSensitivity = 0.1,
     this.minZoom = 0.1,
@@ -50,7 +50,7 @@ class FlNodeEditorConfig {
     this.autoRunGraphDelay = const Duration(seconds: 5),
   });
 
-  FlNodeEditorConfig copyWith({
+  FlNodesConfig copyWith({
     bool? enableZoom,
     double? zoomSensitivity,
     double? minZoom,
@@ -66,7 +66,7 @@ class FlNodeEditorConfig {
     double? snapToGridSize,
     bool? enableAutoPlacement,
   }) {
-    return FlNodeEditorConfig(
+    return FlNodesConfig(
       enableZoom: enableZoom ?? this.enableZoom,
       zoomSensitivity: zoomSensitivity ?? this.zoomSensitivity,
       minZoom: minZoom ?? this.minZoom,

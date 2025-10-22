@@ -16,7 +16,7 @@ class SettingsPanel extends StatelessWidget {
   final List<LocaleDataModel> locales;
   final Locale currentLocale;
   final Function(String) onLocaleChanged;
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +39,9 @@ class SettingsPanel extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
@@ -52,9 +53,9 @@ class SettingsPanel extends StatelessWidget {
                 Text(
                   strings.settingsPanelTitle,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
@@ -82,12 +83,15 @@ class SettingsPanel extends StatelessWidget {
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color:
-                          Theme.of(context).colorScheme.outline.withAlpha(75),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withAlpha(75),
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -152,9 +156,9 @@ class SettingsPanel extends StatelessWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.w600,
-          ),
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
@@ -166,10 +170,7 @@ class SettingsPanel extends StatelessWidget {
     VoidCallback onTap,
   ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: Theme.of(context).colorScheme.primary,
-      ),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: Icon(
@@ -178,9 +179,7 @@ class SettingsPanel extends StatelessWidget {
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
       onTap: onTap,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
 import '../models/data.dart';
 import '../utils/rendering/renderbox.dart';
 
 /// Utility class for the node editor.
-class FlNodeEditorUtils {
+class FlNodesUtils {
   /// Calculates the encompassing rectangle of the selected nodes.
   ///
   /// The encompassing rectangle is calculated by taking the top-left and bottom-right

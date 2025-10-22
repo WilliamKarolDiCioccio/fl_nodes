@@ -1,9 +1,10 @@
-import '../core/controller/core.dart';
-import '../core/events/events.dart';
 import 'package:flutter/material.dart';
 
+import '../core/controller/core.dart';
+import '../core/events/events.dart';
+
 class DebugInfoWidget extends StatelessWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
 
   const DebugInfoWidget({
     super.key,

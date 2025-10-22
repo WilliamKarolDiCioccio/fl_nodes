@@ -1,7 +1,7 @@
 export 'package:fl_nodes_core/src/core/controller/callback.dart'
     show FlCallbackType;
 export 'package:fl_nodes_core/src/core/controller/core.dart'
-    show FlNodeEditorController, FlNodeEditorConfig;
+    show FlNodesController, FlNodesConfig;
 export 'package:fl_nodes_core/src/core/events/events.dart'
     show
         FlViewportOffsetEvent,
@@ -65,7 +65,7 @@ export 'package:fl_nodes_core/src/styles/styles.dart'
         FlFieldStyle,
         FlNodeHeaderStyle,
         FlNodeStyle,
-        FlNodeEditorStyle,
+        FlNodesStyle,
         flDefaultLinkStyleBuilder,
         flDefaultPortStyleBuilder,
         flDefaultNodeHeaderStyleBuilder,

@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:fl_nodes_core/src/core/controller/callback.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
 import 'package:flutter/material.dart';
-
-import 'package:fl_nodes_core/fl_nodes_core.dart';
 
 import '../events/events.dart';
 import '../models/data.dart';
@@ -10,8 +11,8 @@ import '../models/data.dart';
 /// A class that manages the execution of the node editor graph.
 ///
 /// NOTE: This class is still in development and there are performance improvements to be made.
-class FlNodeEditorExecutionHelper {
-  final FlNodeEditorController controller;
+class FlNodesExecutionHelper {
+  final FlNodesController controller;
 
   final Set<String> _executedNodes = {};
   final Map<String, Map<String, dynamic>> _execState = {};
@@ -20,19 +21,19 @@ class FlNodeEditorExecutionHelper {
   Timer? _buildGraphDelayTimer;
   Timer? _runGraphDelayTimer;
 
-  FlNodeEditorProjectDataModel projectData = FlNodeEditorProjectDataModel(
+  FlNodesProjectDataModel projectData = FlNodesProjectDataModel(
     nodes: {},
     links: {},
   );
 
   Map<String, FlNodeDataModel> get nodes => projectData.nodes;
 
-  FlNodeEditorExecutionHelper(this.controller) {
+  FlNodesExecutionHelper(this.controller) {
     controller.eventBus.events.listen(_handleRunnerEvents);
   }
 
   void clear() {
-    projectData = FlNodeEditorProjectDataModel(
+    projectData = FlNodesProjectDataModel(
       nodes: {},
       links: {},
     );
@@ -205,7 +206,7 @@ class FlNodeEditorExecutionHelper {
     FlNodeDataModel node, {
     BuildContext? context,
   }) async {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     /// A function that forwards events to connected nodes through control ports.
     ///

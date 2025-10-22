@@ -10,14 +10,14 @@ import 'core.dart';
 /// [kMaxEventRedoHistory] respectively.
 ///
 /// The history is updated whenever an undoable event is triggered.
-class FlNodeEditorHistoryHelper {
-  final FlNodeEditorController controller;
+class FlNodesHistoryHelper {
+  final FlNodesController controller;
 
   bool _isTraversingHistory = false;
   final _undoStack = Stack<NodeEditorEvent>(kMaxEventUndoHistory);
   final _redoStack = Stack<NodeEditorEvent>(kMaxEventRedoHistory);
 
-  FlNodeEditorHistoryHelper(this.controller) {
+  FlNodesHistoryHelper(this.controller) {
     controller.eventBus.events.listen(_handleUndoableEvents);
   }
 

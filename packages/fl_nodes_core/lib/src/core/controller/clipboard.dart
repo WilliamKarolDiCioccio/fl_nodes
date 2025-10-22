@@ -17,8 +17,8 @@ import 'utils.dart';
 /// A class that manages the clipboard operations of the node editor.
 ///
 /// The clipboard operations include copying, pasting, and cutting nodes.
-class FlNodeEditorClipboardHelper {
-  final FlNodeEditorController controller;
+class FlNodesClipboardHelper {
+  final FlNodesController controller;
 
   NodeEditorEventBus get eventBus => controller.eventBus;
   Offset get viewportOffset => controller.viewportOffset;
@@ -28,7 +28,7 @@ class FlNodeEditorClipboardHelper {
   Map<String, FlNodeDataModel> get nodes => controller.nodes;
   Set<String> get selectedNodeIds => controller.selectedNodeIds;
 
-  FlNodeEditorClipboardHelper(this.controller);
+  FlNodesClipboardHelper(this.controller);
 
   /// Copies the selected nodes to the clipboard.
   ///
@@ -37,12 +37,12 @@ class FlNodeEditorClipboardHelper {
   /// to JSON and then encoded to base64 (to avoid direct tampering with the JSON data)
   /// and then copied to the clipboard.
   Future<String> copySelection({BuildContext? context}) async {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     if (selectedNodeIds.isEmpty) return '';
 
     final encompassingRect =
-        FlNodeEditorUtils.calculateEncompassingRect(selectedNodeIds, nodes);
+        FlNodesUtils.calculateEncompassingRect(selectedNodeIds, nodes);
 
     final selectedNodes = selectedNodeIds.map((id) {
       final nodeCopy = nodes[id]!.copyWith();
@@ -123,7 +123,7 @@ class FlNodeEditorClipboardHelper {
     Offset? position,
     BuildContext? context,
   }) async {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     final clipboardData = await Clipboard.getData('text/plain');
     if (clipboardData == null || clipboardData.text!.isEmpty) return;
@@ -171,8 +171,8 @@ class FlNodeEditorClipboardHelper {
       );
     }).toList();
 
-    // Called on each paste, see [FlNodeEditorController._mapToNewIds] for more info.
-    final newIds = await FlNodeEditorUtils.mapToNewIds(instances);
+    // Called on each paste, see [FlNodesController._mapToNewIds] for more info.
+    final newIds = await FlNodesUtils.mapToNewIds(instances);
 
     final deepCopiedNodes = instances.map((instance) {
       return instance.copyWith(

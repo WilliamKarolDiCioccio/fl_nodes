@@ -42,7 +42,7 @@ final bool isMobile =
 
 class VisualScriptingExampleScreenState
     extends State<VisualScriptingExampleScreen> {
-  late final FlNodeEditorController _nodeEditorController;
+  late final FlNodesController _nodeEditorController;
   final TerminalController _terminalController = TerminalController();
 
   bool isHierarchyCollapsed = isMobile ? true : false;
@@ -66,7 +66,7 @@ class VisualScriptingExampleScreenState
   void initState() {
     super.initState();
 
-    _nodeEditorController = FlNodeEditorController(
+    _nodeEditorController = FlNodesController(
       appVersion: '0.0.1',
       projectSaver: (jsonData) async {
         final String? outputPath = await FilePicker.platform.saveFile(
@@ -234,7 +234,7 @@ class VisualScriptingExampleScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlNodeEditorShortcutsWidget(
+      body: FlNodesShortcutsWidget(
         controller: _nodeEditorController,
         child: Row(
           children: [
@@ -271,7 +271,7 @@ class VisualScriptingExampleScreenState
               child: Column(
                 children: [
                   Expanded(
-                    child: FlNodeEditorWidget(
+                    child: FlNodesWidget(
                       controller: _nodeEditorController,
                       expandToParent: true,
                       nodeBuilder: (node, controller) => FlDefaultNodeWidget(

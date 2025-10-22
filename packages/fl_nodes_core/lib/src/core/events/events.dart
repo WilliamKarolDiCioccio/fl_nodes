@@ -262,7 +262,7 @@ final class FlAddNodeEvent extends NodeEditorEvent {
 
   factory FlAddNodeEvent.fromJson(
     Map<String, dynamic> json, {
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
   }) {
     return FlAddNodeEvent(
       FlNodeDataModel.fromJson(
@@ -291,7 +291,7 @@ final class FlRemoveNodeEvent extends NodeEditorEvent {
 
   factory FlRemoveNodeEvent.fromJson(
     Map<String, dynamic> json, {
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
   }) {
     return FlRemoveNodeEvent(
       FlNodeDataModel.fromJson(
@@ -460,14 +460,14 @@ final class FlAreaHighlightEvent extends NodeEditorEvent {
 
 /// Event produced when the user changes the configuration of the node editor.
 final class FlConfigurationChangeEvent extends NodeEditorEvent {
-  final FlNodeEditorConfig config;
+  final FlNodesConfig config;
 
   const FlConfigurationChangeEvent(this.config, {required super.id});
 }
 
 /// Event produced when the user changes the style of the node editor.
 final class FlStyleChangeEvent extends NodeEditorEvent {
-  final FlNodeEditorStyle style;
+  final FlNodesStyle style;
 
   const FlStyleChangeEvent(this.style, {required super.id});
 }

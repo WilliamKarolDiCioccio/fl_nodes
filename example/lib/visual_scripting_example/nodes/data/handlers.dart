@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'package:example/visual_scripting_example/nodes/data/types.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 
-void registerDataHandlers(FlNodeEditorController controller) {
+void registerDataHandlers(FlNodesController controller) {
   controller.project.registerDataHandler<Operator>(
     toJson: (data) => data.toString().split('.').last,
-    fromJson: (json) => Operator.values.firstWhere(
-      (e) => e.toString().split('.').last == json,
-    ),
+    fromJson: (json) =>
+        Operator.values.firstWhere((e) => e.toString().split('.').last == json),
   );
 
   controller.project.registerDataHandler<Comparator>(

@@ -7,7 +7,7 @@ export 'package:fl_nodes_core/src/core/models/paint.dart';
 export 'package:flutter/gestures.dart';
 
 abstract class FlCustomPainter {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
 
   bool needsPaint = true;
 

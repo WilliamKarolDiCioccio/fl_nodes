@@ -200,8 +200,7 @@ extension FlNodesGroupDataModelV1Adapter on FlNodesGroupDataModel {
       );
 }
 
-extension FlNodeEditorProjectDataModelV1Adapter
-    on FlNodeEditorProjectDataModel {
+extension FlNodesProjectDataModelV1Adapter on FlNodesProjectDataModel {
   Map<String, dynamic> toJsonV1(Map<Type, DataHandler> dataHandlers) {
     final nodesJson =
         nodes.values.map((node) => node.toJsonV1(dataHandlers)).toList();
@@ -218,7 +217,7 @@ extension FlNodeEditorProjectDataModelV1Adapter
     };
   }
 
-  static FlNodeEditorProjectDataModel fromJsonV1(
+  static FlNodesProjectDataModel fromJsonV1(
     Map<String, dynamic> json,
     Map<String, FlNodePrototype> nodePrototypes,
     Map<Type, DataHandler> dataHandlers,
@@ -229,7 +228,7 @@ extension FlNodeEditorProjectDataModelV1Adapter
     }
 
     if (version == null) {
-      return FlNodeEditorProjectDataModelLegacyAdapter.fromJsonLegacy(
+      return FlNodesProjectDataModelLegacyAdapter.fromJsonLegacy(
         json,
         nodePrototypes,
         dataHandlers,
@@ -266,7 +265,7 @@ extension FlNodeEditorProjectDataModelV1Adapter
       nodes[node.id] = node;
     }
 
-    return FlNodeEditorProjectDataModel(
+    return FlNodesProjectDataModel(
       packageVersion: packageSemVerStr,
       appVersion: appSemVerStr,
       nodes: nodes,
@@ -279,8 +278,8 @@ extension FlNodeEditorProjectDataModelV1Adapter
     );
   }
 
-  FlNodeEditorProjectDataModel copyWith() {
-    return FlNodeEditorProjectDataModel(
+  FlNodesProjectDataModel copyWith() {
+    return FlNodesProjectDataModel(
       packageVersion: packageVersion,
       appVersion: appVersion,
       viewportOffset: viewportOffset,

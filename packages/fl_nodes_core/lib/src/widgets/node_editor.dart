@@ -7,13 +7,13 @@ import 'builders.dart';
 import 'debug_info.dart';
 import 'node_editor_data_layer.dart';
 
-class FlNodeEditorWidget extends StatelessWidget {
-  final FlNodeEditorController controller;
+class FlNodesWidget extends StatelessWidget {
+  final FlNodesController controller;
   final bool expandToParent;
   final Size? fixedSize;
   final NodeBuilder nodeBuilder;
 
-  const FlNodeEditorWidget({
+  const FlNodesWidget({
     super.key,
     required this.controller,
     required this.nodeBuilder,
@@ -62,7 +62,7 @@ class FlNodeEditorWidget extends StatelessWidget {
 }
 
 class _OverlayLayer extends StatefulWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
 
   const _OverlayLayer({required this.controller});
 

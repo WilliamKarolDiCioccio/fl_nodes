@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
 import '../events/events.dart';
 import '../localization/delegate.dart';
 import '../models/data.dart';
-
 import 'callback.dart';
 import 'core.dart';
 
@@ -22,10 +20,10 @@ typedef ProjectCreator = Future<bool> Function(bool isSaved);
 /// instead it simpliy converts the project data to JSON and vice versa. JSON was chosen as it
 /// was quick and easy to implement and can be easily manipulated and converted to other formats
 /// (e.g. structured data in a database).
-class FlNodeEditorProjectHelper {
-  final FlNodeEditorController controller;
+class FlNodesProjectHelper {
+  final FlNodesController controller;
 
-  FlNodeEditorProjectDataModel projectData = FlNodeEditorProjectDataModel(
+  FlNodesProjectDataModel projectData = FlNodesProjectDataModel(
     nodes: {},
     links: {},
   );
@@ -51,7 +49,7 @@ class FlNodeEditorProjectHelper {
   /// The [projectSaver] callback is used to save the project data, should return a boolean.
   /// The [projectLoader] callback is used to load the project data, should return a JSON object.
   /// The [projectCreator] callback is used to create a new project, should return a boolean.
-  FlNodeEditorProjectHelper(
+  FlNodesProjectHelper(
     this.controller, {
     required this.projectSaver,
     required this.projectLoader,
@@ -153,7 +151,7 @@ class FlNodeEditorProjectHelper {
 
     _saveDebounceTimer = Timer(controller.config.manualSaveDebounce, () {});
 
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     late final Map<String, dynamic> jsonData;
 
@@ -189,7 +187,7 @@ class FlNodeEditorProjectHelper {
   ///
   /// e.g. If the project data is invalid, the user will be prompted to save the project.
   void load({Map<String, dynamic>? data, BuildContext? context}) async {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     late final Map<String, dynamic>? jsonData;
 
@@ -210,7 +208,7 @@ class FlNodeEditorProjectHelper {
     clear();
 
     try {
-      projectData = FlNodeEditorProjectDataModel.fromJson(
+      projectData = FlNodesProjectDataModel.fromJson(
         jsonData,
         controller.nodePrototypes,
         dataHandlers,
@@ -252,7 +250,7 @@ class FlNodeEditorProjectHelper {
   ///
   /// e.g. If the project is not saved, the user will be prompted to save the project.
   void create({BuildContext? context}) async {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     final shouldProceed = await projectCreator?.call(isSaved);
 
@@ -260,7 +258,7 @@ class FlNodeEditorProjectHelper {
 
     clear();
 
-    projectData = FlNodeEditorProjectDataModel(
+    projectData = FlNodesProjectDataModel(
       nodes: {},
       links: {},
     );

@@ -191,8 +191,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
   }
 }
 
-extension FlNodeEditorProjectDataModelLegacyAdapter
-    on FlNodeEditorProjectDataModel {
+extension FlNodesProjectDataModelLegacyAdapter on FlNodesProjectDataModel {
   Map<String, dynamic> toJsonLegacy(Map<Type, DataHandler> dataHandlers) {
     final nodesJson =
         nodes.values.map((node) => node.toJsonLegacy(dataHandlers)).toList();
@@ -206,7 +205,7 @@ extension FlNodeEditorProjectDataModelLegacyAdapter
     };
   }
 
-  static FlNodeEditorProjectDataModel fromJsonLegacy(
+  static FlNodesProjectDataModel fromJsonLegacy(
     Map<String, dynamic> json,
     Map<String, FlNodePrototype> nodePrototypes,
     Map<Type, DataHandler> dataHandlers,
@@ -231,7 +230,7 @@ extension FlNodeEditorProjectDataModelLegacyAdapter
       nodes[node.id] = node;
     }
 
-    return FlNodeEditorProjectDataModel(
+    return FlNodesProjectDataModel(
       nodes: nodes,
       links: links,
       viewportOffset: Offset(

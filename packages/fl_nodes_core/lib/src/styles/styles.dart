@@ -406,13 +406,13 @@ FlNodeStyle flDefaultNodeStyleBuilder(FlNodeState state) {
           : const FlNodeStyle.basic();
 }
 
-class FlNodeEditorStyle {
+class FlNodesStyle {
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
   final FlGridStyle gridStyle;
   final FlHighlightAreaStyle highlightAreaStyle;
 
-  const FlNodeEditorStyle({
+  const FlNodesStyle({
     this.decoration = const BoxDecoration(
       gradient: LinearGradient(
         colors: [
@@ -428,13 +428,13 @@ class FlNodeEditorStyle {
     this.highlightAreaStyle = const FlHighlightAreaStyle.basic(),
   });
 
-  FlNodeEditorStyle copyWith({
+  FlNodesStyle copyWith({
     BoxDecoration? decoration,
     EdgeInsetsGeometry? padding,
     FlGridStyle? gridStyle,
     FlHighlightAreaStyle? highlightAreaStyle,
   }) {
-    return FlNodeEditorStyle(
+    return FlNodesStyle(
       decoration: decoration ?? this.decoration,
       padding: padding ?? this.padding,
       gridStyle: gridStyle ?? this.gridStyle,

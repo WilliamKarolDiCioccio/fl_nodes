@@ -18,7 +18,7 @@ import 'builders.dart';
 import 'improved_listener.dart';
 
 abstract class FlBaseNodeWidget extends StatefulWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final FlNodeDataModel node;
   final NodeContextMenuBuilder? contextMenuBuilder;
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../core/controller/core.dart';
 import '../core/events/events.dart';
 import '../core/models/data.dart';
-
 import 'base_node.dart';
 
 /// The main NodeWidget which represents a node in the editor.
@@ -140,7 +139,7 @@ class _FlDefaultNodeWidgetState
 }
 
 class _NodeHeaderWidget extends StatelessWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final FlNodeDataModel node;
 
   const _NodeHeaderWidget({
@@ -220,7 +219,7 @@ class _PortWidget extends StatelessWidget {
 }
 
 class _FieldWidget extends StatelessWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final FlNodeDataModel node;
   final FlFieldDataModel field;
 

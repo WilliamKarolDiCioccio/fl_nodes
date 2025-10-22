@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
 import '../../constants.dart';
@@ -7,7 +6,6 @@ import '../../styles/styles.dart';
 import '../controller/core.dart';
 import '../events/events.dart';
 import '../helpers/single_listener_change_notifier.dart';
-
 import 'data_adapters_v1.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
@@ -582,7 +580,7 @@ FlNodeState createNodeState(
 
 FlNodeDataModel createNode(
   FlNodePrototype prototype, {
-  required FlNodeEditorController controller,
+  required FlNodesController controller,
   required Offset offset,
   required Map<String, dynamic>? customData,
 }) {
@@ -622,7 +620,7 @@ FlNodesGroupDataModel createNodesGroup(
 }
 
 /// A container for all the data in a project.
-class FlNodeEditorProjectDataModel {
+class FlNodesProjectDataModel {
   final String packageVersion;
   String appVersion;
   Offset viewportOffset;
@@ -630,7 +628,7 @@ class FlNodeEditorProjectDataModel {
   final Map<String, FlNodeDataModel> nodes;
   final Map<String, FlLinkDataModel> links;
 
-  FlNodeEditorProjectDataModel({
+  FlNodesProjectDataModel({
     this.packageVersion = kPackageVersion,
     this.appVersion = '1.0.0',
     required this.nodes,
@@ -644,19 +642,19 @@ class FlNodeEditorProjectDataModel {
   ) =>
       toJsonV1(dataHandlers);
 
-  factory FlNodeEditorProjectDataModel.fromJson(
+  factory FlNodesProjectDataModel.fromJson(
     Map<String, dynamic> json,
     Map<String, FlNodePrototype> nodePrototypes,
     Map<Type, DataHandler> dataHandlers,
   ) =>
-      FlNodeEditorProjectDataModelV1Adapter.fromJsonV1(
+      FlNodesProjectDataModelV1Adapter.fromJsonV1(
         json,
         nodePrototypes,
         dataHandlers,
       );
 
-  FlNodeEditorProjectDataModel copyWith() {
-    return FlNodeEditorProjectDataModel(
+  FlNodesProjectDataModel copyWith() {
+    return FlNodesProjectDataModel(
       viewportOffset: viewportOffset,
       viewportZoom: viewportZoom,
       nodes: Map.fromEntries(

@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
+
 import 'ar.dart';
 import 'de.dart';
 import 'en.dart';
@@ -10,37 +12,36 @@ import 'ja.dart';
 import 'ko.dart';
 import 'ru.dart';
 import 'zh.dart';
-import 'package:flutter/widgets.dart';
 
 /// An abstract class that defines the localizations for the Node Editor.
-abstract class FlNodeEditorLocalizations {
+abstract class FlNodesLocalizations {
   final Locale locale;
 
-  FlNodeEditorLocalizations(this.locale);
+  FlNodesLocalizations(this.locale);
 
-  static FlNodeEditorLocalizations of(BuildContext? context) {
+  static FlNodesLocalizations of(BuildContext? context) {
     if (context == null) return _fallback;
 
-    final loc = Localizations.of<FlNodeEditorLocalizations>(
+    final loc = Localizations.of<FlNodesLocalizations>(
       context,
-      FlNodeEditorLocalizations,
+      FlNodesLocalizations,
     );
 
     return loc ?? _fallback;
   }
 
-  static final FlNodeEditorLocalizations _fallback =
+  static final FlNodesLocalizations _fallback =
       switch (PlatformDispatcher.instance.locale.languageCode) {
-    'it' => FlNodeEditorLocalizationsIt(const Locale('it')),
-    'fr' => FlNodeEditorLocalizationsFr(const Locale('fr')),
-    'es' => FlNodeEditorLocalizationsEs(const Locale('es')),
-    'de' => FlNodeEditorLocalizationsDe(const Locale('de')),
-    'ja' => FlNodeEditorLocalizationsJa(const Locale('ja')),
-    'zh' => FlNodeEditorLocalizationsZh(const Locale('zh')),
-    'ko' => FlNodeEditorLocalizationsKo(const Locale('ko')),
-    'ru' => FlNodeEditorLocalizationsRu(const Locale('ru')),
-    'ar' => FlNodeEditorLocalizationsAr(const Locale('ar')),
-    _ => FlNodeEditorLocalizationsEn(const Locale('en')),
+    'it' => FlNodesLocalizationsIt(const Locale('it')),
+    'fr' => FlNodesLocalizationsFr(const Locale('fr')),
+    'es' => FlNodesLocalizationsEs(const Locale('es')),
+    'de' => FlNodesLocalizationsDe(const Locale('de')),
+    'ja' => FlNodesLocalizationsJa(const Locale('ja')),
+    'zh' => FlNodesLocalizationsZh(const Locale('zh')),
+    'ko' => FlNodesLocalizationsKo(const Locale('ko')),
+    'ru' => FlNodesLocalizationsRu(const Locale('ru')),
+    'ar' => FlNodesLocalizationsAr(const Locale('ar')),
+    _ => FlNodesLocalizationsEn(const Locale('en')),
   };
 
   String get closeAction;
@@ -81,9 +82,9 @@ abstract class FlNodeEditorLocalizations {
 }
 
 /// A delegate that provides localized strings for the Node Editor.
-class FlNodeEditorLocalizationsDelegate
-    extends LocalizationsDelegate<FlNodeEditorLocalizations> {
-  const FlNodeEditorLocalizationsDelegate();
+class FlNodesLocalizationsDelegate
+    extends LocalizationsDelegate<FlNodesLocalizations> {
+  const FlNodesLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) => [
@@ -100,19 +101,19 @@ class FlNodeEditorLocalizationsDelegate
       ].contains(locale.languageCode);
 
   @override
-  Future<FlNodeEditorLocalizations> load(Locale locale) async {
+  Future<FlNodesLocalizations> load(Locale locale) async {
     return switch (locale.languageCode) {
-      'en' => FlNodeEditorLocalizationsEn(locale),
-      'it' => FlNodeEditorLocalizationsIt(locale),
-      'fr' => FlNodeEditorLocalizationsFr(locale),
-      'es' => FlNodeEditorLocalizationsEs(locale),
-      'de' => FlNodeEditorLocalizationsDe(locale),
-      'ja' => FlNodeEditorLocalizationsJa(locale),
-      'zh' => FlNodeEditorLocalizationsZh(locale),
-      'ko' => FlNodeEditorLocalizationsKo(locale),
-      'ru' => FlNodeEditorLocalizationsRu(locale),
-      'ar' => FlNodeEditorLocalizationsAr(locale),
-      _ => FlNodeEditorLocalizationsEn(locale)
+      'en' => FlNodesLocalizationsEn(locale),
+      'it' => FlNodesLocalizationsIt(locale),
+      'fr' => FlNodesLocalizationsFr(locale),
+      'es' => FlNodesLocalizationsEs(locale),
+      'de' => FlNodesLocalizationsDe(locale),
+      'ja' => FlNodesLocalizationsJa(locale),
+      'zh' => FlNodesLocalizationsZh(locale),
+      'ko' => FlNodesLocalizationsKo(locale),
+      'ru' => FlNodesLocalizationsRu(locale),
+      'ar' => FlNodesLocalizationsAr(locale),
+      _ => FlNodesLocalizationsEn(locale)
     };
   }
 

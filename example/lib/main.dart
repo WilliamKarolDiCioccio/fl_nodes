@@ -1,12 +1,10 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 import 'package:example/mind_map_example/example.dart';
 import 'package:example/models/locale.dart';
 import 'package:example/visual_scripting_example/example.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -52,8 +50,8 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
     final supportedLanguageCodes = locales.map((l) => l.code).toSet();
     final defaultLanguageCode =
         supportedLanguageCodes.contains(systemLocale.languageCode)
-            ? systemLocale.languageCode
-            : 'en';
+        ? systemLocale.languageCode
+        : 'en';
 
     _locale = Locale(defaultLanguageCode);
   }
@@ -63,7 +61,7 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
     return MaterialApp(
       localizationsDelegates: [
         AppLocalizations.delegate,
-        const FlNodeEditorLocalizationsDelegate(),
+        const FlNodesLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -105,32 +103,32 @@ class ExampleGalleryScreen extends StatefulWidget {
 
 class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
   List<_ExampleEntry> get _examples => [
-        _ExampleEntry(
-          title: 'Visual Scripting',
-          description:
-              'Classic node graph with execution flow and visual programming capabilities.',
-          icon: Icons.memory,
-          tags: ['nodes', 'scripting', 'visual'],
-          imageUrl:
-              'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/.github/images/node_editor_example.webp',
-          builder: (ctx) => VisualScriptingExampleScreen(
-            locales: widget.locales,
-            currentLocale: widget.currentLocale,
-            onLocaleChanged: widget.onLocaleChanged,
-          ),
-        ),
-        _ExampleEntry(
-          title: 'Mind Map',
-          description: 'Classic mind map layout with draggable nodes.',
-          icon: Icons.map,
-          tags: ['nodes', 'mind map', 'layout'],
-          builder: (ctx) => MindMapExampleScreen(
-            locales: widget.locales,
-            currentLocale: widget.currentLocale,
-            onLocaleChanged: widget.onLocaleChanged,
-          ),
-        ),
-      ];
+    _ExampleEntry(
+      title: 'Visual Scripting',
+      description:
+          'Classic node graph with execution flow and visual programming capabilities.',
+      icon: Icons.memory,
+      tags: ['nodes', 'scripting', 'visual'],
+      imageUrl:
+          'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/.github/images/node_editor_example.webp',
+      builder: (ctx) => VisualScriptingExampleScreen(
+        locales: widget.locales,
+        currentLocale: widget.currentLocale,
+        onLocaleChanged: widget.onLocaleChanged,
+      ),
+    ),
+    _ExampleEntry(
+      title: 'Mind Map',
+      description: 'Classic mind map layout with draggable nodes.',
+      icon: Icons.map,
+      tags: ['nodes', 'mind map', 'layout'],
+      builder: (ctx) => MindMapExampleScreen(
+        locales: widget.locales,
+        currentLocale: widget.currentLocale,
+        onLocaleChanged: widget.onLocaleChanged,
+      ),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -160,20 +158,14 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                _buildExampleGrid(),
-              ],
-            ),
-          ),
+          Expanded(child: CustomScrollView(slivers: [_buildExampleGrid()])),
         ],
       ),
     );
@@ -190,10 +182,9 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
               Icon(
                 Icons.search_off,
                 size: 64,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant
-                    .withAlpha(127),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withAlpha(127),
               ),
             ],
           ),
@@ -301,8 +292,9 @@ class _ExampleCardState extends State<_ExampleCard> {
               Expanded(
                 flex: 3,
                 child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                   child: entry.imageUrl != null
                       ? Image.network(
                           entry.imageUrl!,
@@ -333,10 +325,9 @@ class _ExampleCardState extends State<_ExampleCard> {
                               Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withAlpha(51),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withAlpha(51),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Icon(
@@ -348,12 +339,8 @@ class _ExampleCardState extends State<_ExampleCard> {
                               Expanded(
                                 child: Text(
                                   entry.title,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -363,12 +350,12 @@ class _ExampleCardState extends State<_ExampleCard> {
                           // Description
                           Text(
                             entry.description,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -385,19 +372,18 @@ class _ExampleCardState extends State<_ExampleCard> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               tag,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant
-                                    .withAlpha(179),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant.withAlpha(179),
                               ),
                             ),
                           );

@@ -1,7 +1,7 @@
 import 'delegate.dart';
 
-class FlNodeEditorLocalizationsKo extends FlNodeEditorLocalizations {
-  FlNodeEditorLocalizationsKo(super.locale);
+class FlNodesLocalizationsKo extends FlNodesLocalizations {
+  FlNodesLocalizationsKo(super.locale);
 
   @override
   String get closeAction => "닫기";

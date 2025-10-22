@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class HierarchyWidget extends StatefulWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final bool isCollapsed;
 
   const HierarchyWidget({

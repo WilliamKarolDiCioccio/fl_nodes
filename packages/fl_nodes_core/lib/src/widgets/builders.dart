@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 /// This file contains all the builders that can be used to fully customize the look of the package.
@@ -40,7 +39,7 @@ typedef NodePortBuilder = Widget Function(
 /// The context menu is the menu that appears when the user right-clicks (content depends on the entity being clicked).
 typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
   BuildContext context,
-  FlNodeEditorController controller,
+  FlNodesController controller,
   FlNodeDataModel node,
 );
 
@@ -51,5 +50,5 @@ typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
 /// WARNING: Only use this builder if you want to fully customize the look of the node.
 typedef NodeBuilder = Widget Function(
   FlNodeDataModel node,
-  FlNodeEditorController controller,
+  FlNodesController controller,
 );

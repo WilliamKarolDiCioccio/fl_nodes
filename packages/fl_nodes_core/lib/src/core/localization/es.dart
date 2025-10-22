@@ -1,7 +1,7 @@
 import 'delegate.dart';
 
-class FlNodeEditorLocalizationsEs extends FlNodeEditorLocalizations {
-  FlNodeEditorLocalizationsEs(super.locale);
+class FlNodesLocalizationsEs extends FlNodesLocalizations {
+  FlNodesLocalizationsEs(super.locale);
 
   @override
   String get closeAction => "Cerrar";

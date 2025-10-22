@@ -1,17 +1,16 @@
 import 'dart:ui' as ui;
 import 'dart:ui';
 
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/painters/links.dart';
+import 'package:fl_nodes_core/src/painters/selection_area.dart';
+import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
-import 'package:fl_nodes_core/src/constants.dart';
-import 'package:fl_nodes_core/src/painters/links.dart';
-import 'package:fl_nodes_core/src/painters/selection_area.dart';
-import 'package:fl_nodes_core/src/painters/tmp_link.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
@@ -23,7 +22,6 @@ import '../core/models/data.dart';
 import '../core/models/paint.dart';
 import '../core/utils/rendering/paths.dart';
 import '../styles/styles.dart';
-
 import 'builders.dart';
 
 class _NodeDiffCheckData {
@@ -56,7 +54,7 @@ class _ParentData extends ContainerBoxParentData<RenderBox> {
 }
 
 class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final FragmentShader gridShader;
   final NodeBuilder nodeBuilder;
   final Function(String linkId, Offset position)? showLinkContextMenu;
@@ -100,7 +98,7 @@ class NodeEditorRenderBox extends RenderBox
         ContainerRenderObjectMixin<RenderBox, _ParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _ParentData> {
   NodeEditorRenderBox({
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
     required FragmentShader gridShader,
     required bool isModalPresent,
     required Function(String portId, Offset position)? showLinkContextMenu,
@@ -195,7 +193,7 @@ class NodeEditorRenderBox extends RenderBox
     }
   }
 
-  final FlNodeEditorController _controller;
+  final FlNodesController _controller;
   final Function(String linkId, Offset position)? _showLinkContextMenu;
 
   final Map<String, RenderBox> _childrenById = {};

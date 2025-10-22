@@ -39,10 +39,10 @@ class ContextMenuUtils {
   static List<ContextMenuEntry> portContextMenuEntries(
     Offset position, {
     required BuildContext context,
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
     required PortLocator locator,
   }) {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.portMenuLabel),
@@ -58,10 +58,10 @@ class ContextMenuUtils {
 
   static List<ContextMenuEntry> nodeMenuEntries(
     BuildContext context,
-    FlNodeEditorController controller,
+    FlNodesController controller,
     FlNodeDataModel node,
   ) {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.nodeMenuLabel),
@@ -130,7 +130,7 @@ class ContextMenuUtils {
   static List<ContextMenuEntry> nodeCreationMenuEntries(
     Offset position, {
     required BuildContext context,
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
     required PortLocator? locator,
   }) {
     final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
@@ -195,7 +195,7 @@ class ContextMenuUtils {
   static List<ContextMenuEntry> canvasMenuEntries(
     Offset position, {
     required BuildContext context,
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
     required PortLocator? locator,
   }) {
     final worldPosition = RenderBoxUtils.screenToWorld(
@@ -204,7 +204,7 @@ class ContextMenuUtils {
       controller.viewportOffset,
       controller.viewportZoom,
     )!;
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.editorMenuLabel),
@@ -276,10 +276,10 @@ class ContextMenuUtils {
   static List<ContextMenuEntry> linkContextMenuEntries(
     Offset position, {
     required BuildContext context,
-    required FlNodeEditorController controller,
+    required FlNodesController controller,
     required String linkId,
   }) {
-    final strings = FlNodeEditorLocalizations.of(context);
+    final strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.linkMenuLabel),

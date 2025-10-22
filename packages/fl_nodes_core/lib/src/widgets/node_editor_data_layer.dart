@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide Size;
-
 import 'package:flutter_shaders/flutter_shaders.dart';
 
 import '../constants.dart';
@@ -15,13 +14,12 @@ import '../core/models/data.dart';
 import '../core/utils/rendering/renderbox.dart';
 import '../core/utils/widgets/context_menu.dart';
 import '../styles/styles.dart';
-
 import 'builders.dart';
 import 'improved_listener.dart';
 import 'node_editor_render_object.dart';
 
 class NodeEditorDataLayer extends StatefulWidget {
-  final FlNodeEditorController controller;
+  final FlNodesController controller;
   final bool expandToParent;
   final Size? fixedSize;
   final NodeBuilder nodeBuilder;
@@ -43,8 +41,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   // Wrapper state
   Offset get offset => widget.controller.viewportOffset;
   double get zoom => widget.controller.viewportZoom;
-  FlNodeEditorStyle get style => widget.controller.style;
-  FlNodeEditorConfig get config => widget.controller.config;
+  FlNodesStyle get style => widget.controller.style;
+  FlNodesConfig get config => widget.controller.config;
   GlobalKey get editorKey => widget.controller.editorKey;
 
   // Interaction state

@@ -1,10 +1,9 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
 import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/overlay.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -13,7 +12,6 @@ import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
 import '../utils/rendering/renderbox.dart';
-
 import 'callback.dart';
 import 'clipboard.dart';
 import 'config.dart';
@@ -33,31 +31,31 @@ export 'config.dart';
 /// The controller also provides an event bus for the node editor, allowing
 /// different parts of the application to communicate with each other by
 /// sending and receiving events.
-class FlNodeEditorController with ChangeNotifier {
+class FlNodesController with ChangeNotifier {
   final FlCallback? onCallback;
   final GlobalKey editorKey;
   final String appVersion;
 
-  FlNodeEditorController({
+  FlNodesController({
     required this.appVersion,
-    this.config = const FlNodeEditorConfig(),
-    this.style = const FlNodeEditorStyle(),
+    this.config = const FlNodesConfig(),
+    this.style = const FlNodesStyle(),
     ProjectSaver? projectSaver,
     ProjectLoader? projectLoader,
     ProjectCreator? projectCreator,
     this.onCallback,
     GlobalKey? editorKey,
   }) : editorKey = editorKey ?? GlobalKey() {
-    clipboard = FlNodeEditorClipboardHelper(this);
-    runner = FlNodeEditorExecutionHelper(this);
-    history = FlNodeEditorHistoryHelper(this);
-    project = FlNodeEditorProjectHelper(
+    clipboard = FlNodesClipboardHelper(this);
+    runner = FlNodesExecutionHelper(this);
+    history = FlNodesHistoryHelper(this);
+    project = FlNodesProjectHelper(
       this,
       projectSaver: projectSaver,
       projectLoader: projectLoader,
       projectCreator: projectCreator,
     );
-    overlay = FlNodeEditorOverlayHelper(this);
+    overlay = FlNodesOverlayHelper(this);
   }
 
   /// This method is used to dispose of the node editor controller and all of its resources, subsystems and members.
@@ -93,11 +91,11 @@ class FlNodeEditorController with ChangeNotifier {
   /// The event bus is used to communicate between different susbsystems and with the UI.
   final eventBus = NodeEditorEventBus();
 
-  late final FlNodeEditorClipboardHelper clipboard;
-  late final FlNodeEditorExecutionHelper runner;
-  late final FlNodeEditorHistoryHelper history;
-  late final FlNodeEditorProjectHelper project;
-  late final FlNodeEditorOverlayHelper overlay;
+  late final FlNodesClipboardHelper clipboard;
+  late final FlNodesExecutionHelper runner;
+  late final FlNodesHistoryHelper history;
+  late final FlNodesProjectHelper project;
+  late final FlNodesOverlayHelper overlay;
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Animation properties are used to manage animations in the node editor.
@@ -308,10 +306,10 @@ class FlNodeEditorController with ChangeNotifier {
   /// Node editor configuration and style.
   //////////////////////////////////////////////////////////////////////////////////
 
-  FlNodeEditorConfig config;
+  FlNodesConfig config;
 
   /// Set the global configuration of the node editor.
-  void setConfig(FlNodeEditorConfig config) {
+  void setConfig(FlNodesConfig config) {
     if (config == this.config) return;
 
     this.config = config;
@@ -357,10 +355,10 @@ class FlNodeEditorController with ChangeNotifier {
   void enableAutoPlacement(bool enable) =>
       setConfig(config = config.copyWith(enableAutoPlacement: enable));
 
-  FlNodeEditorStyle style;
+  FlNodesStyle style;
 
   /// Set the style of the node editor.
-  void setStyle(FlNodeEditorStyle style) {
+  void setStyle(FlNodesStyle style) {
     if (style == this.style) return;
 
     this.style = style;
@@ -1096,7 +1094,7 @@ class FlNodeEditorController with ChangeNotifier {
   }) {
     selectNodesById(ids, holdSelection: holdSelection);
 
-    final encompassingRect = FlNodeEditorUtils.calculateEncompassingRect(
+    final encompassingRect = FlNodesUtils.calculateEncompassingRect(
       selectedNodeIds,
       nodes,
       margin: 256,

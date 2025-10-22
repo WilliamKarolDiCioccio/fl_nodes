@@ -4,11 +4,11 @@ import 'package:fl_nodes_core/src/painters/custom_painter.dart';
 import 'package:uuid/uuid.dart';
 
 /// A class that manages the overlay elements of the node editor.
-class FlNodeEditorOverlayHelper {
-  final FlNodeEditorController controller;
+class FlNodesOverlayHelper {
+  final FlNodesController controller;
   Map<String, FlOverlayData> data = {};
 
-  FlNodeEditorOverlayHelper(this.controller);
+  FlNodesOverlayHelper(this.controller);
 
   void add(String idName, {required FlOverlayData data}) {
     this.data[idName] = data;

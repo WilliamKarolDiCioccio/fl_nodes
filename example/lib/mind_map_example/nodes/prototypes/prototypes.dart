@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-
 import 'package:example/mind_map_example/nodes/data/types.dart';
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/material.dart';
 
-void registerNodes(BuildContext context, FlNodeEditorController controller) {
+void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     FlNodePrototype(
       idName: 'shape.rectangle',

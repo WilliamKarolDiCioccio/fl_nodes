@@ -1,13 +1,14 @@
-import '../core/controller/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class FlNodeEditorShortcutsWidget extends StatelessWidget {
-  final FlNodeEditorController controller;
+import '../core/controller/core.dart';
+
+class FlNodesShortcutsWidget extends StatelessWidget {
+  final FlNodesController controller;
   final Widget child;
 
-  const FlNodeEditorShortcutsWidget({
+  const FlNodesShortcutsWidget({
     super.key,
     required this.controller,
     required this.child,

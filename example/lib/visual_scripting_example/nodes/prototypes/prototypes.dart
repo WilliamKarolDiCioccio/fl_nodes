@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-
 import 'package:example/l10n/app_localizations.dart';
 import 'package:example/visual_scripting_example/nodes/data/types.dart';
 import 'package:example/visual_scripting_example/nodes/styles/headers.dart';
 import 'package:example/visual_scripting_example/nodes/styles/ports.dart';
 import 'package:example/visual_scripting_example/widgets/terminal.dart';
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/material.dart';
 
 FlNodePrototype createValueNode<T>({
   required String idName,
@@ -65,7 +64,7 @@ FlNodePrototype createValueNode<T>({
   );
 }
 
-void registerNodes(BuildContext context, FlNodeEditorController controller) {
+void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<double>(
       idName: 'numericValue',
