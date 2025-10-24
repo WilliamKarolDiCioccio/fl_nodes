@@ -1,9 +1,10 @@
 import 'dart:math';
 
-import 'package:fl_nodes_core/src/constants.dart';
-import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/core/controller/overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -13,6 +14,7 @@ import '../events/events.dart';
 import '../models/data.dart';
 import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
+
 import 'callback.dart';
 import 'clipboard.dart';
 import 'config.dart';
@@ -61,11 +63,11 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to dispose of the node editor controller and all of its resources, subsystems and members.
   @override
   void dispose() {
-    eventBus.close();
     history.clear();
     project.clear();
     runner.clear();
     overlay.clear();
+    eventBus.close();
 
     clear();
 
