@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:uuid/uuid.dart';
 
 import '../../constants.dart';
@@ -6,6 +7,7 @@ import '../../styles/styles.dart';
 import '../controller/core.dart';
 import '../events/events.dart';
 import '../helpers/single_listener_change_notifier.dart';
+
 import 'data_adapters_v1.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
@@ -56,7 +58,7 @@ class FlLinkState {
 /// A link is a connection between two ports.
 final class FlLinkDataModel {
   final String id;
-  final ({PortLocator from, PortLocator to}) ports;
+  final (PortLocator, PortLocator) ports;
   final FlLinkState state;
 
   FlLinkDataModel({
@@ -79,7 +81,7 @@ final class FlLinkDataModel {
 
   FlLinkDataModel copyWith({
     String? id,
-    ({PortLocator from, PortLocator to})? ports,
+    (PortLocator, PortLocator)? ports,
     FlLinkState? state,
     List<Offset>? joints,
   }) {
@@ -118,18 +120,6 @@ class TempLinkDataModel {
   });
 }
 
-enum FlPortLogicalOrientation {
-  input,
-  output,
-  ignore,
-}
-
-enum FlPortType {
-  data,
-  control,
-  ignore,
-}
-
 enum FlPortGeometricOrientation {
   top,
   bottom,
@@ -146,22 +136,35 @@ abstract class FlPortPrototype {
   final PortStyleBuilder styleBuilder;
   final FlLinkPrototype linkPrototype;
   final Type dataType;
-  final FlPortLogicalOrientation logicalOrientation;
   final FlPortGeometricOrientation geometricOrientation;
-  final FlPortType type;
 
   FlPortPrototype({
     required this.idName,
     required this.displayName,
     this.styleBuilder = flDefaultPortStyleBuilder,
     this.dataType = dynamic,
-    required this.logicalOrientation,
     required this.geometricOrientation,
-    required this.type,
     required this.linkPrototype,
   });
 
-  bool compatibleWith(FlPortPrototype other);
+  String? compatibleWith(FlPortPrototype other) {
+    bool areTypesCompatible(Type type1, Type type2) {
+      if (type1 == dynamic || type2 == dynamic) return true;
+
+      if ((type1 == int || type1 == double) &&
+          (type2 == int || type2 == double)) {
+        return true;
+      }
+
+      return type1 == type2;
+    }
+
+    if (!areTypesCompatible(dataType, other.dataType)) {
+      return "Cannot connect a port of type '$dataType' to a port of type '${other.dataType}'";
+    }
+
+    return null;
+  }
 }
 
 class FlDataInputPortPrototype<T> extends FlPortPrototype {
@@ -170,19 +173,15 @@ class FlDataInputPortPrototype<T> extends FlPortPrototype {
     required super.displayName,
     required super.geometricOrientation,
     super.styleBuilder,
-  }) : super(
-          linkPrototype: FlLinkPrototype(label: (_) => ''),
-          dataType: T,
-          logicalOrientation: FlPortLogicalOrientation.input,
-          type: FlPortType.data,
-        );
-
-  // called by [DataOutputPortPrototype.compatibleWith], see note there
-  bool _isCompatibleWithOutput(FlPortPrototype other) =>
-      other is FlDataOutputPortPrototype<T>;
+  }) : super(linkPrototype: FlLinkPrototype(label: (_) => ''), dataType: T);
 
   @override
-  bool compatibleWith(FlPortPrototype other) => _isCompatibleWithOutput(other);
+  String? compatibleWith(FlPortPrototype other) {
+    if (other is! FlDataOutputPortPrototype) {
+      return "Cannot connect a data input port of type '$dataType' to a non-matching data output port";
+    }
+    return super.compatibleWith(other);
+  }
 }
 
 class FlDataOutputPortPrototype<T> extends FlPortPrototype {
@@ -192,26 +191,15 @@ class FlDataOutputPortPrototype<T> extends FlPortPrototype {
     required super.linkPrototype,
     required super.geometricOrientation,
     super.styleBuilder,
-  }) : super(
-          dataType: T,
-          logicalOrientation: FlPortLogicalOrientation.output,
-          type: FlPortType.data,
-        );
+  }) : super(dataType: T);
 
-  // the check we'd like to make here is:
-  //    other is DataInputPortPrototype<U> && T is U
-  //      => if [other] is an Input<Animal>, then we should be an Output<Animal/Cat/Dog/...>
-  // which could also be written:
-  //    DataInputPortPrototype<T> is other.runtimeType
-  //    => Input<Cat> is Input<Animal>
-  //
-  // unfortunately dart's type/reflection system is extremely limited,
-  // so you can't easily do that sort of check; instead, we (ab)use the
-  // fact that /instances/ know the actual type parameter, so we ask it
-  // to perform the type check for us
   @override
-  bool compatibleWith(FlPortPrototype other) =>
-      other is FlDataInputPortPrototype && other._isCompatibleWithOutput(this);
+  String? compatibleWith(FlPortPrototype other) {
+    if (other is! FlDataInputPortPrototype) {
+      return "Cannot connect a data output port of type '$dataType' to a non-matching data input port";
+    }
+    return super.compatibleWith(other);
+  }
 }
 
 class FlControlInputPortPrototype extends FlPortPrototype {
@@ -220,15 +208,15 @@ class FlControlInputPortPrototype extends FlPortPrototype {
     required super.displayName,
     required super.geometricOrientation,
     required super.styleBuilder,
-  }) : super(
-          linkPrototype: FlLinkPrototype(label: (_) => ''),
-          logicalOrientation: FlPortLogicalOrientation.input,
-          type: FlPortType.control,
-        );
+  }) : super(linkPrototype: FlLinkPrototype(label: (_) => ''));
 
   @override
-  bool compatibleWith(FlPortPrototype other) =>
-      other is FlControlOutputPortPrototype;
+  String? compatibleWith(FlPortPrototype other) {
+    if (other is! FlControlOutputPortPrototype) {
+      return "Cannot connect a control input port to a non-control output port";
+    }
+    return super.compatibleWith(other);
+  }
 }
 
 class FlControlOutputPortPrototype extends FlPortPrototype {
@@ -237,15 +225,15 @@ class FlControlOutputPortPrototype extends FlPortPrototype {
     required super.displayName,
     required super.geometricOrientation,
     required super.styleBuilder,
-  }) : super(
-          linkPrototype: FlLinkPrototype(label: (_) => ''),
-          logicalOrientation: FlPortLogicalOrientation.output,
-          type: FlPortType.control,
-        );
+  }) : super(linkPrototype: FlLinkPrototype(label: (_) => ''));
 
   @override
-  bool compatibleWith(FlPortPrototype other) =>
-      other is FlControlInputPortPrototype;
+  String? compatibleWith(FlPortPrototype other) {
+    if (other is! FlControlInputPortPrototype) {
+      return "Cannot connect a control output port to a non-control input port";
+    }
+    return super.compatibleWith(other);
+  }
 }
 
 class FlGenericPortPrototype extends FlPortPrototype {
@@ -254,14 +242,10 @@ class FlGenericPortPrototype extends FlPortPrototype {
     required super.displayName,
     required super.geometricOrientation,
     super.styleBuilder,
-  }) : super(
-          linkPrototype: FlLinkPrototype(label: (_) => ''),
-          logicalOrientation: FlPortLogicalOrientation.ignore,
-          type: FlPortType.ignore,
-        );
+  }) : super(linkPrototype: FlLinkPrototype(label: (_) => ''));
 
   @override
-  bool compatibleWith(FlPortPrototype other) => true;
+  String? compatibleWith(FlPortPrototype other) => null;
 }
 
 /// The state of a port painted on the canvas.

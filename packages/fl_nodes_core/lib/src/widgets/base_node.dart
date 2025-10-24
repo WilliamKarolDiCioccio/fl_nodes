@@ -46,8 +46,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   late Color fakeTransparentColor;
 
-  late List<FlPortDataModel> inPorts;
-  late List<FlPortDataModel> outPorts;
+  late List<FlPortDataModel> ports;
   late List<FlFieldDataModel> fields;
 
   double get viewportZoom => widget.controller.viewportZoom;
@@ -447,17 +446,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   void _updatePortsAndFields() {
     setState(() {
-      inPorts = widget.node.ports.values
-          .where((port) =>
-              port.prototype.logicalOrientation ==
-              FlPortLogicalOrientation.input)
-          .toList();
-      outPorts = widget.node.ports.values
-          .where((port) =>
-              port.prototype.logicalOrientation ==
-              FlPortLogicalOrientation.output)
-          .toList();
-
+      ports = widget.node.ports.values.toList();
       fields = widget.node.fields.values.toList();
     });
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/controller/core.dart';
 import '../core/events/events.dart';
 import '../core/models/data.dart';
+
 import 'base_node.dart';
 
 /// The main NodeWidget which represents a node in the editor.
@@ -56,7 +57,14 @@ class _FlDefaultNodeWidgetState
                               Flexible(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: inPorts
+                                  children: ports
+                                      .where(
+                                        (port) =>
+                                            port.prototype
+                                                is FlDataInputPortPrototype ||
+                                            port.prototype
+                                                is FlControlInputPortPrototype,
+                                      )
                                       .map(
                                         (port) => _PortWidget(
                                           node: widget.node,
@@ -70,7 +78,14 @@ class _FlDefaultNodeWidgetState
                               Flexible(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: outPorts
+                                  children: ports
+                                      .where(
+                                        (port) =>
+                                            port.prototype
+                                                is FlDataOutputPortPrototype ||
+                                            port.prototype
+                                                is FlControlOutputPortPrototype,
+                                      )
                                       .map(
                                         (port) => _PortWidget(
                                           node: widget.node,
@@ -127,11 +142,13 @@ class _FlDefaultNodeWidgetState
       final portOffset = portBox.localToGlobal(Offset.zero);
       final relativeY = portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
 
+      // Determine if the port is an input port
+      final isInput = port.prototype is FlDataInputPortPrototype ||
+          port.prototype is FlControlInputPortPrototype;
+
       // Set port offset based on direction
       port.offset = Offset(
-        port.prototype.logicalOrientation == FlPortLogicalOrientation.input
-            ? 0
-            : renderBoxSize.width,
+        isInput ? 0 : renderBoxSize.width,
         relativeY + portBox.size.height / 2,
       );
     }
@@ -196,8 +213,8 @@ class _PortWidget extends StatelessWidget {
       return SizedBox(key: port.key, height: 0, width: 0);
     }
 
-    final isInput =
-        port.prototype.logicalOrientation == FlPortLogicalOrientation.input;
+    final isInput = port.prototype is FlDataInputPortPrototype ||
+        port.prototype is FlControlInputPortPrototype;
 
     return Row(
       mainAxisAlignment:

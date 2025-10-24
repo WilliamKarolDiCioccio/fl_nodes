@@ -1,10 +1,9 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
 import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/overlay.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -12,15 +11,14 @@ import '../containers/spatial_hash_grid.dart';
 import '../events/bus.dart';
 import '../events/events.dart';
 import '../models/data.dart';
+import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
-
 import 'callback.dart';
 import 'clipboard.dart';
 import 'config.dart';
 import 'history.dart';
 import 'project.dart';
 import 'runner.dart';
-import 'utils.dart';
 
 export 'config.dart';
 
@@ -631,65 +629,44 @@ class FlNodesController with ChangeNotifier {
     final node2 = nodes[node2Id]!;
     final port2 = node2.ports[port2IdName]!;
 
-    String getErrorMessage(FlPortPrototype port1, FlPortPrototype port2) {
-      // display a specific message if they're incompatible because of different types (e.g. control vs data ports)
-      if (port1.type != port2.type) {
-        return 'Cannot connect a ${port1.type.name} port to a ${port2.type.name} port';
-      }
-
-      // display a specific message if they're incompatible because they're both the same direction (e.g. input & input)
-      if (port1.logicalOrientation == port2.logicalOrientation) {
-        return 'Cannot connect two ${port1.logicalOrientation.name} ports';
-      }
-
-      if (port1.dataType != port2.dataType) {
-        return "Cannot connect a port of type '${port1.dataType}' to a port of type '${port2.dataType}'";
-      }
-
-      // We don't know why they incompatible, so just show a generic error message
-      return "These two ports are incompatible";
-    }
-
-    if (!port1.prototype.compatibleWith(port2.prototype)) {
+    // if this exact link already exists, don't do anything
+    if (FlNodesUtils.linkExists(
+      node1Id,
+      port1IdName,
+      node2Id,
+      port2IdName,
+      links.values.toList(),
+    )) {
       onCallback?.call(
         FlCallbackType.error,
-        getErrorMessage(port1.prototype, port2.prototype),
+        'A link already exists between node $node1Id port $port1IdName '
+        'and node $node2Id port $port2IdName',
       );
       return null;
     }
 
-    // if this exact link already exists, don't do anything
-    if (port1.links.any(
-          (link) =>
-              link.ports.from.nodeId == node2Id &&
-              link.ports.to.portId == port2IdName,
-        ) ||
-        port2.links.any(
-          (link) =>
-              link.ports.from.nodeId == node1Id &&
-              link.ports.to.portId == port1IdName,
-        )) {
+    final errorMessage = port1.prototype.compatibleWith(port2.prototype);
+
+    if (errorMessage != null) {
+      onCallback?.call(
+        FlCallbackType.error,
+        errorMessage,
+      );
       return null;
-    }
-
-    late ({PortLocator from, PortLocator to}) portLocators;
-
-    // Determine the order to insert the node references in the link based on the port direction.
-    if (port1.prototype.logicalOrientation == FlPortLogicalOrientation.output) {
-      portLocators = (
-        from: (nodeId: node1Id, portId: port1IdName),
-        to: (nodeId: node2Id, portId: port2IdName),
-      );
-    } else {
-      portLocators = (
-        from: (nodeId: node2Id, portId: port2IdName),
-        to: (nodeId: node1Id, portId: port1IdName),
-      );
     }
 
     final link = FlLinkDataModel(
       id: const Uuid().v4(),
-      ports: portLocators,
+      ports: (
+        (
+          nodeId: node1Id,
+          portId: port1IdName,
+        ),
+        (
+          nodeId: node2Id,
+          portId: port2IdName,
+        ),
+      ),
       state: FlLinkState(),
     );
 
@@ -721,25 +698,24 @@ class FlNodesController with ChangeNotifier {
     String? eventId,
     bool isHandled = false,
   }) {
-    if (!nodes.containsKey(link.ports.from.nodeId) ||
-        !nodes.containsKey(link.ports.to.nodeId)) {
+    if (!nodes.containsKey(link.ports.$1.nodeId) ||
+        !nodes.containsKey(link.ports.$2.nodeId)) {
       return;
     }
 
-    final fromNode = nodes[link.ports.from.nodeId]!;
-    final toNode = nodes[link.ports.to.nodeId]!;
+    final node1 = nodes[link.ports.$1.nodeId]!;
+    final node2 = nodes[link.ports.$2.nodeId]!;
 
-    if (!fromNode.ports.containsKey(link.ports.from.portId) ||
-        !toNode.ports.containsKey(link.ports.to.portId)) {
+    if (!node1.ports.containsKey(link.ports.$1.portId) ||
+        !node2.ports.containsKey(link.ports.$2.portId)) {
       return;
     }
 
-    final fromPort =
-        nodes[link.ports.from.nodeId]!.ports[link.ports.from.portId]!;
-    final toPort = nodes[link.ports.to.nodeId]!.ports[link.ports.to.portId]!;
+    final port1 = nodes[link.ports.$1.nodeId]!.ports[link.ports.$1.portId]!;
+    final port2 = nodes[link.ports.$2.nodeId]!.ports[link.ports.$2.portId]!;
 
-    fromPort.links.add(link);
-    toPort.links.add(link);
+    port1.links.add(link);
+    port2.links.add(link);
 
     links.putIfAbsent(
       link.id,
@@ -772,12 +748,11 @@ class FlNodesController with ChangeNotifier {
     final link = links[id]!;
 
     // Remove the link from its associated ports
-    final fromPort =
-        nodes[link.ports.from.nodeId]?.ports[link.ports.from.portId];
-    final toPort = nodes[link.ports.to.nodeId]?.ports[link.ports.to.portId];
+    final port1 = nodes[link.ports.$1.nodeId]?.ports[link.ports.$1.portId];
+    final port2 = nodes[link.ports.$2.nodeId]?.ports[link.ports.$2.portId];
 
-    fromPort?.links.remove(link);
-    toPort?.links.remove(link);
+    port1?.links.remove(link);
+    port2?.links.remove(link);
 
     links.remove(id);
 

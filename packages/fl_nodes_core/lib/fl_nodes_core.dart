@@ -35,8 +35,6 @@ export 'package:fl_nodes_core/src/core/models/data.dart'
     show
         FlLinkPrototype,
         FlLinkDataModel,
-        FlPortType,
-        FlPortLogicalOrientation,
         FlPortGeometricOrientation,
         FlPortPrototype,
         FlNodePrototype,

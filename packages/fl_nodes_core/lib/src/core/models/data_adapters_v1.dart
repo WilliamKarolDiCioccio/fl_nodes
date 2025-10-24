@@ -8,12 +8,12 @@ extension FlLinkDataModelV1Adapter<T> on FlLinkDataModel {
     return {
       'id': id,
       'from': {
-        'nodeId': ports.from.nodeId,
-        'portId': ports.from.portId,
+        'nodeId': ports.$1.nodeId,
+        'portId': ports.$1.portId,
       },
       'to': {
-        'nodeId': ports.to.nodeId,
-        'portId': ports.to.portId,
+        'nodeId': ports.$2.nodeId,
+        'portId': ports.$2.portId,
       },
       'labelData': null,
     };
@@ -24,11 +24,11 @@ extension FlLinkDataModelV1Adapter<T> on FlLinkDataModel {
     return FlLinkDataModel(
       id: json['id'],
       ports: (
-        from: (
+        (
           nodeId: json['from']['nodeId'],
           portId: json['from']['portId'],
         ),
-        to: (
+        (
           nodeId: json['to']['nodeId'],
           portId: json['to']['portId'],
         ),

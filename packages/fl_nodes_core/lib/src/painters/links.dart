@@ -39,38 +39,37 @@ class LinksCustomPainter extends FlCustomPainter {
       }
 
       for (final link in controller.links.values) {
-        final outNode = controller.getNodeById(link.ports.from.nodeId);
-        final inNode = controller.getNodeById(link.ports.to.nodeId);
-        if (outNode == null || inNode == null) continue;
+        final node1 = controller.getNodeById(link.ports.$1.nodeId);
+        final node2 = controller.getNodeById(link.ports.$2.nodeId);
+        if (node1 == null || node2 == null) continue;
 
-        final outPort = outNode.ports[link.ports.from.portId];
-        final inPort = inNode.ports[link.ports.to.portId];
-        if (outPort == null || inPort == null) continue;
+        final port1 = node1.ports[link.ports.$1.portId];
+        final port2 = node2.ports[link.ports.$2.portId];
+        if (port1 == null || port2 == null) continue;
 
-        final outPortOffset = outNode.offset + outPort.offset;
-        final inPortOffset = inNode.offset + inPort.offset;
+        final outPortOffset = node1.offset + port1.offset;
+        final inPortOffset = node2.offset + port2.offset;
         final outPortGeometricOrientation =
-            outPort.prototype.geometricOrientation;
-        final inPortGeometricOrientation =
-            inPort.prototype.geometricOrientation;
+            port1.prototype.geometricOrientation;
+        final inPortGeometricOrientation = port2.prototype.geometricOrientation;
 
         final Rect pathBounds = Rect.fromPoints(outPortOffset, inPortOffset);
 
         if (!viewport.overlaps(pathBounds)) continue;
 
-        final linkStyle = outPort.style.linkStyleBuilder(link.state);
+        final linkStyle = port1.style.linkStyleBuilder(link.state);
 
         String? labelText;
         Rect? fromNodeBounds;
         Rect? toNodeBounds;
 
         if (shouldDrawLabels) {
-          labelText = outPort.prototype.linkPrototype
+          labelText = port1.prototype.linkPrototype
               .label(controller.editorKey.currentContext!);
 
           if (labelText.isNotEmpty) {
-            fromNodeBounds = outNode.cachedRenderboxRect;
-            toNodeBounds = inNode.cachedRenderboxRect;
+            fromNodeBounds = node1.cachedRenderboxRect;
+            toNodeBounds = node2.cachedRenderboxRect;
           }
         }
 
@@ -208,8 +207,8 @@ class LinksCustomPainter extends FlCustomPainter {
       final controllerLink = controller.links[id];
       if (controllerLink == null) continue;
 
-      final fromNode = controller.getNodeById(controllerLink.ports.from.nodeId);
-      final toNode = controller.getNodeById(controllerLink.ports.to.nodeId);
+      final fromNode = controller.getNodeById(controllerLink.ports.$1.nodeId);
+      final toNode = controller.getNodeById(controllerLink.ports.$2.nodeId);
       if (fromNode == null || toNode == null) continue;
 
       final fromNodeBounds = fromNode.cachedRenderboxRect;

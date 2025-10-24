@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 import 'package:fl_nodes_core/src/core/controller/callback.dart';
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/localization/delegate.dart';
-import 'package:flutter/material.dart';
+import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
 
 import '../events/events.dart';
 import '../models/data.dart';
@@ -45,6 +47,8 @@ class FlNodesExecutionHelper {
 
   /// Handles events from the controller and updates the graph accordingly.
   void _handleRunnerEvents(NodeEditorEvent event) {
+    if (event.isHandled) return;
+
     if (event is FlLoadProjectEvent || event is FlNewProjectEvent) {
       _buildGraphDelayTimer?.cancel();
       _runGraphDelayTimer?.cancel();
@@ -62,6 +66,8 @@ class FlNodesExecutionHelper {
         event is FlRemoveNodeEvent ||
         event is FlAddLinkEvent ||
         event is FlRemoveLinkEvent ||
+        event is FlCutSelectionEvent ||
+        event is FlPasteSelectionEvent ||
         (event is FlNodeFieldEvent &&
             event.eventType == FlFieldEventType.submit)) {
       if (controller.config.autoBuildGraph) {
@@ -93,15 +99,11 @@ class FlNodesExecutionHelper {
 
     final Set<String> visited = {};
 
-    for (final node in projectData.nodes.values) {
-      if (!node.ports.values.every(
-        (port) =>
-            port.prototype.logicalOrientation ==
-            FlPortLogicalOrientation.output,
-      )) {
-        continue;
-      }
-
+    for (final node in nodes.values.where((node) => node.ports.values.every(
+          (port) =>
+              port.prototype is FlControlOutputPortPrototype ||
+              port.prototype is FlDataOutputPortPrototype,
+        ))) {
       _findDeps(node.id, visited);
     }
   }
@@ -111,58 +113,21 @@ class FlNodesExecutionHelper {
 
     visited.add(nodeId);
 
-    _dataDeps[nodeId] = _getConnectedNodeIdsFromNode(
+    _dataDeps[nodeId] =
+        FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
+      controller,
       nodes[nodeId]!,
-      FlPortLogicalOrientation.input,
-      FlPortType.data,
     );
 
-    final connectedOutputNodeIds = _getConnectedNodeIdsFromNode(
+    final controlFlowNodesIds =
+        FlNodesUtils.getConnectedNodesIdsForNode<FlControlOutputPortPrototype>(
+      controller,
       nodes[nodeId]!,
-      FlPortLogicalOrientation.output,
-      FlPortType.control,
     );
 
-    for (final connectedNodeId in connectedOutputNodeIds) {
-      _findDeps(connectedNodeId, visited);
+    for (final node in controlFlowNodesIds) {
+      _findDeps(node, visited);
     }
-  }
-
-  // Returns the unique IDs of nodes connected to a given port.
-  Set<String> _getConnectedNodeIdsFromPort(FlPortDataModel port) {
-    final connectedNodeIds = <String>{};
-
-    for (final link in port.links) {
-      final connectedNode = nodes[
-          port.prototype.logicalOrientation == FlPortLogicalOrientation.input
-              ? link.ports.from.nodeId
-              : link.ports.to.nodeId]!;
-
-      connectedNodeIds.add(connectedNode.id);
-    }
-
-    return connectedNodeIds;
-  }
-
-  /// Returns the unique IDs of nodes connected to a given node's input or output ports.
-  Set<String> _getConnectedNodeIdsFromNode(
-    FlNodeDataModel node,
-    FlPortLogicalOrientation logicalOrientation,
-    FlPortType type,
-  ) {
-    final connectedNodeIds = <String>{};
-
-    final ports = node.ports.values.where(
-      (port) =>
-          port.prototype.logicalOrientation == logicalOrientation &&
-          port.prototype.type == type,
-    );
-
-    for (final port in ports) {
-      connectedNodeIds.addAll(_getConnectedNodeIdsFromPort(port));
-    }
-
-    return connectedNodeIds;
   }
 
   /// Executes the entire graph asynchronously
@@ -183,15 +148,11 @@ class FlNodesExecutionHelper {
     _executedNodes.clear();
     _execState.clear();
 
-    for (final node in nodes.values) {
-      if (!node.ports.values.every(
-        (port) =>
-            port.prototype.logicalOrientation ==
-            FlPortLogicalOrientation.output,
-      )) {
-        continue;
-      }
-
+    for (final node in nodes.values.where((node) => node.ports.values.every(
+          (port) =>
+              port.prototype is FlControlOutputPortPrototype ||
+              port.prototype is FlDataOutputPortPrototype,
+        ))) {
       await _executeNode(node, context: context);
     }
   }
@@ -218,13 +179,18 @@ class FlNodesExecutionHelper {
       for (final portIdName in portIdNames) {
         final port = node.ports[portIdName]!;
 
-        final connectedNodeIds = _getConnectedNodeIdsFromPort(
+        if (port.prototype is! FlControlOutputPortPrototype &&
+            port.prototype is! FlDataOutputPortPrototype) {
+          throw Exception(
+            'Port ${port.prototype.idName} is not of type control',
+          );
+        }
+
+        final Set<String> connectedNodeIds =
+            FlNodesUtils.getConnectedNodesIdsForPort(
+          controller,
           port,
         );
-
-        if (port.prototype.type != FlPortType.control) {
-          throw Exception('Port ${port.prototype.idName} is not of type event');
-        }
 
         for (final nodeId in connectedNodeIds) {
           futures.add(_executeNode(nodes[nodeId]!));
@@ -242,15 +208,21 @@ class FlNodesExecutionHelper {
         final (idName, data) = idNameAndData;
 
         final port = node.ports[idName]!;
-        port.data = data;
 
-        if (port.prototype.type != FlPortType.data) {
-          throw Exception('Port ${port.prototype.idName} is not of type data');
+        if (port.prototype is! FlDataInputPortPrototype &&
+            port.prototype is! FlDataOutputPortPrototype) {
+          throw Exception(
+            'Port ${port.prototype.idName} is not of type data',
+          );
         }
 
         for (final link in port.links) {
-          final connectedNode = nodes[link.ports.to.nodeId]!;
-          final connectedPort = connectedNode.ports[link.ports.to.portId]!;
+          final locator = FlNodesUtils.getDestination(
+            controller,
+            link,
+          );
+
+          final connectedPort = nodes[locator.nodeId]!.ports[locator.portId]!;
 
           connectedPort.data = data;
         }
@@ -259,9 +231,11 @@ class FlNodesExecutionHelper {
 
     _executedNodes.add(node.id);
 
-    for (final dep in _dataDeps[node.id]!) {
-      if (_executedNodes.contains(dep)) continue;
-      await _executeNode(nodes[dep]!);
+    if (_dataDeps.containsKey(node.id)) {
+      for (final dep in _dataDeps[node.id]!) {
+        if (_executedNodes.contains(dep)) continue;
+        await _executeNode(nodes[dep]!);
+      }
     }
 
     try {
@@ -278,9 +252,8 @@ class FlNodesExecutionHelper {
         FlCallbackType.error,
         strings.failedToExecuteNodeErrorMsg(e.toString()),
       );
-      return;
+    } finally {
+      _execState.remove(node.id);
     }
-
-    _execState.remove(node.id);
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 import '../../controller/core.dart';
@@ -141,7 +143,7 @@ class ContextMenuUtils {
 
       controller.nodePrototypes.forEach((key, value) {
         if (value.portPrototypes.any(
-          startPort.prototype.compatibleWith,
+          (prototype) => startPort.prototype.compatibleWith(prototype) == null,
         )) {
           compatiblePrototypes.add(MapEntry(key, value));
         }
@@ -180,7 +182,8 @@ class ContextMenuUtils {
               addedNode.ports.values
                   .map((port) => port.prototype)
                   .firstWhere(
-                    startPort.prototype.compatibleWith,
+                    (prototype) =>
+                        startPort.prototype.compatibleWith(prototype) == null,
                   )
                   .idName,
             );
@@ -288,9 +291,10 @@ class ContextMenuUtils {
         icon: Icons.launch,
         onSelected: () {
           final link = controller.links[linkId];
-          if (link != null) {
-            controller.focusNodesById({link.ports.from.nodeId});
-          }
+          if (link == null) return;
+          controller.focusNodesById({
+            FlNodesUtils.getSource(controller, link).nodeId,
+          });
         },
       ),
       MenuItem(
@@ -298,9 +302,10 @@ class ContextMenuUtils {
         icon: Icons.call_received,
         onSelected: () {
           final link = controller.links[linkId];
-          if (link != null) {
-            controller.focusNodesById({link.ports.to.nodeId});
-          }
+          if (link == null) return;
+          controller.focusNodesById({
+            FlNodesUtils.getDestination(controller, link).nodeId,
+          });
         },
       ),
       const MenuDivider(),

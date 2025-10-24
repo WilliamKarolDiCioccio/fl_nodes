@@ -6,10 +6,10 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
   Map<String, dynamic> toJsonLegacy(Map<Type, DataHandler> dataHandlers) {
     return {
       'id': id,
-      'from': ports.from.nodeId,
-      'to': ports.to.nodeId,
-      'fromPort': ports.from.portId,
-      'toPort': ports.to.portId,
+      'from': ports.$1.nodeId,
+      'to': ports.$2.nodeId,
+      'fromPort': ports.$1.portId,
+      'toPort': ports.$2.portId,
     };
   }
 
@@ -21,11 +21,11 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
       id: json['id'],
       // What you see here is a mistake in the legacy format that we have to keep for compatibility
       ports: (
-        from: (
+        (
           nodeId: json['from'],
           portId: json['to'],
         ),
-        to: (
+        (
           nodeId: json['fromPort'],
           portId: json['toPort'],
         ),

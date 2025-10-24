@@ -9,10 +9,10 @@ import '../events/events.dart';
 import '../localization/delegate.dart';
 import '../models/data.dart';
 import '../utils/misc/json_extensions.dart';
+import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
 import 'callback.dart';
 import 'core.dart';
-import 'utils.dart';
 
 /// A class that manages the clipboard operations of the node editor.
 ///
@@ -52,8 +52,8 @@ class FlNodesClipboardHelper {
       // We make deep copies as we only want to copy the links that are within the selection.
       final updatedPorts = nodeCopy.ports.map((portId, port) {
         final deepCopiedLinks = port.links.where((link) {
-          return selectedNodeIds.contains(link.ports.from.nodeId) &&
-              selectedNodeIds.contains(link.ports.to.nodeId);
+          return selectedNodeIds.contains(link.ports.$1.nodeId) &&
+              selectedNodeIds.contains(link.ports.$2.nodeId);
         }).toSet();
 
         return MapEntry(
@@ -188,13 +188,13 @@ class FlNodesClipboardHelper {
                   state: FlLinkState(),
                   id: newIds[link.id],
                   ports: (
-                    from: (
-                      nodeId: newIds[link.ports.from.nodeId]!,
-                      portId: link.ports.from.portId,
+                    (
+                      nodeId: newIds[link.ports.$1.nodeId]!,
+                      portId: link.ports.$1.portId,
                     ),
-                    to: (
-                      nodeId: newIds[link.ports.to.nodeId]!,
-                      portId: link.ports.to.portId,
+                    (
+                      nodeId: newIds[link.ports.$2.nodeId]!,
+                      portId: link.ports.$2.portId,
                     ),
                   ),
                 );
