@@ -7,11 +7,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import 'package:fl_nodes_core/fl_nodes_core.dart';
-import 'package:fl_nodes_core/src/core/models/data.dart';
 
 import '../constants.dart';
 import '../core/events/events.dart';
-import '../core/utils/rendering/renderbox.dart';
 import '../core/utils/widgets/context_menu.dart';
 
 import 'builders.dart';

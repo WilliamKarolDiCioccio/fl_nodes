@@ -195,7 +195,7 @@ class ContextMenuUtils {
     }).toList();
   }
 
-  static List<ContextMenuEntry> canvasMenuEntries(
+  static List<ContextMenuEntry> defaultCanvasMenuEntries(
     Offset position, {
     required BuildContext context,
     required FlNodesController controller,

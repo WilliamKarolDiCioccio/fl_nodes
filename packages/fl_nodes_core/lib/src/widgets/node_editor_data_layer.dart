@@ -23,6 +23,7 @@ class NodeEditorDataLayer extends StatefulWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final NodeBuilder nodeBuilder;
+  final CanvasContextMenuBuilder canvasContextMenuBuilder;
 
   const NodeEditorDataLayer({
     super.key,
@@ -30,6 +31,7 @@ class NodeEditorDataLayer extends StatefulWidget {
     required this.expandToParent,
     required this.fixedSize,
     required this.nodeBuilder,
+    required this.canvasContextMenuBuilder,
   });
 
   @override
@@ -436,7 +438,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 } else if (!isContextMenuVisible) {
                   ContextMenuUtils.createAndShowContextMenu(
                     context,
-                    entries: ContextMenuUtils.canvasMenuEntries(
+                    entries: widget.canvasContextMenuBuilder(
                       position,
                       context: context,
                       controller: widget.controller,
@@ -566,7 +568,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                       // Else show the editor context menu
                       ContextMenuUtils.createAndShowContextMenu(
                         context,
-                        entries: ContextMenuUtils.canvasMenuEntries(
+                        entries: widget.canvasContextMenuBuilder(
                           event.position,
                           context: context,
                           controller: widget.controller,

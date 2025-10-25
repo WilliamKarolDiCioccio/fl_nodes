@@ -274,6 +274,7 @@ class VisualScriptingExampleScreenState
                     child: FlNodesWidget(
                       controller: _nodeEditorController,
                       expandToParent: true,
+                      canvasContextMenuBuilder: ContextMenuUtils.defaultCanvasMenuEntries,
                       nodeBuilder: (node, controller) => FlDefaultNodeWidget(
                         node: node,
                         controller: controller,
