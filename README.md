@@ -148,4 +148,10 @@ Contributions are welcome!
 
 ## 🚀 **Let's Build Together!**
 
-Enjoy using **FlNodes** and create amazing node-based UIs for your Flutter apps! 🌟
+Enjoy using FlNodes and **create amazing node-based UIs** for your Flutter apps and/or **get involved in library's development**! 🌟
+
+<a href="https://github.com/WilliamKarolDiCioccio/fl_nodes/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=WilliamKarolDiCioccio/fl_nodes" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
