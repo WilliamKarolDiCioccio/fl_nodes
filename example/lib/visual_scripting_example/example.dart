@@ -30,14 +30,18 @@ class VisualScriptingExampleScreen extends StatefulWidget {
   final Function(String) onLocaleChanged;
 
   @override
-  State<VisualScriptingExampleScreen> createState() => VisualScriptingExampleScreenState();
+  State<VisualScriptingExampleScreen> createState() =>
+      VisualScriptingExampleScreenState();
 }
 
-final bool isMobile = TargetPlatform.iOS == defaultTargetPlatform || TargetPlatform.android == defaultTargetPlatform
+final bool isMobile =
+    TargetPlatform.iOS == defaultTargetPlatform ||
+        TargetPlatform.android == defaultTargetPlatform
     ? true
     : false;
 
-class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScreen> {
+class VisualScriptingExampleScreenState
+    extends State<VisualScriptingExampleScreen> {
   late final FlNodesController _nodeEditorController;
   final TerminalController _terminalController = TerminalController();
 
@@ -108,7 +112,8 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
         if (isSaved) return true;
         return await _showUnsavedChangesDialog() == true;
       },
-      onCallback: (type, message) => showNodeEditorSnackbar(context, message, type),
+      onCallback: (type, message) =>
+          showNodeEditorSnackbar(context, message, type),
     );
 
     _nodeEditorController.overlay.add(
@@ -159,14 +164,25 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
       final response = await http.get(Uri.parse(sampleProjectLink));
 
       if (response.statusCode == 200 && mounted) {
-        _nodeEditorController.project.load(data: jsonDecode(response.body), context: context);
+        _nodeEditorController.project.load(
+          data: jsonDecode(response.body),
+          context: context,
+        );
       } else {
         if (!mounted) return;
-        showNodeEditorSnackbar(context, AppLocalizations.of(context)!.failedToLoadSampleProject, FlCallbackType.error);
+        showNodeEditorSnackbar(
+          context,
+          AppLocalizations.of(context)!.failedToLoadSampleProject,
+          FlCallbackType.error,
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      showNodeEditorSnackbar(context, AppLocalizations.of(context)!.failedToLoadSampleProject, FlCallbackType.error);
+      showNodeEditorSnackbar(
+        context,
+        AppLocalizations.of(context)!.failedToLoadSampleProject,
+        FlCallbackType.error,
+      );
     }
   }
 
@@ -201,7 +217,11 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!mounted) return;
-      showNodeEditorSnackbar(context, 'Could not launch GitHub', FlCallbackType.error);
+      showNodeEditorSnackbar(
+        context,
+        'Could not launch GitHub',
+        FlCallbackType.error,
+      );
     }
   }
 
@@ -220,7 +240,10 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
           children: [
             ClipRect(
               child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: isHierarchyCollapsed ? 1.0 : 0.0, end: isHierarchyCollapsed ? 0.0 : 1.0),
+                tween: Tween<double>(
+                  begin: isHierarchyCollapsed ? 1.0 : 0.0,
+                  end: isHierarchyCollapsed ? 0.0 : 1.0,
+                ),
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 onEnd: () {
@@ -229,11 +252,18 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
                   });
                 },
                 builder: (context, widthFactor, child) {
-                  return Align(alignment: Alignment.centerLeft, widthFactor: widthFactor.clamp(0.0, 1.0), child: child);
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: widthFactor.clamp(0.0, 1.0),
+                    child: child,
+                  );
                 },
                 child: SizedBox(
                   width: 300,
-                  child: HierarchyWidget(controller: _nodeEditorController, isCollapsed: isHierarchyFullyCollapsed),
+                  child: HierarchyWidget(
+                    controller: _nodeEditorController,
+                    isCollapsed: isHierarchyFullyCollapsed,
+                  ),
                 ),
               ),
             ),
@@ -245,7 +275,10 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
                       controller: _nodeEditorController,
                       expandToParent: true,
                       canvasContextMenuBuilder: ContextMenuUtils.defaultCanvasMenuEntries,
-                      nodeBuilder: (node, controller) => FlDefaultNodeWidget(node: node, controller: controller),
+                      nodeBuilder: (node, controller) => FlDefaultNodeWidget(
+                        node: node,
+                        controller: controller,
+                      ),
                     ),
                   ),
                   ClipRect(
@@ -270,7 +303,10 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
                       },
                       child: SizedBox(
                         height: 400,
-                        child: TerminalWidget(controller: _terminalController, isCollapsed: isTerminalFullyCollapsed),
+                        child: TerminalWidget(
+                          controller: _terminalController,
+                          isCollapsed: isTerminalFullyCollapsed,
+                        ),
                       ),
                     ),
                   ),
@@ -300,7 +336,9 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
                 onPressed: _toggleHierarchy,
               ),
               _buildToolbarButton(
-                icon: isTerminalCollapsed ? Icons.terminal : Icons.terminal_outlined,
+                icon: isTerminalCollapsed
+                    ? Icons.terminal
+                    : Icons.terminal_outlined,
                 tooltip: AppLocalizations.of(context)!.toggleTerminalTooltip,
                 onPressed: _toggleTerminal,
               ),
@@ -317,17 +355,20 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
               _buildToolbarButton(
                 icon: Icons.add,
                 tooltip: strings.createProjectActionTooltip,
-                onPressed: () => _nodeEditorController.project.create(context: context),
+                onPressed: () =>
+                    _nodeEditorController.project.create(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.folder_open,
                 tooltip: strings.openProjectActionTooltip,
-                onPressed: () => _nodeEditorController.project.load(context: context),
+                onPressed: () =>
+                    _nodeEditorController.project.load(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.save,
                 tooltip: strings.saveProjectActionTooltip,
-                onPressed: () => _nodeEditorController.project.save(context: context),
+                onPressed: () =>
+                    _nodeEditorController.project.save(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.undo,
@@ -340,16 +381,21 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
                 onPressed: () => _nodeEditorController.history.redo(),
               ),
               _buildToolbarButton(
-                icon: _nodeEditorController.config.enableSnapToGrid ? Icons.grid_on : Icons.grid_off,
+                icon: _nodeEditorController.config.enableSnapToGrid
+                    ? Icons.grid_on
+                    : Icons.grid_off,
                 tooltip: AppLocalizations.of(context)!.toggleSnapToGridTooltip,
                 onPressed: () => setState(() {
-                  _nodeEditorController.enableSnapToGrid(!_nodeEditorController.config.enableSnapToGrid);
+                  _nodeEditorController.enableSnapToGrid(
+                    !_nodeEditorController.config.enableSnapToGrid,
+                  );
                 }),
               ),
               _buildToolbarButton(
                 icon: Icons.play_arrow,
                 tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
-                onPressed: () => _nodeEditorController.runner.executeGraph(context: context),
+                onPressed: () =>
+                    _nodeEditorController.runner.executeGraph(context: context),
                 color: Colors.green,
               ),
             ],
@@ -387,10 +433,22 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(51)),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 8, offset: const Offset(0, 2))],
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, spacing: 8, children: children),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: children,
+      ),
     );
   }
 
@@ -409,7 +467,11 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
           onTap: onPressed,
           child: Container(
             padding: const EdgeInsets.all(8),
-            child: Icon(icon, size: 20, color: color ?? Theme.of(context).colorScheme.onSurface),
+            child: Icon(
+              icon,
+              size: 20,
+              color: color ?? Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
       ),
