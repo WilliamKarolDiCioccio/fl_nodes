@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../core/controller/core.dart';
+import '../core/utils/widgets/context_menu.dart';
 import 'builders.dart';
 import 'debug_info.dart';
 import 'node_editor_data_layer.dart';
@@ -12,11 +13,13 @@ class FlNodesWidget extends StatelessWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final NodeBuilder nodeBuilder;
+  final CanvasContextMenuBuilder? canvasContextMenuBuilder;
 
   const FlNodesWidget({
     super.key,
     required this.controller,
     required this.nodeBuilder,
+    this.canvasContextMenuBuilder,
     this.expandToParent = true,
     this.fixedSize,
   });
@@ -34,6 +37,7 @@ class FlNodesWidget extends StatelessWidget {
             expandToParent: expandToParent,
             fixedSize: fixedSize,
             nodeBuilder: nodeBuilder,
+            canvasContextMenuBuilder: canvasContextMenuBuilder ?? ContextMenuUtils.defaultCanvasMenuEntries,
           ),
           _OverlayLayer(controller: controller),
           if (kDebugMode) DebugInfoWidget(controller: controller),

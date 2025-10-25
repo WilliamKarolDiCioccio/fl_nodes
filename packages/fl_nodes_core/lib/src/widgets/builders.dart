@@ -52,3 +52,11 @@ typedef NodeBuilder = Widget Function(
   FlNodeDataModel node,
   FlNodesController controller,
 );
+
+/// Builder of the main context menu 
+typedef CanvasContextMenuBuilder = List<ContextMenuEntry>  Function(
+  Offset position, {
+  required BuildContext context,
+  required FlNodesController controller,
+  required PortLocator? locator,
+});
