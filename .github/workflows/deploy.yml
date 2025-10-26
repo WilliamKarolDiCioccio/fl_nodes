@@ -16,5 +16,5 @@ jobs:
       - uses: WilliamKarolDiCioccio/flutter-gh-pages@main
         with:
           baseHref: /fl_nodes/
-          workingDir: example
+          workingDir: examples/fl_nodes_example
           targetBranch: gh-live-example
