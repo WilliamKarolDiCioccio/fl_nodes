@@ -11,18 +11,18 @@ import '../../styles/styles.dart';
 import '../containers/spatial_hash_grid.dart';
 import '../events/bus.dart';
 import '../events/events.dart';
+import '../models/config.dart';
 import '../models/data.dart';
 import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
 
 import 'callback.dart';
 import 'clipboard.dart';
-import 'config.dart';
 import 'history.dart';
 import 'project.dart';
 import 'runner.dart';
 
-export 'config.dart';
+export '../models/config.dart';
 
 /// A controller class for the Node Editor.
 ///
