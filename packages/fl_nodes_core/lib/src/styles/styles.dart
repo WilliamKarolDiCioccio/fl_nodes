@@ -411,6 +411,7 @@ class FlNodesStyle {
   final EdgeInsetsGeometry padding;
   final FlGridStyle gridStyle;
   final FlHighlightAreaStyle highlightAreaStyle;
+  final BoxShadow? nodesShadow;
 
   const FlNodesStyle({
     this.decoration = const BoxDecoration(
@@ -426,6 +427,11 @@ class FlNodesStyle {
     this.padding = const EdgeInsets.all(0.0),
     this.gridStyle = const FlGridStyle.basic(),
     this.highlightAreaStyle = const FlHighlightAreaStyle.basic(),
+    this.nodesShadow = const BoxShadow(
+      color: Colors.black54,
+      blurRadius: 4.0,
+      offset: Offset(2, 2),
+    ),
   });
 
   FlNodesStyle copyWith({
@@ -433,12 +439,14 @@ class FlNodesStyle {
     EdgeInsetsGeometry? padding,
     FlGridStyle? gridStyle,
     FlHighlightAreaStyle? highlightAreaStyle,
+    BoxShadow? nodesShadow,
   }) {
     return FlNodesStyle(
       decoration: decoration ?? this.decoration,
       padding: padding ?? this.padding,
       gridStyle: gridStyle ?? this.gridStyle,
       highlightAreaStyle: highlightAreaStyle ?? this.highlightAreaStyle,
+      nodesShadow: nodesShadow ?? this.nodesShadow,
     );
   }
 }

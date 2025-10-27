@@ -593,12 +593,16 @@ class NodeEditorRenderBox extends RenderBox
         if (childParentData.state.isSelected) {
           selectedChildren.add(child);
 
-          selectedShadowPath.addRRect(
-            RRect.fromRectAndRadius(
-              childParentData.rect.inflate(4),
-              Radius.circular(childParentData.borderRadius),
-            ),
-          );
+          if (_controller.style.nodesShadow != null) {
+            final shadow = _controller.style.nodesShadow!;
+
+            selectedShadowPath.addRRect(
+              RRect.fromRectAndRadius(
+                childParentData.rect.inflate(shadow.blurRadius),
+                Radius.circular(childParentData.borderRadius),
+              ),
+            );
+          }
 
           if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
@@ -615,12 +619,16 @@ class NodeEditorRenderBox extends RenderBox
         } else {
           unselectedChildren.add(child);
 
-          unselectedShadowPath.addRRect(
-            RRect.fromRectAndRadius(
-              childParentData.rect.inflate(4),
-              Radius.circular(childParentData.borderRadius),
-            ),
-          );
+          if (_controller.style.nodesShadow != null) {
+            final shadow = _controller.style.nodesShadow!;
+
+            unselectedShadowPath.addRRect(
+              RRect.fromRectAndRadius(
+                childParentData.rect.inflate(shadow.blurRadius),
+                Radius.circular(childParentData.borderRadius),
+              ),
+            );
+          }
 
           if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
@@ -682,10 +690,12 @@ class NodeEditorRenderBox extends RenderBox
 
     // First we paint the unselected nodes, so they appear below the selected ones.
 
-    if (lodLevel == 4) {
+    final shadow = _controller.style.nodesShadow;
+
+    if (lodLevel == 4 && shadow != null) {
       context.canvas.drawShadow(
-        unselectedShadowPath,
-        const ui.Color(0xC8000000),
+        unselectedShadowPath.shift(shadow.offset),
+        shadow.color,
         4,
         true,
       );
@@ -705,10 +715,10 @@ class NodeEditorRenderBox extends RenderBox
 
     // Then we paint the selected nodes, so they appear above the unselected ones.
 
-    if (lodLevel == 4) {
+    if (lodLevel == 4 && shadow != null) {
       context.canvas.drawShadow(
-        selectedShadowPath,
-        const ui.Color(0xC8000000),
+        selectedShadowPath.shift(shadow.offset),
+        shadow.color,
         4,
         true,
       );
