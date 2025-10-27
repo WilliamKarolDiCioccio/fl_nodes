@@ -1,9 +1,8 @@
+import 'package:fl_nodes_core/fl_nodes_core.dart';
 import 'package:fl_nodes_core/src/core/events/events.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../core/controller/core.dart';
-import '../core/utils/widgets/context_menu.dart';
 import 'builders.dart';
 import 'debug_info.dart';
 import 'node_editor_data_layer.dart';
@@ -13,13 +12,44 @@ class FlNodesWidget extends StatelessWidget {
   final bool expandToParent;
   final Size? fixedSize;
   final NodeBuilder nodeBuilder;
-  final CanvasContextMenuBuilder? canvasContextMenuBuilder;
+
+  final void Function(
+    BuildContext context,
+    Offset position,
+    FlNodesController controller,
+    PortLocator locator,
+  ) showPortContextMenu;
+
+  final void Function(
+    BuildContext context,
+    Offset position,
+    FlNodesController controller,
+    PortLocator? locator,
+  ) showCanvasContextMenu;
+
+  final void Function(
+    BuildContext context,
+    Offset lastFocalPoint,
+    FlNodesController controller,
+    PortLocator? locator,
+    void Function() onTmpLinkCancel,
+  ) showNodeCreationMenu;
+
+  final void Function(
+    BuildContext context,
+    String linkId,
+    Offset position,
+    FlNodesController controller,
+  ) showLinkContextMenu;
 
   const FlNodesWidget({
     super.key,
     required this.controller,
     required this.nodeBuilder,
-    this.canvasContextMenuBuilder,
+    required this.showPortContextMenu,
+    required this.showCanvasContextMenu,
+    required this.showNodeCreationMenu,
+    required this.showLinkContextMenu,
     this.expandToParent = true,
     this.fixedSize,
   });
@@ -37,7 +67,10 @@ class FlNodesWidget extends StatelessWidget {
             expandToParent: expandToParent,
             fixedSize: fixedSize,
             nodeBuilder: nodeBuilder,
-            canvasContextMenuBuilder: canvasContextMenuBuilder ?? ContextMenuUtils.defaultCanvasMenuEntries,
+            showPortContextMenu: showPortContextMenu,
+            showCanvasContextMenu: showCanvasContextMenu,
+            showNodeCreationMenu: showNodeCreationMenu,
+            showLinkContextMenu: showLinkContextMenu,
           ),
           _OverlayLayer(controller: controller),
           if (kDebugMode) DebugInfoWidget(controller: controller),
