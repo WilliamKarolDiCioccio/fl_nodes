@@ -158,7 +158,7 @@ class VisualScriptingExampleScreenState
 
   Future<void> _loadSampleProject() async {
     const sampleProjectLink =
-        'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/example/assets/www/node_project.json';
+        'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/examples/fl_nodes_example/assets/www/node_project.json';
 
     try {
       final response = await http.get(Uri.parse(sampleProjectLink));
