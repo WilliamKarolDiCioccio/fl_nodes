@@ -4,12 +4,18 @@ import 'package:fl_nodes_example/models/locale.dart';
 import 'package:fl_nodes_example/visual_scripting_example/example.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    BrowserContextMenu.disableContextMenu();
+  }
+
   runApp(const FlNodesExampleApp());
 }
 
