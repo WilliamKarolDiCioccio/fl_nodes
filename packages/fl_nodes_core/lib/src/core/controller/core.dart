@@ -1,10 +1,9 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
 import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/overlay.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
@@ -15,7 +14,6 @@ import '../models/config.dart';
 import '../models/data.dart';
 import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
-
 import 'callback.dart';
 import 'clipboard.dart';
 import 'history.dart';
@@ -958,6 +956,7 @@ class FlNodesController with ChangeNotifier {
     Set<String> ids, {
     bool holdSelection = false,
     bool isHandled = false,
+    bool isSideEffect = false,
   }) async {
     if (ids.isEmpty) {
       return clearSelection();
@@ -980,6 +979,7 @@ class FlNodesController with ChangeNotifier {
             ? FlSelectionEventType.holdSelect
             : FlSelectionEventType.select,
         isHandled: isHandled,
+        isSideEffect: isSideEffect,
       ),
     );
   }
