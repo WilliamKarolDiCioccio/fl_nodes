@@ -14,15 +14,16 @@ class FlDefaultNodeWidget extends FlBaseNodeWidget {
     super.key,
     required super.controller,
     required super.node,
-    super.contextMenuBuilder,
+    required super.showPortContextMenu,
+    required super.showNodeCreationMenu,
+    required super.showNodeContextMenu,
   });
 
   @override
   State<FlDefaultNodeWidget> createState() => _FlDefaultNodeWidgetState();
 }
 
-class _FlDefaultNodeWidgetState
-    extends FlBaseNodeWidgetState<FlDefaultNodeWidget> {
+class _FlDefaultNodeWidgetState extends FlBaseNodeWidgetState<FlDefaultNodeWidget> {
   @override
   Widget build(BuildContext context) {
     return wrapWithControls(
@@ -60,10 +61,8 @@ class _FlDefaultNodeWidgetState
                                   children: ports
                                       .where(
                                         (port) =>
-                                            port.prototype
-                                                is FlDataInputPortPrototype ||
-                                            port.prototype
-                                                is FlControlInputPortPrototype,
+                                            port.prototype is FlDataInputPortPrototype ||
+                                            port.prototype is FlControlInputPortPrototype,
                                       )
                                       .map(
                                         (port) => _PortWidget(
@@ -81,10 +80,8 @@ class _FlDefaultNodeWidgetState
                                   children: ports
                                       .where(
                                         (port) =>
-                                            port.prototype
-                                                is FlDataOutputPortPrototype ||
-                                            port.prototype
-                                                is FlControlOutputPortPrototype,
+                                            port.prototype is FlDataOutputPortPrototype ||
+                                            port.prototype is FlControlOutputPortPrototype,
                                       )
                                       .map(
                                         (port) => _PortWidget(
@@ -122,8 +119,7 @@ class _FlDefaultNodeWidgetState
   void updatePortsPosition() {
     // Early return with combined null checks
     final renderBox = context.findRenderObject() as RenderBox?;
-    final nodeBox =
-        widget.node.key.currentContext?.findRenderObject() as RenderBox?;
+    final nodeBox = widget.node.key.currentContext?.findRenderObject() as RenderBox?;
 
     if (renderBox == null || nodeBox == null) return;
 
@@ -143,8 +139,7 @@ class _FlDefaultNodeWidgetState
       final relativeY = portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
 
       // Determine if the port is an input port
-      final isInput = port.prototype is FlDataInputPortPrototype ||
-          port.prototype is FlControlInputPortPrototype;
+      final isInput = port.prototype is FlDataInputPortPrototype || port.prototype is FlControlInputPortPrototype;
 
       // Set port offset based on direction
       port.offset = Offset(
@@ -213,12 +208,10 @@ class _PortWidget extends StatelessWidget {
       return SizedBox(key: port.key, height: 0, width: 0);
     }
 
-    final isInput = port.prototype is FlDataInputPortPrototype ||
-        port.prototype is FlControlInputPortPrototype;
+    final isInput = port.prototype is FlDataInputPortPrototype || port.prototype is FlControlInputPortPrototype;
 
     return Row(
-      mainAxisAlignment:
-          isInput ? MainAxisAlignment.start : MainAxisAlignment.end,
+      mainAxisAlignment: isInput ? MainAxisAlignment.start : MainAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       key: port.key,
       children: [
