@@ -1,0 +1,39 @@
+name: fl_context_menu
+description: "A new Flutter package project."
+version: 0.0.1
+maintainer: William Karol Di Cioccio
+license: MIT
+
+resolution: workspace
+
+homepage: https://williamkaroldicioccio.github.io/fl_nodes/
+repository: https://github.com/WilliamKarolDiCioccio/fl_nodes
+issue_tracker: https://github.com/WilliamKarolDiCioccio/fl_nodes/issues
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
+topics:
+  - fl-nodes
+  - context-menu
+
+funding:
+  - buymeacoffee.com/Wilielmus
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ">=4.0.0 <7.0.0"
+  test_coverage_badge: ^0.3.2
