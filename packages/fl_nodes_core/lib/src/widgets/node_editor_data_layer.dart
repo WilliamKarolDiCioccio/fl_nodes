@@ -486,7 +486,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (locator != null) {
                     _onTmpLinkEnd(locator);
                   } else {
-                    widget.showNodeCreationMenu(context, _lastFocalPoint, widget.controller, locator, _onTmpLinkCancel);
+                    widget.showNodeCreationMenu(context, _lastFocalPoint, widget.controller, _portLocator, _onTmpLinkCancel);
                   }
 
                   _isLinking = false;
