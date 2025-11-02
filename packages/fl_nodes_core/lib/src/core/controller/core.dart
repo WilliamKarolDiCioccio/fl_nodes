@@ -286,6 +286,14 @@ class FlNodesController with ChangeNotifier {
   bool nodesDataDirty = false;
   bool linksDataDirty = false;
 
+  void forceNodeRepaint() {
+    nodesDataDirty = true;
+  }
+
+  void forceLinkRepaint() {
+    linksDataDirty = true;
+  }
+
   /// This method is used to compute the level of detail (LOD) based on the zoom level and
   /// it's called automatically by the controller when the zoom level is changed.
   static int _computeLODLevel(double zoom) {
@@ -828,6 +836,42 @@ class FlNodesController with ChangeNotifier {
     }
 
     linksDataDirty = true;
+  }
+
+  /// This method is used to set custom data for a node.
+  ///
+  /// Emits a [FlNodeCustomDataEvent] event.
+  void setCustomData(
+    String nodeId, {
+    required String key,
+    required dynamic value,
+    bool needsLayout = false,
+    bool needPaint = false,
+    bool isHandled = false,
+  }) {
+    if (!nodes.containsKey(nodeId)) return;
+
+    final node = nodes[nodeId]!;
+    node.customData[key] = value;
+
+    if (needsLayout) {
+      nodesDataDirty = true;
+      linksDataDirty = true;
+    } else if (needPaint) {
+      nodesDataDirty = true;
+    }
+
+    eventBus.emit(
+      FlNodeCustomDataEvent(
+        id: const Uuid().v4(),
+        nodeId: nodeId,
+        key: key,
+        value: value,
+        needsLayout: needsLayout,
+        needPaint: needPaint,
+        isHandled: isHandled,
+      ),
+    );
   }
 
   /// This method is used to set the data of a field in a node.

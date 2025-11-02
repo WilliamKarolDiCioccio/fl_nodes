@@ -425,6 +425,25 @@ final class FlLinkLabelEvent extends NodeEditorEvent {
   });
 }
 
+/// Event produced when the custom data of a node changes.
+final class FlNodeCustomDataEvent extends NodeEditorEvent {
+  final String nodeId;
+  final String key;
+  final dynamic value;
+  final bool needsLayout;
+  final bool needPaint;
+
+  const FlNodeCustomDataEvent({
+    required this.nodeId,
+    required this.key,
+    required this.value,
+    required this.needsLayout,
+    required this.needPaint,
+    required super.id,
+    super.isHandled,
+  });
+}
+
 ////////////////////////////////////////////////////////////////////////
 /// Project management events.
 ////////////////////////////////////////////////////////////////////////
