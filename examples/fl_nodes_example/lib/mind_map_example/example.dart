@@ -12,6 +12,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../utils/context_menu.dart';
+
 class MindMapExampleScreen extends StatefulWidget {
   const MindMapExampleScreen({
     super.key,
@@ -28,9 +30,7 @@ class MindMapExampleScreen extends StatefulWidget {
   State<MindMapExampleScreen> createState() => MindMapExampleScreenState();
 }
 
-final bool isMobile =
-    TargetPlatform.iOS == defaultTargetPlatform ||
-        TargetPlatform.android == defaultTargetPlatform
+final bool isMobile = TargetPlatform.iOS == defaultTargetPlatform || TargetPlatform.android == defaultTargetPlatform
     ? true
     : false;
 
@@ -87,8 +87,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
         if (isSaved) return true;
         return await _showUnsavedChangesDialog() == true;
       },
-      onCallback: (type, message) =>
-          showNodeEditorSnackbar(context, message, type),
+      onCallback: (type, message) => showNodeEditorSnackbar(context, message, type),
     );
 
     _controller.overlay.add(
@@ -142,11 +141,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!mounted) return;
-      showNodeEditorSnackbar(
-        context,
-        'Could not launch GitHub',
-        FlCallbackType.error,
-      );
+      showNodeEditorSnackbar(context, 'Could not launch GitHub', FlCallbackType.error);
     }
   }
 
@@ -164,8 +159,17 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
         child: FlNodesWidget(
           controller: _controller,
           expandToParent: true,
-          nodeBuilder: (node, controller) =>
-              MindMapNodeWidget(node: node, controller: controller),
+          nodeBuilder: (node, controller) => MindMapNodeWidget(
+            node: node,
+            controller: controller,
+            showPortContextMenu: ShowContextMenuUtils.showPortContextMenu,
+            showNodeCreationMenu: ShowContextMenuUtils.showNodeCreationMenu,
+            showNodeContextMenu: ShowContextMenuUtils.showNodeContextMenu,
+          ),
+          showPortContextMenu: ShowContextMenuUtils.showPortContextMenu,
+          showCanvasContextMenu: ShowContextMenuUtils.showCanvasContextMenu,
+          showNodeCreationMenu: ShowContextMenuUtils.showNodeCreationMenu,
+          showLinkContextMenu: ShowContextMenuUtils.showLinkContextMenu,
         ),
       ),
     );
@@ -213,21 +217,16 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
                 onPressed: () => _controller.history.redo(),
               ),
               _buildToolbarButton(
-                icon: _controller.config.enableSnapToGrid
-                    ? Icons.grid_on
-                    : Icons.grid_off,
+                icon: _controller.config.enableSnapToGrid ? Icons.grid_on : Icons.grid_off,
                 tooltip: AppLocalizations.of(context)!.toggleSnapToGridTooltip,
                 onPressed: () => setState(() {
-                  _controller.enableSnapToGrid(
-                    !_controller.config.enableSnapToGrid,
-                  );
+                  _controller.enableSnapToGrid(!_controller.config.enableSnapToGrid);
                 }),
               ),
               _buildToolbarButton(
                 icon: Icons.play_arrow,
                 tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
-                onPressed: () =>
-                    _controller.runner.executeGraph(context: context),
+                onPressed: () => _controller.runner.executeGraph(context: context),
                 color: Colors.green,
               ),
             ],
@@ -255,22 +254,10 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withAlpha(51),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(51)),
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 8, offset: const Offset(0, 2))],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8,
-        children: children,
-      ),
+      child: Row(mainAxisSize: MainAxisSize.min, spacing: 8, children: children),
     );
   }
 
@@ -289,11 +276,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
           onTap: onPressed,
           child: Container(
             padding: const EdgeInsets.all(8),
-            child: Icon(
-              icon,
-              size: 20,
-              color: color ?? Theme.of(context).colorScheme.onSurface,
-            ),
+            child: Icon(icon, size: 20, color: color ?? Theme.of(context).colorScheme.onSurface),
           ),
         ),
       ),

@@ -2,7 +2,6 @@ import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:fl_nodes_core/src/styles/styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 /// This file contains all the builders that can be used to fully customize the look of the package.
 
@@ -34,15 +33,6 @@ typedef NodePortBuilder = Widget Function(
   FlNodeStyle style,
 );
 
-/// The content of the node context menu.
-///
-/// The context menu is the menu that appears when the user right-clicks (content depends on the entity being clicked).
-typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
-  BuildContext context,
-  FlNodesController controller,
-  FlNodeDataModel node,
-);
-
 /// The style of the node.
 ///
 /// The node is the widget that contains the header, the fields and the ports.
@@ -50,5 +40,40 @@ typedef NodeContextMenuBuilder = List<ContextMenuEntry> Function(
 /// WARNING: Only use this builder if you want to fully customize the look of the node.
 typedef NodeBuilder = Widget Function(
   FlNodeDataModel node,
+  FlNodesController controller,
+);
+
+typedef ShowPortContextMenu = void Function(
+  BuildContext context,
+  Offset position,
+  FlNodesController controller,
+  PortLocator locator,
+);
+
+typedef ShowNodeCreationtMenu = void Function(
+  BuildContext context,
+  Offset lastFocalPoint,
+  FlNodesController controller,
+  PortLocator? locator,
+  void Function() onTmpLinkCancel,
+);
+
+typedef ShowNodeContextMenu = void Function(
+  BuildContext context,
+  Offset position,
+  FlNodesController controller,
+  FlNodeDataModel node,
+);
+
+typedef ShowCanvasContextMenu = void Function(
+  BuildContext context,
+  Offset position,
+  FlNodesController controller,
+  PortLocator? locator,
+);
+typedef ShowLinkContextMenu = void Function(
+  BuildContext context,
+  String linkId,
+  Offset position,
   FlNodesController controller,
 );

@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:fl_nodes_core/fl_nodes_core.dart';
-import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -10,26 +9,30 @@ import 'package:flutter/services.dart';
 
 import '../constants.dart';
 import '../core/events/events.dart';
+import '../core/models/data.dart';
 import '../core/utils/rendering/renderbox.dart';
-import '../core/utils/widgets/context_menu.dart';
 import 'builders.dart';
 import 'improved_listener.dart';
 
 abstract class FlBaseNodeWidget extends StatefulWidget {
   final FlNodesController controller;
   final FlNodeDataModel node;
-  final NodeContextMenuBuilder? contextMenuBuilder;
+
+  final ShowPortContextMenu showPortContextMenu;
+  final ShowNodeCreationtMenu showNodeCreationMenu;
+  final ShowNodeContextMenu showNodeContextMenu;
 
   const FlBaseNodeWidget({
     super.key,
     required this.controller,
     required this.node,
-    this.contextMenuBuilder,
+    required this.showPortContextMenu,
+    required this.showNodeCreationMenu,
+    required this.showNodeContextMenu,
   });
 }
 
-abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
-    extends State<T> {
+abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T> {
   // Interaction state for linking ports.
   bool _isLinking = false;
 
@@ -109,15 +112,12 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       });
     } else if (event is FlNodeFieldEvent) {
       if (event.nodeId == widget.node.id &&
-          (event.eventType == FlFieldEventType.submit ||
-              event.eventType == FlFieldEventType.cancel)) {
+          (event.eventType == FlFieldEventType.submit || event.eventType == FlFieldEventType.cancel)) {
         setState(() {});
       }
     } else if (event is FlAddNodeEvent) {
       if (event.node.id == widget.node.id) setState(() {});
-    } else if (event is FlConfigurationChangeEvent ||
-        event is FlStyleChangeEvent ||
-        event is FlLocaleChangeEvent) {
+    } else if (event is FlConfigurationChangeEvent || event is FlStyleChangeEvent || event is FlLocaleChangeEvent) {
       _updatePortsAndFields();
       _updateStyleCache();
 
@@ -185,8 +185,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       final node = widget.controller.getNodeById(nodeId)!;
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
-        if ((worldPosition - absolutePortPosition).distance <
-            kNearPortSnapDistance) {
+        if ((worldPosition - absolutePortPosition).distance < kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
@@ -237,8 +236,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   }
 
   Widget wrapWithControls(Widget child) {
-    return defaultTargetPlatform == TargetPlatform.android ||
-            defaultTargetPlatform == TargetPlatform.iOS
+    return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS
         ? GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
@@ -258,36 +256,10 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
               }
 
               if (locator != null && !widget.node.state.isCollapsed) {
-                final entries = ContextMenuUtils.portContextMenuEntries(
-                  position,
-                  context: context,
-                  controller: widget.controller,
-                  locator: locator,
-                );
-
-                ContextMenuUtils.createAndShowContextMenu(
-                  context,
-                  entries: entries,
-                  position: position,
-                );
-              } else if (!isContextMenuVisible) {
-                final entries = widget.contextMenuBuilder != null
-                    ? widget.contextMenuBuilder!(
-                        context,
-                        widget.controller,
-                        widget.node,
-                      )
-                    : ContextMenuUtils.nodeMenuEntries(
-                        context,
-                        widget.controller,
-                        widget.node,
-                      );
-
-                ContextMenuUtils.createAndShowContextMenu(
-                  context,
-                  entries: entries,
-                  position: position,
-                );
+                widget.showPortContextMenu(context, position, widget.controller, locator);
+              } else {
+                widget.controller.selectNodesById({widget.node.id});
+                widget.showNodeContextMenu(context, position, widget.controller, widget.node);
               }
             },
             onPanDown: (details) {
@@ -323,17 +295,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  ContextMenuUtils.createAndShowContextMenu(
-                    context,
-                    entries: ContextMenuUtils.nodeCreationMenuEntries(
-                      _lastPanPosition!,
-                      context: context,
-                      controller: widget.controller,
-                      locator: locator,
-                    ),
-                    position: _lastPanPosition!,
-                    onDismiss: (value) => _onTmpLinkCancel(),
-                  );
+                  widget.showNodeCreationMenu(context, _lastPanPosition!, widget.controller, locator, _onTmpLinkCancel);
                 }
                 _isLinking = false;
               } else {
@@ -359,34 +321,9 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
                 }
 
                 if (locator != null && !widget.node.state.isCollapsed) {
-                  ContextMenuUtils.createAndShowContextMenu(
-                    context,
-                    entries: ContextMenuUtils.portContextMenuEntries(
-                      event.position,
-                      context: context,
-                      controller: widget.controller,
-                      locator: locator,
-                    ),
-                    position: event.position,
-                  );
-                } else if (!isContextMenuVisible) {
-                  final entries = widget.contextMenuBuilder != null
-                      ? widget.contextMenuBuilder!(
-                          context,
-                          widget.controller,
-                          widget.node,
-                        )
-                      : ContextMenuUtils.nodeMenuEntries(
-                          context,
-                          widget.controller,
-                          widget.node,
-                        );
-
-                  ContextMenuUtils.createAndShowContextMenu(
-                    context,
-                    entries: entries,
-                    position: event.position,
-                  );
+                  widget.showPortContextMenu(context, event.position, widget.controller, locator);
+                } else {
+                  widget.showNodeContextMenu(context, event.position, widget.controller, widget.node);
                 }
               } else if (event.buttons == kPrimaryMouseButton) {
                 if (locator != null && !_isLinking && _portLocator == null) {
@@ -414,17 +351,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  ContextMenuUtils.createAndShowContextMenu(
-                    context,
-                    entries: ContextMenuUtils.nodeCreationMenuEntries(
-                      event.position,
-                      context: context,
-                      controller: widget.controller,
-                      locator: locator,
-                    ),
-                    position: event.position,
-                    onDismiss: (value) => _onTmpLinkCancel(),
-                  );
+                  widget.showNodeCreationMenu(context, event.position, widget.controller, locator, _onTmpLinkCancel);
                 }
               } else {
                 _resetEdgeTimer();
@@ -436,10 +363,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   void _updateStyleCache() {
     setState(() {
-      widget.node.builtStyle =
-          widget.node.prototype.styleBuilder(widget.node.state);
-      widget.node.builtHeaderStyle =
-          widget.node.prototype.headerStyleBuilder(widget.node.state);
+      widget.node.builtStyle = widget.node.prototype.styleBuilder(widget.node.state);
+      widget.node.builtHeaderStyle = widget.node.prototype.headerStyleBuilder(widget.node.state);
 
       fakeTransparentColor = Color.alphaBlend(
         widget.node.builtStyle.decoration.color!.withAlpha(255),
