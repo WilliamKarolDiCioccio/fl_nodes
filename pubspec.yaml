@@ -13,9 +13,11 @@ dev_dependencies:
 
 workspace:
   - examples/fl_nodes_example
+  - examples/fl_context_menu_example
   - benchmarks
   - packages/fl_nodes
   - packages/fl_nodes_core
+  - packages/fl_context_menu
 
 melos:
   publish:
@@ -40,4 +42,4 @@ melos:
     example:release: cd examples/fl_nodes_example && flutter run --release -d chrome
 
 flutter:
-  uses-material-design: false
+  uses-material-design: true

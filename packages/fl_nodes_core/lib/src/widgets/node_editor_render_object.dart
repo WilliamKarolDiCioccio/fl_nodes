@@ -164,6 +164,14 @@ class NodeEditorRenderBox extends RenderBox
     } else if (event is FlNodeFieldEvent) {
       _childrenNotLaidOut.add(event.nodeId);
       markNeedsLayout();
+    } else if (event is FlNodeCustomDataEvent) {
+      if (event.needsLayout) {
+        _childrenNotLaidOut.add(event.nodeId);
+        markNeedsLayout();
+      } else if (event.needPaint) {
+        _childrenNotPainted.add(event.nodeId);
+        markNeedsPaint();
+      }
     } else if (event is FlLinkLabelEvent) {
       markNeedsPaint();
     } else if (event is FlConfigurationChangeEvent) {
@@ -302,7 +310,7 @@ class NodeEditorRenderBox extends RenderBox
       final childParentData = child.parentData! as _ParentData;
       final nodeData = _nodesDiffCheckData[index];
 
-      // This node still exists → remove it from the "removed" set
+      // This node still exists, remove it from the "removed" set
       removedNodes.remove(nodeData.id);
 
       // Check if this child's metadata is stale

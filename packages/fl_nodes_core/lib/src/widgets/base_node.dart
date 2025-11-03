@@ -1,16 +1,16 @@
 import 'dart:async';
 
+import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-import 'package:fl_nodes_core/fl_nodes_core.dart';
-
 import '../constants.dart';
 import '../core/events/events.dart';
-
+import '../core/models/data.dart';
+import '../core/utils/rendering/renderbox.dart';
 import 'builders.dart';
 import 'improved_listener.dart';
 
@@ -249,7 +249,10 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
               final locator = _isNearPort(position);
 
               if (!widget.node.state.isSelected) {
-                widget.controller.selectNodesById({widget.node.id});
+                widget.controller.selectNodesById(
+                  {widget.node.id},
+                  isSideEffect: true,
+                );
               }
 
               if (locator != null && !widget.node.state.isCollapsed) {
@@ -311,7 +314,10 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
 
               if (event.buttons == kSecondaryMouseButton) {
                 if (!widget.node.state.isSelected) {
-                  widget.controller.selectNodesById({widget.node.id});
+                  widget.controller.selectNodesById(
+                    {widget.node.id},
+                    isSideEffect: true,
+                  );
                 }
 
                 if (locator != null && !widget.node.state.isCollapsed) {

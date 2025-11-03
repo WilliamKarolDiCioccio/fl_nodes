@@ -1,28 +1,26 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-
 import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/overlay.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../styles/styles.dart';
 import '../containers/spatial_hash_grid.dart';
 import '../events/bus.dart';
 import '../events/events.dart';
+import '../models/config.dart';
 import '../models/data.dart';
 import '../utils/misc/nodes.dart';
 import '../utils/rendering/renderbox.dart';
-
 import 'callback.dart';
 import 'clipboard.dart';
-import 'config.dart';
 import 'history.dart';
 import 'project.dart';
 import 'runner.dart';
 
-export 'config.dart';
+export '../models/config.dart';
 
 /// A controller class for the Node Editor.
 ///
@@ -287,6 +285,14 @@ class FlNodesController with ChangeNotifier {
 
   bool nodesDataDirty = false;
   bool linksDataDirty = false;
+
+  void forceNodeRepaint() {
+    nodesDataDirty = true;
+  }
+
+  void forceLinkRepaint() {
+    linksDataDirty = true;
+  }
 
   /// This method is used to compute the level of detail (LOD) based on the zoom level and
   /// it's called automatically by the controller when the zoom level is changed.
@@ -832,6 +838,42 @@ class FlNodesController with ChangeNotifier {
     linksDataDirty = true;
   }
 
+  /// This method is used to set custom data for a node.
+  ///
+  /// Emits a [FlNodeCustomDataEvent] event.
+  void setCustomData(
+    String nodeId, {
+    required String key,
+    required dynamic value,
+    bool needsLayout = false,
+    bool needPaint = false,
+    bool isHandled = false,
+  }) {
+    if (!nodes.containsKey(nodeId)) return;
+
+    final node = nodes[nodeId]!;
+    node.customData[key] = value;
+
+    if (needsLayout) {
+      nodesDataDirty = true;
+      linksDataDirty = true;
+    } else if (needPaint) {
+      nodesDataDirty = true;
+    }
+
+    eventBus.emit(
+      FlNodeCustomDataEvent(
+        id: const Uuid().v4(),
+        nodeId: nodeId,
+        key: key,
+        value: value,
+        needsLayout: needsLayout,
+        needPaint: needPaint,
+        isHandled: isHandled,
+      ),
+    );
+  }
+
   /// This method is used to set the data of a field in a node.
   ///
   /// Emits a [FlNodeFieldEvent] event.
@@ -958,6 +1000,7 @@ class FlNodesController with ChangeNotifier {
     Set<String> ids, {
     bool holdSelection = false,
     bool isHandled = false,
+    bool isSideEffect = false,
   }) async {
     if (ids.isEmpty) {
       return clearSelection();
@@ -980,6 +1023,7 @@ class FlNodesController with ChangeNotifier {
             ? FlSelectionEventType.holdSelect
             : FlSelectionEventType.select,
         isHandled: isHandled,
+        isSideEffect: isSideEffect,
       ),
     );
   }

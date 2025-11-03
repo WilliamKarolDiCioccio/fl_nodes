@@ -12,11 +12,13 @@ abstract base class NodeEditorEvent {
   final String id;
   final bool isHandled;
   final bool isUndoable;
+  final bool isSideEffect;
 
   const NodeEditorEvent({
     required this.id,
     this.isHandled = false,
     this.isUndoable = false,
+    this.isSideEffect = false,
   });
 
   Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
@@ -76,6 +78,7 @@ final class FlNodeSelectionEvent extends NodeEditorEvent {
     required this.type,
     required super.id,
     super.isHandled,
+    super.isSideEffect,
   });
 }
 
@@ -176,6 +179,7 @@ final class FlLinkSelectionEvent extends NodeEditorEvent {
     required this.type,
     required super.id,
     super.isHandled,
+    super.isSideEffect,
   });
 }
 
@@ -280,8 +284,11 @@ final class FlAddNodeEvent extends NodeEditorEvent {
 final class FlRemoveNodeEvent extends NodeEditorEvent {
   final FlNodeDataModel node;
 
-  const FlRemoveNodeEvent(this.node, {required super.id, super.isHandled})
-      : super(isUndoable: true);
+  const FlRemoveNodeEvent(
+    this.node, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -342,8 +349,11 @@ final class FlAddLinkEvent extends NodeEditorEvent {
 final class FlRemoveLinkEvent extends NodeEditorEvent {
   final FlLinkDataModel link;
 
-  const FlRemoveLinkEvent(this.link, {required super.id, super.isHandled})
-      : super(isUndoable: true);
+  const FlRemoveLinkEvent(
+    this.link, {
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -410,6 +420,25 @@ final class FlLinkLabelEvent extends NodeEditorEvent {
   const FlLinkLabelEvent(
     this.linkId,
     this.label, {
+    required super.id,
+    super.isHandled,
+  });
+}
+
+/// Event produced when the custom data of a node changes.
+final class FlNodeCustomDataEvent extends NodeEditorEvent {
+  final String nodeId;
+  final String key;
+  final dynamic value;
+  final bool needsLayout;
+  final bool needPaint;
+
+  const FlNodeCustomDataEvent({
+    required this.nodeId,
+    required this.key,
+    required this.value,
+    required this.needsLayout,
+    required this.needPaint,
     required super.id,
     super.isHandled,
   });

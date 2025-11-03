@@ -1,0 +1,27 @@
+name: fl_context_menu_example
+description: "A new Flutter project."
+publish_to: "none"
+version: 1.0.0
+license: MIT
+
+resolution: workspace
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  fl_context_menu:
+    path: ../../packages/fl_context_menu
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
