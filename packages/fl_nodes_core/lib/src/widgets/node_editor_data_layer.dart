@@ -60,6 +60,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
   // Interaction kinematics
   Offset _lastPositionDelta = Offset.zero;
   Offset _lastFocalPoint = Offset.zero;
+  double _lastScale = 1.0;
   Offset _kineticEnergy = Offset.zero;
   Timer? _kineticTimer;
   Offset _selectionStart = Offset.zero;
@@ -445,7 +446,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
               onScaleUpdate: (ScaleUpdateDetails details) {
                 _lastFocalPoint = details.focalPoint;
 
-                if (details.scale != 1.0) {
+                if (details.scale != _lastScale) {
+                  final scaleChange = details.scale / _lastScale;
+                  _lastScale = details.scale;
+
                   if (!_isDragging) {
                     if (_isLinking) {
                       _onTmpLinkCancel();
@@ -462,9 +466,9 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (widget.controller.config.enablePan && _isDragging) {
                     _onDragUpdate(details.focalPointDelta);
                   }
-                  if (widget.controller.config.enableZoom && details.scale > 1.5 || details.scale < 0.5) {
+                  if (widget.controller.config.enableZoom) {
                     _setZoomFromRawInput(
-                      details.scale < 1 ? details.scale : -details.scale,
+                      scaleChange < 1 ? scaleChange : -scaleChange,
                       details.focalPoint,
                     );
                   }
@@ -477,6 +481,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                 }
               },
               onScaleEnd: (ScaleEndDetails details) {
+                _lastScale = 1.0;
                 if (_isDragging) {
                   _onDragEnd();
                   _isDragging = false;
@@ -486,7 +491,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (locator != null) {
                     _onTmpLinkEnd(locator);
                   } else {
-                    widget.showNodeCreationMenu(context, _lastFocalPoint, widget.controller, _portLocator, _onTmpLinkCancel);
+                    widget.showNodeCreationMenu(
+                        context, _lastFocalPoint, widget.controller, _portLocator, _onTmpLinkCancel);
                   }
 
                   _isLinking = false;
