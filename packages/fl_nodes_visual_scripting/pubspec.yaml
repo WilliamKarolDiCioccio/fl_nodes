@@ -1,0 +1,42 @@
+name: fl_nodes_visual_scripting
+description: A domain-specific package for visual scripting using the fl_nodes framework.
+version: 0.0.1
+maintainer: William Karol Di Cioccio
+license: MIT
+
+resolution: workspace
+
+homepage: https://williamkaroldicioccio.github.io/fl_nodes/
+repository: https://github.com/WilliamKarolDiCioccio/fl_nodes
+issue_tracker: https://github.com/WilliamKarolDiCioccio/fl_nodes/issues
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
+topics:
+  - fl-nodes
+  - visual-scripting
+  - framework
+
+funding:
+  - buymeacoffee.com/Wilielmus
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  fl_nodes_core: 0.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ">=4.0.0 <7.0.0"
+  test_coverage_badge: ^0.3.2
