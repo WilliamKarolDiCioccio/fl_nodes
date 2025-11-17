@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:uuid/uuid.dart';
 
 import '../../constants.dart';
@@ -7,7 +6,6 @@ import '../../styles/styles.dart';
 import '../controller/core.dart';
 import '../events/events.dart';
 import '../helpers/single_listener_change_notifier.dart';
-
 import 'data_adapters_v1.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
@@ -513,6 +511,7 @@ final class FlNodeDataModel {
     Map<String, FlPortDataModel>? ports,
     Map<String, FlFieldDataModel>? fields,
     FlNodeState? state,
+    Map<String, dynamic>? customData,
     Function(FlNodeDataModel node)? onRendered,
     Offset? offset,
   }) {
@@ -521,6 +520,7 @@ final class FlNodeDataModel {
       prototype: prototype,
       ports: ports ?? this.ports,
       state: state ?? this.state,
+      customData: customData ?? this.customData,
       fields: fields ?? this.fields,
       offset: offset ?? this.offset,
     );
