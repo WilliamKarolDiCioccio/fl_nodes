@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 bool isContextMenuVisible = false;
@@ -16,9 +15,15 @@ class ContextMenuUtils {
 
     isContextMenuVisible = true;
 
-    final menu = ContextMenu(entries: entries, position: position, padding: const EdgeInsets.all(8));
+    final menu = ContextMenu(
+      entries: entries,
+      position: position,
+      padding: const EdgeInsets.all(8),
+    );
 
-    final copiedValue = await showContextMenu(context, contextMenu: menu).then((value) {
+    final copiedValue = await showContextMenu(context, contextMenu: menu).then((
+      value,
+    ) {
       isContextMenuVisible = false;
       return value;
     });
@@ -65,7 +70,12 @@ class ContextMenuUtils {
               return AlertDialog(
                 title: Text(node.prototype.displayName(context)),
                 content: Text(node.prototype.description(context)),
-                actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(strings.closeAction))],
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(strings.closeAction),
+                  ),
+                ],
               );
             },
           );
@@ -73,9 +83,14 @@ class ContextMenuUtils {
       ),
       const MenuDivider(),
       MenuItem(
-        label: node.state.isCollapsed ? strings.expandNodeAction : strings.collapseNodeAction,
-        icon: node.state.isCollapsed ? Icons.arrow_drop_down : Icons.arrow_right,
-        onSelected: () => controller.toggleCollapseSelectedNodes(!node.state.isCollapsed),
+        label: node.state.isCollapsed
+            ? strings.expandNodeAction
+            : strings.collapseNodeAction,
+        icon: node.state.isCollapsed
+            ? Icons.arrow_drop_down
+            : Icons.arrow_right,
+        onSelected: () =>
+            controller.toggleCollapseSelectedNodes(!node.state.isCollapsed),
       ),
       const MenuDivider(),
       MenuItem(
@@ -117,15 +132,21 @@ class ContextMenuUtils {
     final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
 
     if (locator != null) {
-      final startPort = controller.getNodeById(locator.nodeId)!.ports[locator.portId]!;
+      final startPort = controller
+          .getNodeById(locator.nodeId)!
+          .ports[locator.portId]!;
 
       controller.nodePrototypes.forEach((key, value) {
-        if (value.portPrototypes.any((prototype) => startPort.prototype.compatibleWith(prototype) == null)) {
+        if (value.portPrototypes.any(
+          (prototype) => startPort.prototype.compatibleWith(prototype) == null,
+        )) {
           compatiblePrototypes.add(MapEntry(key, value));
         }
       });
     } else {
-      controller.nodePrototypes.forEach((key, value) => compatiblePrototypes.add(MapEntry(key, value)));
+      controller.nodePrototypes.forEach(
+        (key, value) => compatiblePrototypes.add(MapEntry(key, value)),
+      );
     }
 
     final worldPosition = RenderBoxUtils.screenToWorld(
@@ -140,18 +161,22 @@ class ContextMenuUtils {
         label: entry.value.displayName(context),
         icon: Icons.widgets,
         onSelected: () {
-          final addedNode = controller.addNode(entry.key, offset: worldPosition ?? Offset.zero);
+          final addedNode = controller.addNode(
+            entry.key,
+            offset: worldPosition ?? Offset.zero,
+          );
 
           if (locator != null) {
-            final startPort = controller.nodes[locator!.nodeId]!.ports[locator!.portId]!;
+            final startPort =
+                controller.nodes[locator!.nodeId]!.ports[locator!.portId]!;
 
             controller.addLink(
               locator!.nodeId,
               locator!.portId,
               addedNode.id,
               addedNode.ports.values
-                  .map((port) => port.prototype)
-                  .firstWhere((prototype) => startPort.prototype.compatibleWith(prototype) == null)
+                  .firstWhere((port) => startPort.canLinkTo(port) == null)
+                  .prototype
                   .idName,
             );
 
@@ -181,7 +206,8 @@ class ContextMenuUtils {
       MenuItem(
         label: strings.centerViewAction,
         icon: Icons.center_focus_strong,
-        onSelected: () => controller.setViewportOffset(Offset.zero, absolute: true),
+        onSelected: () =>
+            controller.setViewportOffset(Offset.zero, absolute: true),
       ),
       MenuItem(
         label: strings.resetZoomAction,
@@ -202,15 +228,24 @@ class ContextMenuUtils {
       MenuItem(
         label: strings.pasteSelectionAction,
         icon: Icons.paste,
-        onSelected: () => controller.clipboard.pasteSelection(position: worldPosition),
+        onSelected: () =>
+            controller.clipboard.pasteSelection(position: worldPosition),
       ),
       const MenuDivider(),
       MenuItem.submenu(
         label: strings.projectLabel,
         icon: Icons.folder,
         items: [
-          MenuItem(label: strings.undoAction, icon: Icons.undo, onSelected: () => controller.history.undo()),
-          MenuItem(label: strings.redoAction, icon: Icons.redo, onSelected: () => controller.history.redo()),
+          MenuItem(
+            label: strings.undoAction,
+            icon: Icons.undo,
+            onSelected: () => controller.history.undo(),
+          ),
+          MenuItem(
+            label: strings.redoAction,
+            icon: Icons.redo,
+            onSelected: () => controller.history.redo(),
+          ),
           MenuItem(
             label: strings.saveProjectAction,
             icon: Icons.save,
@@ -247,7 +282,9 @@ class ContextMenuUtils {
         onSelected: () {
           final link = controller.links[linkId];
           if (link == null) return;
-          controller.focusNodesById({FlNodesUtils.getSource(controller, link).nodeId});
+          controller.focusNodesById({
+            FlNodesUtils.getSource(controller, link).nodeId,
+          });
         },
       ),
       MenuItem(
@@ -256,7 +293,9 @@ class ContextMenuUtils {
         onSelected: () {
           final link = controller.links[linkId];
           if (link == null) return;
-          controller.focusNodesById({FlNodesUtils.getDestination(controller, link).nodeId});
+          controller.focusNodesById({
+            FlNodesUtils.getDestination(controller, link).nodeId,
+          });
         },
       ),
       const MenuDivider(),
@@ -324,19 +363,28 @@ class ShowContextMenuUtils {
     PortLocator? locator,
   ) => ContextMenuUtils.createAndShowContextMenu(
     context,
-    entries: ContextMenuUtils.canvasMenuEntries(position, context: context, controller: controller, locator: locator),
+    entries: ContextMenuUtils.canvasMenuEntries(
+      position,
+      context: context,
+      controller: controller,
+      locator: locator,
+    ),
     position: position,
   );
 
-  static void showLinkContextMenu(BuildContext context, String linkId, Offset position, FlNodesController controller) =>
-      ContextMenuUtils.createAndShowContextMenu(
-        context,
-        entries: ContextMenuUtils.linkContextMenuEntries(
-          position,
-          context: context,
-          controller: controller,
-          linkId: linkId,
-        ),
-        position: position,
-      );
+  static void showLinkContextMenu(
+    BuildContext context,
+    String linkId,
+    Offset position,
+    FlNodesController controller,
+  ) => ContextMenuUtils.createAndShowContextMenu(
+    context,
+    entries: ContextMenuUtils.linkContextMenuEntries(
+      position,
+      context: context,
+      controller: controller,
+      linkId: linkId,
+    ),
+    position: position,
+  );
 }

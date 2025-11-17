@@ -134,6 +134,7 @@ abstract class FlPortPrototype {
   final PortStyleBuilder styleBuilder;
   final FlLinkPrototype linkPrototype;
   final Type dataType;
+  final bool allowsMultipleLinks;
   final FlPortGeometricOrientation geometricOrientation;
 
   FlPortPrototype({
@@ -141,6 +142,7 @@ abstract class FlPortPrototype {
     required this.displayName,
     this.styleBuilder = flDefaultPortStyleBuilder,
     this.dataType = dynamic,
+    this.allowsMultipleLinks = true,
     required this.geometricOrientation,
     required this.linkPrototype,
   });
@@ -323,6 +325,26 @@ final class FlPortDataModel {
     instance.links = links ?? this.links;
 
     return instance;
+  }
+
+  String? canLinkTo(FlPortDataModel other) {
+    // prevent linking a port to itself
+    if (identical(this, other)) return "Cannot connect a port to itself";
+
+    // check prototype compatibility
+    final compatibilityError = prototype.compatibleWith(other.prototype);
+    if (compatibilityError != null) return compatibilityError;
+
+    // check multiplicity constraints
+    if (!prototype.allowsMultipleLinks && links.isNotEmpty) {
+      return "Port '${prototype.idName}' already has a link and does not allow multiple links";
+    }
+
+    if (!other.prototype.allowsMultipleLinks && other.links.isNotEmpty) {
+      return "Port '${other.prototype.idName}' already has a link and does not allow multiple links";
+    }
+
+    return null;
   }
 }
 

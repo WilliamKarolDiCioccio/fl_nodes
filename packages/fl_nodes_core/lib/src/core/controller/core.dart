@@ -653,7 +653,7 @@ class FlNodesController with ChangeNotifier {
       return null;
     }
 
-    final errorMessage = port1.prototype.compatibleWith(port2.prototype);
+    final errorMessage = port1.canLinkTo(port2);
 
     if (errorMessage != null) {
       onCallback?.call(
