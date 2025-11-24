@@ -20,11 +20,11 @@ class FlNodesConfig {
   final bool enableAutoPlacement;
   final bool autoSave;
   final bool autoBuildGraph;
-  final bool autoRunGraph;
+  final bool autoExecGraph;
   final Duration autoSaveInterval;
   final Duration manualSaveDebounce;
   final Duration autoBuildGraphDelay;
-  final Duration autoRunGraphDelay;
+  final Duration autoExecGraphDelay;
 
   const FlNodesConfig({
     this.enableZoom = true,
@@ -43,11 +43,11 @@ class FlNodesConfig {
     this.enableAutoPlacement = false,
     this.autoSave = false,
     this.autoBuildGraph = true,
-    this.autoRunGraph = true,
+    this.autoExecGraph = true,
     this.autoSaveInterval = const Duration(seconds: 30),
     this.manualSaveDebounce = const Duration(seconds: 2),
     this.autoBuildGraphDelay = const Duration(seconds: 5),
-    this.autoRunGraphDelay = const Duration(seconds: 5),
+    this.autoExecGraphDelay = const Duration(seconds: 5),
   });
 
   FlNodesConfig copyWith({

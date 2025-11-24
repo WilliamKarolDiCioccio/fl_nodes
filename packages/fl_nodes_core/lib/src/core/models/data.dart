@@ -59,6 +59,8 @@ final class FlLinkDataModel {
   final (PortLocator, PortLocator) ports;
   final FlLinkState state;
 
+  Map<String, dynamic> debugDiagnostics = {}; // Debug-only data
+
   FlLinkDataModel({
     required this.id,
     required this.ports,
@@ -168,10 +170,13 @@ abstract class FlPortPrototype {
 }
 
 class FlDataInputPortPrototype<T> extends FlPortPrototype {
+  final bool relevantOnFirstExecution;
+
   FlDataInputPortPrototype({
     required super.idName,
     required super.displayName,
     required super.geometricOrientation,
+    this.relevantOnFirstExecution = true,
     super.styleBuilder,
   }) : super(linkPrototype: FlLinkPrototype(label: (_) => ''), dataType: T);
 
@@ -286,6 +291,8 @@ final class FlPortDataModel {
   final FlPortState state;
   Offset offset; // Determined by Flutter
   final GlobalKey key = GlobalKey(); // Determined by Flutter
+
+  Map<String, dynamic> debugDiagnostics = {}; // Debug-only data
 
   FlPortDataModel({
     required this.prototype,
@@ -419,7 +426,7 @@ typedef OnNodeExecute = Future<void> Function(
   Map<String, dynamic> ports,
   Map<String, dynamic> fields,
   Map<String, dynamic> execState,
-  Future<void> Function(Set<String>) forward,
+  void Function(Set<String>, {bool definitive}) forward,
   void Function(Set<(String, dynamic)>) put,
 );
 
@@ -501,6 +508,8 @@ final class FlNodeDataModel {
   Offset offset; // User or system defined offset
   Rect cachedRenderboxRect; // Determined by Flutter
   final GlobalKey key = GlobalKey(); // Determined by Flutter
+
+  Map<String, dynamic> debugDiagnostics = {}; // Debug-only data
 
   FlNodeDataModel({
     required this.id,
