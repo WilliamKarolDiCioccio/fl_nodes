@@ -6,6 +6,7 @@ import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/localization/delegate.dart';
 import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import '../events/events.dart';
 import '../models/data.dart';
@@ -146,7 +147,23 @@ class FlNodesExecutionHelper {
 
     _independentGraphs.clear();
 
+    final startTime = DateTime.now();
+
+    controller.eventBus.emit(
+      FlGraphBuildStartEvent(
+        id: const Uuid().v4(),
+        startTime: startTime,
+      ),
+    );
+
     _independentGraphs.addAll(_findAndLinearizeSubgraphs());
+
+    controller.eventBus.emit(
+      FlGraphBuildCompleteEvent(
+        id: const Uuid().v4(),
+        timeTaken: DateTime.now().difference(startTime).abs(),
+      ),
+    );
   }
 
   /// Finds starting nodes and builds independent subgraphs
@@ -389,10 +406,26 @@ class FlNodesExecutionHelper {
       _nodeStates[nodeState] = FlNodeExecutionState.idle;
     }
 
+    final startTime = DateTime.now();
+
+    controller.eventBus.emit(
+      FlGraphRunStartEvent(
+        id: const Uuid().v4(),
+        startTime: startTime,
+      ),
+    );
+
     // Execute independent subgraphs sequentially
     for (final graph in _independentGraphs) {
       await _executeLinearizedGraph(graph, context: context);
     }
+
+    controller.eventBus.emit(
+      FlGraphRunCompleteEvent(
+        id: const Uuid().v4(),
+        timeTaken: DateTime.now().difference(startTime).abs(),
+      ),
+    );
   }
 
   /// Executes a linearized subgraph of nodes in order
@@ -424,13 +457,25 @@ class FlNodesExecutionHelper {
     FlNodeDataModel node, {
     BuildContext? context,
   }) async {
+    void setNodeState(FlNodeExecutionState state) {
+      _nodeStates[node.id] = state;
+
+      controller.eventBus.emit(
+        FlNodeExecutionStateEvent(
+          id: const Uuid().v4(),
+          node.id,
+          state,
+        ),
+      );
+    }
+
     // Cache localization strings
     final strings = FlNodesLocalizations.of(context);
 
     final Set<String> selectedControlPortIdNames = {};
 
     // Set node state to executing
-    _nodeStates[node.id] = FlNodeExecutionState.executing;
+    setNodeState(FlNodeExecutionState.executing);
 
     // Ensure all data dependencies are ready before execution (assertion)
     if (!_areDataDependenciesReady(node.id)) {
@@ -451,20 +496,20 @@ class FlNodesExecutionHelper {
 
           // Check the definitive flag to determine if execution is complete or stepped (for feedback loops)
           if (definitive) {
-            _nodeStates[node.id] = FlNodeExecutionState.completed;
+            setNodeState(FlNodeExecutionState.completed);
           } else {
-            _nodeStates[node.id] = FlNodeExecutionState.stepped;
+            setNodeState(FlNodeExecutionState.stepped);
           }
         },
         (idNamesAndData) => _put(node, idNamesAndData),
       );
 
       if (_nodeStates[node.id] == FlNodeExecutionState.executing) {
-        _nodeStates[node.id] = FlNodeExecutionState.stepped;
+        setNodeState(FlNodeExecutionState.stepped);
       }
     } catch (e) {
       // Immediately set node state to exception on error
-      _nodeStates[node.id] = FlNodeExecutionState.exception;
+      setNodeState(FlNodeExecutionState.exception);
 
       // Focus the node that caused the error (UI feedback)
       controller.focusNodesById({node.id});

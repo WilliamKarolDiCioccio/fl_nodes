@@ -1,4 +1,5 @@
 // events_v2.dart
+import 'package:fl_nodes_core/src/core/controller/runner.dart';
 import 'package:flutter/material.dart';
 
 import '../../styles/styles.dart';
@@ -69,6 +70,10 @@ abstract base class FlClipboardClassEvent extends NodeEditorEvent {
     super.isUndoable,
     super.isHandled,
   });
+}
+
+abstract base class FlRunnerClassEvent extends NodeEditorEvent {
+  const FlRunnerClassEvent({required super.id, super.isHandled}) : super();
 }
 
 abstract base class FlProjectClassEvent extends NodeEditorEvent {
@@ -529,6 +534,45 @@ final class FlCollapseNodeEvent extends FlVisualizationClassEvent
     this.nodeIds, {
     required super.id,
     super.isHandled = false,
+  });
+}
+
+////////////////////////////////////////////////////////////////////////
+/// Runner events
+////////////////////////////////////////////////////////////////////////
+
+final class FlGraphBuildStartEvent extends FlRunnerClassEvent {
+  final DateTime startTime;
+
+  const FlGraphBuildStartEvent({required super.id, required this.startTime});
+}
+
+final class FlGraphBuildCompleteEvent extends FlRunnerClassEvent {
+  final Duration? timeTaken;
+
+  const FlGraphBuildCompleteEvent({required super.id, this.timeTaken});
+}
+
+final class FlGraphRunStartEvent extends FlRunnerClassEvent {
+  final DateTime startTime;
+
+  const FlGraphRunStartEvent({required super.id, required this.startTime});
+}
+
+final class FlGraphRunCompleteEvent extends FlRunnerClassEvent {
+  final Duration? timeTaken;
+
+  const FlGraphRunCompleteEvent({required super.id, this.timeTaken});
+}
+
+final class FlNodeExecutionStateEvent extends FlRunnerClassEvent {
+  final String nodeId;
+  final FlNodeExecutionState state;
+
+  const FlNodeExecutionStateEvent(
+    this.nodeId,
+    this.state, {
+    required super.id,
   });
 }
 
