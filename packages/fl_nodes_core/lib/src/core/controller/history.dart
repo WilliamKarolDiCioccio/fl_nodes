@@ -39,6 +39,13 @@ class FlNodesHistoryHelper {
   void _handleUndoableEvents(NodeEditorEvent event) {
     if (!event.isUndoable || _isTraversingHistory) return;
 
+    if (event is FlNodeFieldEvent ||
+        event is FlNodeCustomDataEvent ||
+        event is FlLinkLabelEvent) {
+      // TODO: Implement undo/redo for these events later.
+      return;
+    }
+
     if (_undoStack.length >= kMaxEventUndoHistory) _undoStack.evict();
     if (_redoStack.length >= kMaxEventRedoHistory) _redoStack.evict();
 

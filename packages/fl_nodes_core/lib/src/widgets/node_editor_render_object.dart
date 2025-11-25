@@ -120,38 +120,28 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   void _handleControllerEvent(NodeEditorEvent event) {
-    if (event.isHandled) return;
+    if (event is! FlPaintEventCat && event is! FlLayoutEventCat) return;
 
     // In the following code we must account for the possibility of events affecting nodes outside the viewport
 
     // Node widgets state related events trigger style updates. Arbitrary styles might require layout updates.
     // Therefore all node widgets must be marked for layout updates when receiving these events.
 
+    // Handle special cases and data updates first
     if (event is FlViewportOffsetEvent) {
       _offset = event.offset;
       _transformChanged = true;
-      markNeedsPaint();
     } else if (event is FlViewportZoomEvent) {
       _zoom = event.zoom;
       _transformChanged = true;
-      markNeedsPaint();
     } else if (event is FlAreaHighlightEvent) {
       _selectionAreaPainter.highlightArea = event.area;
-      markNeedsPaint();
     } else if (event is FlDrawTempLinkEvent) {
       _tmpLinkCustomPainter.tmpLinkData = _getTmpLinkData();
-      markNeedsPaint();
-    } else if (event is FlDragSelectionEvent) {
-      _updateNodes();
-    } else if (event is FlAddNodeEvent ||
-        event is FlRemoveNodeEvent ||
-        event is FlCutSelectionEvent ||
-        event is FlPasteSelectionEvent) {
-      _updateNodes();
-    } else if (event is FlAddLinkEvent || event is FlRemoveLinkEvent) {
-      markNeedsPaint();
-    } else if (event is FlLinkSelectionEvent) {
-      markNeedsPaint();
+    } else if (event is FlTreeEventCat ||
+        event is FlDragSelectionEvent ||
+        event is FlConfigurationChangeEvent) {
+      return _updateNodes(); // This handles marking for layout/paint as needed on its own
     } else if (event is FlNodeSelectionEvent) {
       _childrenNotLaidOut.addAll(event.nodeIds);
       markNeedsLayout();
@@ -164,18 +154,6 @@ class NodeEditorRenderBox extends RenderBox
     } else if (event is FlNodeFieldEvent) {
       _childrenNotLaidOut.add(event.nodeId);
       markNeedsLayout();
-    } else if (event is FlNodeCustomDataEvent) {
-      if (event.needsLayout) {
-        _childrenNotLaidOut.add(event.nodeId);
-        markNeedsLayout();
-      } else if (event.needPaint) {
-        _childrenNotPainted.add(event.nodeId);
-        markNeedsPaint();
-      }
-    } else if (event is FlLinkLabelEvent) {
-      markNeedsPaint();
-    } else if (event is FlConfigurationChangeEvent) {
-      _updateNodes();
     } else if (event is FlLocaleChangeEvent || event is FlStyleChangeEvent) {
       _childrenNotLaidOut.addAll(_childrenById.keys);
 
@@ -197,7 +175,14 @@ class NodeEditorRenderBox extends RenderBox
       _transformChanged = true;
 
       _childrenNotLaidOut.addAll(_childrenById.keys);
-      _updateNodes();
+      return _updateNodes();
+    }
+
+    // Mark the render object for the correct rendering operation based on the event type.
+    if (event is FlPaintEventCat) {
+      markNeedsPaint();
+    } else if (event is FlLayoutEventCat) {
+      markNeedsLayout();
     }
   }
 
