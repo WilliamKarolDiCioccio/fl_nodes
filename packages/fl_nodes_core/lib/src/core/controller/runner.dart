@@ -429,11 +429,6 @@ class FlNodesExecutionHelper {
 
     final Set<String> selectedControlPortIdNames = {};
 
-    // Prevent re-execution of completed nodes
-    if (_nodeStates[node.id] == FlNodeExecutionState.completed) {
-      throw Exception('Node ${node.id} has already been completed.');
-    }
-
     // Set node state to executing
     _nodeStates[node.id] = FlNodeExecutionState.executing;
 
