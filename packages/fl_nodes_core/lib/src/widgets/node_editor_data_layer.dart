@@ -44,7 +44,8 @@ class NodeEditorDataLayer extends StatefulWidget {
   final ShowLinkContextMenu showLinkContextMenu;
 }
 
-class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerProviderStateMixin {
+class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
+    with TickerProviderStateMixin {
   // Wrapper state
   Offset get offset => widget.controller.viewportOffset;
   double get zoom => widget.controller.viewportZoom;
@@ -93,12 +94,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
 
     if (event is FlDragSelectionEvent) {
       _suppressEvents();
-    } else if (event is FlAddNodeEvent ||
-        event is FlRemoveNodeEvent ||
-        event is FlPasteSelectionEvent ||
-        event is FlCutSelectionEvent ||
-        event is FlLoadProjectEvent ||
-        event is FlNewProjectEvent) {
+    } else if (event is FlTreeEventCat) {
       setState(() {});
     }
   }
@@ -203,7 +199,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
 
-        if ((worldPosition - absolutePortPosition).distance < kNearPortSnapDistance) {
+        if ((worldPosition - absolutePortPosition).distance <
+            kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
@@ -308,7 +305,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
   void _setOffsetFromRawInput(Offset delta) {
     if (!widget.controller.config.enablePan) return;
 
-    final Offset offsetFactor = delta * widget.controller.config.panSensitivity / zoom;
+    final Offset offsetFactor =
+        delta * widget.controller.config.panSensitivity / zoom;
 
     final Offset targetOffset = offset + offsetFactor;
 
@@ -328,8 +326,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
     if (!widget.controller.config.enableZoom) return;
 
     final double sensitivity = widget.controller.config.zoomSensitivity;
-    final bool isMobile =
-        defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
 
     late double targetZoom;
 
@@ -366,7 +364,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
         delta = amount * platformWeight * sensitivity;
       }
 
-      final double targetLogZoom = isTrackpadInput ? logZoom + delta : logZoom - delta;
+      final double targetLogZoom =
+          isTrackpadInput ? logZoom + delta : logZoom - delta;
 
       targetZoom = exp(targetLogZoom);
     }
@@ -416,17 +415,22 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
   @override
   Widget build(BuildContext context) {
     Widget controlsWrapper(Widget child) {
-      return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS
+      return defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS
           ? GestureDetector(
               onTap: () => widget.controller.clearSelection(),
               onLongPressStart: (LongPressStartDetails details) {
                 final position = details.globalPosition;
                 final locator = _isNearPort(position);
 
-                if (locator != null && !widget.controller.nodes[locator.nodeId]!.state.isCollapsed) {
-                  widget.showPortContextMenu(context, position, widget.controller, locator);
+                if (locator != null &&
+                    !widget
+                        .controller.nodes[locator.nodeId]!.state.isCollapsed) {
+                  widget.showPortContextMenu(
+                      context, position, widget.controller, locator);
                 } else {
-                  widget.showCanvasContextMenu(context, position, widget.controller, locator);
+                  widget.showCanvasContextMenu(
+                      context, position, widget.controller, locator);
                 }
               },
               onScaleStart: (ScaleStartDetails details) {
@@ -462,7 +466,9 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (widget.controller.config.enablePan && _isDragging) {
                     _onDragUpdate(details.focalPointDelta);
                   }
-                  if (widget.controller.config.enableZoom && details.scale > 1.5 || details.scale < 0.5) {
+                  if (widget.controller.config.enableZoom &&
+                          details.scale > 1.5 ||
+                      details.scale < 0.5) {
                     _setZoomFromRawInput(
                       details.scale < 1 ? details.scale : -details.scale,
                       details.focalPoint,
@@ -486,7 +492,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (locator != null) {
                     _onTmpLinkEnd(locator);
                   } else {
-                    widget.showNodeCreationMenu(context, _lastFocalPoint, widget.controller, _portLocator, _onTmpLinkCancel);
+                    widget.showNodeCreationMenu(context, _lastFocalPoint,
+                        widget.controller, _portLocator, _onTmpLinkCancel);
                   }
 
                   _isLinking = false;
@@ -511,18 +518,24 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                   if (event.buttons == kMiddleMouseButton) {
                     _onDragStart();
                   } else if (event.buttons == kPrimaryMouseButton) {
-                    if (locator != null && !_isLinking && _portLocator == null) {
+                    if (locator != null &&
+                        !_isLinking &&
+                        _portLocator == null) {
                       _onTmpLinkStart(locator);
                     } else {
                       _onHighlightStart(event.position);
                     }
                   } else if (event.buttons == kSecondaryMouseButton) {
-                    if (locator != null && !widget.controller.nodes[locator.nodeId]!.state.isCollapsed) {
+                    if (locator != null &&
+                        !widget.controller.nodes[locator.nodeId]!.state
+                            .isCollapsed) {
                       /// If a port is near the cursor, show the port context menu
-                      widget.showPortContextMenu(context, event.position, widget.controller, locator);
+                      widget.showPortContextMenu(
+                          context, event.position, widget.controller, locator);
                     } else {
                       // Else show the editor context menu
-                      widget.showCanvasContextMenu(context, event.position, widget.controller, locator);
+                      widget.showCanvasContextMenu(
+                          context, event.position, widget.controller, locator);
                     }
                   }
                 },
@@ -545,20 +558,23 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                       _onTmpLinkEnd(locator);
                     } else {
                       // Show the create submenu if no port is near the cursor
-                      widget.showNodeCreationMenu(
-                          context, event.position, widget.controller, _portLocator, _onTmpLinkCancel);
+                      widget.showNodeCreationMenu(context, event.position,
+                          widget.controller, _portLocator, _onTmpLinkCancel);
                     }
                   } else if (_isSelecting) {
                     _onHighlightEnd();
                   }
                 },
                 onPointerSignalReceived: (event) {
-                  if (event is PointerScrollEvent && widget.controller.config.enablePan) {
+                  if (event is PointerScrollEvent &&
+                      widget.controller.config.enablePan) {
                     if (kIsWeb) {
                       final isZoomModifier =
-                          HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+                          HardwareKeyboard.instance.isControlPressed ||
+                              HardwareKeyboard.instance.isMetaPressed;
 
-                      if (isZoomModifier && widget.controller.config.enableZoom) {
+                      if (isZoomModifier &&
+                          widget.controller.config.enableZoom) {
                         _setZoomFromRawInput(
                           event.scrollDelta.dy,
                           event.position,
@@ -575,7 +591,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                       }
                     }
                   }
-                  if (event is PointerScaleEvent && widget.controller.config.enableZoom) {
+                  if (event is PointerScaleEvent &&
+                      widget.controller.config.enableZoom) {
                     if (kIsWeb) {
                       _setZoomFromRawInput(
                         event.scale,
@@ -585,7 +602,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                     }
                   }
                 },
-                onPointerPanZoomStart: _trackpadGestureRecognizer.addPointerPanZoom,
+                onPointerPanZoomStart:
+                    _trackpadGestureRecognizer.addPointerPanZoom,
                 child: child,
               ),
             );
@@ -602,7 +620,8 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
             controller: widget.controller,
             gridShader: gridShader,
             showLinkContextMenu: (linkId, position) {
-              widget.showLinkContextMenu(context, linkId, position, widget.controller);
+              widget.showLinkContextMenu(
+                  context, linkId, position, widget.controller);
             },
             nodeBuilder: widget.nodeBuilder,
           ),

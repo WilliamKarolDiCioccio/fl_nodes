@@ -861,17 +861,37 @@ class FlNodesController with ChangeNotifier {
       nodesDataDirty = true;
     }
 
-    eventBus.emit(
-      FlNodeCustomDataEvent(
-        id: const Uuid().v4(),
-        nodeId: nodeId,
-        key: key,
-        value: value,
-        needsLayout: needsLayout,
-        needPaint: needPaint,
-        isHandled: isHandled,
-      ),
-    );
+    if (needsLayout) {
+      eventBus.emit(
+        FlNodeCustomDataLayoutEvent(
+          id: const Uuid().v4(),
+          nodeId: nodeId,
+          key: key,
+          value: value,
+          isHandled: isHandled,
+        ),
+      );
+    } else if (needPaint) {
+      eventBus.emit(
+        FlNodeCustomDataPaintEvent(
+          id: const Uuid().v4(),
+          nodeId: nodeId,
+          key: key,
+          value: value,
+          isHandled: isHandled,
+        ),
+      );
+    } else {
+      eventBus.emit(
+        FlNodeCustomDataEvent(
+          id: const Uuid().v4(),
+          nodeId: nodeId,
+          key: key,
+          value: value,
+          isHandled: isHandled,
+        ),
+      );
+    }
   }
 
   /// This method is used to set the data of a field in a node.

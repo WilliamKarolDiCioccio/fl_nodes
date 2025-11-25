@@ -1,12 +1,11 @@
+// events_v2.dart
 import 'package:flutter/material.dart';
 
 import '../../styles/styles.dart';
 import '../controller/core.dart';
 import '../models/data.dart';
 
-///
-/// It includes an [id] to identify the event, a [isHandled] flag to indicate if the event has been handled,
-/// and an [isUndoable] flag to indicate if the event can be undone.
+/// Base event: small immutable payload common to all events.
 @immutable
 abstract base class NodeEditorEvent {
   final String id;
@@ -28,12 +27,77 @@ abstract base class NodeEditorEvent {
       };
 }
 
+/// ---------------------------------------------------------------------------
+/// Categories (empty mixins to tag events for broad distinctions)
+/// ---------------------------------------------------------------------------
+mixin FlTreeEventCat {}
+mixin FlPaintEventCat {}
+mixin FlLayoutEventCat {}
+
+/// ---------------------------------------------------------------------------
+/// Classes (shared data for semantic categories)
+/// ---------------------------------------------------------------------------
+
+abstract base class FlViewportClassEvent extends NodeEditorEvent {
+  const FlViewportClassEvent({required super.id, super.isHandled});
+}
+
+abstract base class FlSelectionClassEvent extends NodeEditorEvent {
+  const FlSelectionClassEvent({
+    required super.id,
+    super.isUndoable,
+    super.isHandled,
+    super.isSideEffect,
+  });
+}
+
+abstract base class FlVisualizationClassEvent extends NodeEditorEvent {
+  const FlVisualizationClassEvent({required super.id, super.isHandled});
+}
+
+/// GraphEditEvent is intended for mutations to the graph: undo/redo & serialization.
+abstract base class FlGraphEditClassEvent extends NodeEditorEvent {
+  const FlGraphEditClassEvent({
+    required super.id,
+    super.isHandled,
+  }) : super(isUndoable: true);
+}
+
+abstract base class FlClipboardClassEvent extends NodeEditorEvent {
+  const FlClipboardClassEvent({
+    required super.id,
+    super.isUndoable,
+    super.isHandled,
+  });
+}
+
+abstract base class FlProjectClassEvent extends NodeEditorEvent {
+  const FlProjectClassEvent({required super.id, super.isHandled}) : super();
+}
+
+abstract base class FlTempInteractionClassEvent extends NodeEditorEvent {
+  const FlTempInteractionClassEvent({required super.id, super.isHandled})
+      : super();
+}
+
+abstract base class FlConfigurationClassEvent extends NodeEditorEvent {
+  const FlConfigurationClassEvent({required super.id, super.isHandled})
+      : super();
+}
+
+/// ---------------------------------------------------------------------------
+/// Concrete events — mapped to semantic category + rendering trait
+/// (Adjust per your product needs; I mapped according to the earlier discussion)
+/// ---------------------------------------------------------------------------
+
 ////////////////////////////////////////////////////////////////////////
-/// Viewport events.
+// Viewport events (view state changes — paint-only)
 ////////////////////////////////////////////////////////////////////////
 
 /// Event produced when the viewport offset changes.
-final class FlViewportOffsetEvent extends NodeEditorEvent {
+/// -> Paint (no layout)
+final class FlViewportOffsetEvent extends FlViewportClassEvent
+    with FlPaintEventCat {
   final Offset offset;
   final bool animate;
 
@@ -41,12 +105,14 @@ final class FlViewportOffsetEvent extends NodeEditorEvent {
     this.offset, {
     this.animate = true,
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
 /// Event produced when the viewport zoom level changes.
-final class FlViewportZoomEvent extends NodeEditorEvent {
+/// -> Paint (no layout)
+final class FlViewportZoomEvent extends FlViewportClassEvent
+    with FlPaintEventCat {
   final double zoom;
   final bool animate;
 
@@ -54,22 +120,18 @@ final class FlViewportZoomEvent extends NodeEditorEvent {
     this.zoom, {
     this.animate = true,
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
 ////////////////////////////////////////////////////////////////////////
-/// Selection events.
+// Selection events (mostly paint-only; dragging that moves nodes -> layout)
 ////////////////////////////////////////////////////////////////////////
 
-enum FlSelectionEventType {
-  select,
-  holdSelect,
-  deselect,
-}
+enum FlSelectionEventType { select, holdSelect, deselect }
 
-/// Event produced when nodes are selected or deselected.
-final class FlNodeSelectionEvent extends NodeEditorEvent {
+final class FlNodeSelectionEvent extends FlSelectionClassEvent
+    with FlLayoutEventCat {
   final FlSelectionEventType type;
   final Set<String> nodeIds;
 
@@ -77,13 +139,28 @@ final class FlNodeSelectionEvent extends NodeEditorEvent {
     this.nodeIds, {
     required this.type,
     required super.id,
-    super.isHandled,
-    super.isSideEffect,
+    super.isHandled = false,
+    super.isSideEffect = false,
   });
 }
 
-/// Event produced when the user starts dragging a group of selected nodes.
-final class FlDragSelectionStartEvent extends NodeEditorEvent {
+final class FlLinkSelectionEvent extends FlSelectionClassEvent
+    with FlPaintEventCat {
+  final FlSelectionEventType type;
+  final Set<String> linkIds;
+
+  const FlLinkSelectionEvent(
+    this.linkIds, {
+    required this.type,
+    required super.id,
+    super.isHandled = false,
+    super.isSideEffect = false,
+  });
+}
+
+/// Dragging selection updates positions -> layout (and undoable)
+final class FlDragSelectionStartEvent extends FlGraphEditClassEvent
+    with FlLayoutEventCat {
   final Set<String> nodeIds;
   final Offset position;
 
@@ -91,7 +168,7 @@ final class FlDragSelectionStartEvent extends NodeEditorEvent {
     this.nodeIds,
     this.position, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 
   @override
@@ -111,8 +188,8 @@ final class FlDragSelectionStartEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced to update the position of a group of selected nodes while dragging.
-final class FlDragSelectionEvent extends NodeEditorEvent {
+final class FlDragSelectionEvent extends FlGraphEditClassEvent
+    with FlLayoutEventCat {
   final Set<String> nodeIds;
   final Offset delta;
 
@@ -120,8 +197,8 @@ final class FlDragSelectionEvent extends NodeEditorEvent {
     this.nodeIds,
     this.delta, {
     required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
+    super.isHandled = false,
+  });
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -140,8 +217,8 @@ final class FlDragSelectionEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user stops dragging a group of selected nodes.
-final class FlDragSelectionEndEvent extends NodeEditorEvent {
+final class FlDragSelectionEndEvent extends FlGraphEditClassEvent
+    with FlLayoutEventCat {
   final Offset position;
   final Set<String> nodeIds;
 
@@ -149,7 +226,7 @@ final class FlDragSelectionEndEvent extends NodeEditorEvent {
     this.position,
     this.nodeIds, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 
   @override
@@ -169,33 +246,23 @@ final class FlDragSelectionEndEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user selects or deselects a group of links (one or more).
-final class FlLinkSelectionEvent extends NodeEditorEvent {
-  final FlSelectionEventType type;
-  final Set<String> linkIds;
+////////////////////////////////////////////////////////////////////////
+// Clipboard events
+// (these are domain-level clipboard actions — treatment varies)
+////////////////////////////////////////////////////////////////////////
 
-  const FlLinkSelectionEvent(
-    this.linkIds, {
-    required this.type,
-    required super.id,
-    super.isHandled,
-    super.isSideEffect,
-  });
-}
-
-/// Event produced when the user copies a selection to the clipboard (Ctrl+C).
-final class FlCopySelectionEvent extends NodeEditorEvent {
+final class FlCopySelectionEvent extends FlClipboardClassEvent {
   final String clipboardContent;
 
   const FlCopySelectionEvent(
     this.clipboardContent, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   }) : super(isUndoable: true);
 }
 
-/// Event produced when the user pastes a selection from the clipboard (Ctrl+V).
-final class FlPasteSelectionEvent extends NodeEditorEvent {
+final class FlPasteSelectionEvent extends FlClipboardClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   final Offset position;
   final String clipboardContent;
 
@@ -203,32 +270,29 @@ final class FlPasteSelectionEvent extends NodeEditorEvent {
     this.position,
     this.clipboardContent, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
-/// Event produced when the user cuts a selection to the clipboard (Ctrl+X).
-final class FlCutSelectionEvent extends NodeEditorEvent {
+final class FlCutSelectionEvent extends FlClipboardClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   final String clipboardContent;
 
   const FlCutSelectionEvent(
     this.clipboardContent, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
 ////////////////////////////////////////////////////////////////////////
-/// Hover events.
+// Hover events (no render side-effects beyond transient UI — NoRender)
 ////////////////////////////////////////////////////////////////////////
 
-enum FlHoverEventType {
-  enter,
-  exit,
-}
+enum FlHoverEventType { enter, exit }
 
-/// Event produced when the user enters or exits the bounds of a node.
-final class FlNodeHoverEvent extends NodeEditorEvent {
+final class FlNodeHoverEvent extends FlVisualizationClassEvent
+    with FlLayoutEventCat {
   final FlHoverEventType type;
   final String nodeId;
 
@@ -236,27 +300,23 @@ final class FlNodeHoverEvent extends NodeEditorEvent {
     this.nodeId, {
     required this.type,
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
-// NOTE: We don't have hover events for links and ports because they are not widgets and therefore
-// they do not require state management and are managed directly in the render object. Moreover,
-// hover events in general cannot be produced from the controller.
-
 ////////////////////////////////////////////////////////////////////////
-/// Nodes, groups and links management events.
+// Graph edit events (mutate graph — default to LayoutEvent; adjust if only paint)
 ////////////////////////////////////////////////////////////////////////
 
-/// Event produced when the user creates a new node.
-final class FlAddNodeEvent extends NodeEditorEvent {
+final class FlAddNodeEvent extends FlGraphEditClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   final FlNodeDataModel node;
 
   const FlAddNodeEvent(
     this.node, {
     required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
+    super.isHandled = false,
+  });
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -280,15 +340,15 @@ final class FlAddNodeEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user removes a node.
-final class FlRemoveNodeEvent extends NodeEditorEvent {
+final class FlRemoveNodeEvent extends FlGraphEditClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   final FlNodeDataModel node;
 
   const FlRemoveNodeEvent(
     this.node, {
     required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
+    super.isHandled = false,
+  });
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -312,15 +372,14 @@ final class FlRemoveNodeEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the creates a new link between two nodes.
-final class FlAddLinkEvent extends NodeEditorEvent {
+final class FlAddLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   final FlLinkDataModel link;
 
   const FlAddLinkEvent(
     this.link, {
     required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
+    super.isHandled = false,
+  });
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -345,15 +404,15 @@ final class FlAddLinkEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user removes a link between two nodes.
-final class FlRemoveLinkEvent extends NodeEditorEvent {
+final class FlRemoveLinkEvent extends FlGraphEditClassEvent
+    with FlPaintEventCat {
   final FlLinkDataModel link;
 
   const FlRemoveLinkEvent(
     this.link, {
     required super.id,
-    super.isHandled,
-  }) : super(isUndoable: true);
+    super.isHandled = false,
+  });
 
   @override
   Map<String, dynamic> toJson(dataHandlers) => {
@@ -378,27 +437,14 @@ final class FlRemoveLinkEvent extends NodeEditorEvent {
   }
 }
 
-/// Event produced when the user collapses or expands a group of nodes (can be used for any widget changes that require layout updates).
-final class FlCollapseNodeEvent extends NodeEditorEvent {
-  final bool collpased;
-  final Set<String> nodeIds;
-
-  const FlCollapseNodeEvent(
-    this.collpased,
-    this.nodeIds, {
-    required super.id,
-    super.isHandled,
-  });
-}
-
 enum FlFieldEventType {
   change,
   submit,
   cancel,
 }
 
-/// Event produced when the user changes a field value in a node.
-final class FlNodeFieldEvent extends NodeEditorEvent {
+final class FlNodeFieldEvent extends FlGraphEditClassEvent
+    with FlLayoutEventCat {
   final String nodeId;
   final dynamic value;
   final FlFieldEventType eventType;
@@ -408,12 +454,12 @@ final class FlNodeFieldEvent extends NodeEditorEvent {
     this.value,
     this.eventType, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
-/// Event produced when the user changes the label of a link.
-final class FlLinkLabelEvent extends NodeEditorEvent {
+final class FlLinkLabelEvent extends FlGraphEditClassEvent
+    with FlPaintEventCat {
   final String linkId;
   final String label;
 
@@ -421,54 +467,123 @@ final class FlLinkLabelEvent extends NodeEditorEvent {
     this.linkId,
     this.label, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
-/// Event produced when the custom data of a node changes.
-final class FlNodeCustomDataEvent extends NodeEditorEvent {
+final class FlNodeCustomDataEvent extends FlGraphEditClassEvent {
   final String nodeId;
   final String key;
   final dynamic value;
-  final bool needsLayout;
-  final bool needPaint;
 
   const FlNodeCustomDataEvent({
     required this.nodeId,
     required this.key,
     required this.value,
-    required this.needsLayout,
-    required this.needPaint,
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
+  });
+}
+
+final class FlNodeCustomDataPaintEvent extends FlGraphEditClassEvent
+    with FlPaintEventCat {
+  final String nodeId;
+  final String key;
+  final dynamic value;
+
+  const FlNodeCustomDataPaintEvent({
+    required this.nodeId,
+    required this.key,
+    required this.value,
+    required super.id,
+    super.isHandled = false,
+  });
+}
+
+final class FlNodeCustomDataLayoutEvent extends FlGraphEditClassEvent
+    with FlLayoutEventCat {
+  final String nodeId;
+  final String key;
+  final dynamic value;
+
+  const FlNodeCustomDataLayoutEvent({
+    required this.nodeId,
+    required this.key,
+    required this.value,
+    required super.id,
+    super.isHandled = false,
   });
 }
 
 ////////////////////////////////////////////////////////////////////////
-/// Project management events.
+// Visualization tweaks
 ////////////////////////////////////////////////////////////////////////
 
-/// Event produced when the user saves the current project (Ctrl+S).
-final class FlSaveProjectEvent extends NodeEditorEvent {
+final class FlCollapseNodeEvent extends FlVisualizationClassEvent
+    with FlLayoutEventCat {
+  final bool collpased;
+  final Set<String> nodeIds;
+
+  const FlCollapseNodeEvent(
+    this.collpased,
+    this.nodeIds, {
+    required super.id,
+    super.isHandled = false,
+  });
+}
+
+////////////////////////////////////////////////////////////////////////
+// Project / Configuration / Styling events
+////////////////////////////////////////////////////////////////////////
+
+final class FlSaveProjectEvent extends FlProjectClassEvent {
   const FlSaveProjectEvent({required super.id});
 }
 
-/// Event produced when the user loads a project (Ctrl+O).
-final class FlLoadProjectEvent extends NodeEditorEvent {
+final class FlLoadProjectEvent extends FlProjectClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   const FlLoadProjectEvent({required super.id});
 }
 
-/// Event produced when the user creates a new project (Ctrl+Shift+N).
-final class FlNewProjectEvent extends NodeEditorEvent {
+final class FlNewProjectEvent extends FlProjectClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
   const FlNewProjectEvent({required super.id});
 }
 
+final class FlConfigurationChangeEvent extends FlConfigurationClassEvent
+    with FlTreeEventCat, FlLayoutEventCat {
+  final FlNodesConfig config;
+
+  const FlConfigurationChangeEvent(this.config, {required super.id});
+}
+
+final class FlStyleChangeEvent extends FlConfigurationClassEvent
+    with FlLayoutEventCat {
+  final FlNodesStyle style;
+
+  const FlStyleChangeEvent(this.style, {required super.id});
+}
+
+final class FlLocaleChangeEvent extends FlConfigurationClassEvent
+    with FlLayoutEventCat {
+  final Locale locale;
+
+  const FlLocaleChangeEvent(this.locale, {required super.id});
+}
+
+final class FlOverlayChangedEvent extends FlConfigurationClassEvent
+    with FlPaintEventCat {
+  final Set<String> idNames;
+
+  const FlOverlayChangedEvent(this.idNames, {required super.id});
+}
+
 ////////////////////////////////////////////////////////////////////////
-/// Temporary drawing events.
+// Temporary drawing / interaction events (paint-only or no-render)
 ////////////////////////////////////////////////////////////////////////
 
-/// Event produced to update the path of the link being drawn when the user drags from a port to create a new link.
-final class FlDrawTempLinkEvent extends NodeEditorEvent {
+final class FlDrawTempLinkEvent extends FlTempInteractionClassEvent
+    with FlPaintEventCat {
   final Offset startOffset;
   final Offset endOffset;
 
@@ -476,41 +591,17 @@ final class FlDrawTempLinkEvent extends NodeEditorEvent {
     this.startOffset,
     this.endOffset, {
     required super.id,
-    super.isHandled,
+    super.isHandled = false,
   });
 }
 
-/// Event produced when an area is highlighted in the editor viewport (leads to selection).
-final class FlAreaHighlightEvent extends NodeEditorEvent {
+final class FlAreaHighlightEvent extends FlTempInteractionClassEvent
+    with FlPaintEventCat {
   final Rect? area;
 
-  const FlAreaHighlightEvent(this.area, {required super.id, super.isHandled});
-}
-
-/// Event produced when the user changes the configuration of the node editor.
-final class FlConfigurationChangeEvent extends NodeEditorEvent {
-  final FlNodesConfig config;
-
-  const FlConfigurationChangeEvent(this.config, {required super.id});
-}
-
-/// Event produced when the user changes the style of the node editor.
-final class FlStyleChangeEvent extends NodeEditorEvent {
-  final FlNodesStyle style;
-
-  const FlStyleChangeEvent(this.style, {required super.id});
-}
-
-/// Event produced when the user changes the locale of the node editor.
-final class FlLocaleChangeEvent extends NodeEditorEvent {
-  final Locale locale;
-
-  const FlLocaleChangeEvent(this.locale, {required super.id});
-}
-
-/// Event produced when an overlay element changes (position, visibility, opacity, etc.).
-final class FlOverlayChangedEvent extends NodeEditorEvent {
-  final Set<String> idNames;
-
-  const FlOverlayChangedEvent(this.idNames, {required super.id});
+  const FlAreaHighlightEvent(
+    this.area, {
+    required super.id,
+    super.isHandled = false,
+  });
 }
