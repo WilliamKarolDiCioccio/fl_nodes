@@ -553,6 +553,12 @@ final class FlGraphBuildCompleteEvent extends FlRunnerClassEvent {
   const FlGraphBuildCompleteEvent({required super.id, this.timeTaken});
 }
 
+final class FlGraphBuildAbortedEvent extends FlRunnerClassEvent {
+  final String reason;
+
+  const FlGraphBuildAbortedEvent({required super.id, required this.reason});
+}
+
 final class FlGraphRunStartEvent extends FlRunnerClassEvent {
   final DateTime startTime;
 
@@ -563,6 +569,12 @@ final class FlGraphRunCompleteEvent extends FlRunnerClassEvent {
   final Duration? timeTaken;
 
   const FlGraphRunCompleteEvent({required super.id, this.timeTaken});
+}
+
+final class FlGraphRunAbortedEvent extends FlRunnerClassEvent {
+  final String reason;
+
+  const FlGraphRunAbortedEvent({required super.id, required this.reason});
 }
 
 final class FlNodeExecutionStateEvent extends FlRunnerClassEvent {

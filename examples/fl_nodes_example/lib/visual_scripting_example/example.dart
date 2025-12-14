@@ -408,6 +408,12 @@ class VisualScriptingExampleScreenState
                 }),
               ),
               _buildToolbarButton(
+                icon: Icons.handyman,
+                tooltip: AppLocalizations.of(context)!.buildGraphTooltip,
+                onPressed: () => _nodeEditorController.runner.buildGraph(),
+                color: Colors.blue,
+              ),
+              _buildToolbarButton(
                 icon: Icons.play_arrow,
                 tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
                 onPressed: () =>

@@ -52,6 +52,24 @@ enum FlNodeExecutionState {
   exception,
 }
 
+/// Represents the overall state of the execution helper.
+enum ExecutionHelperState {
+  /// The execution helper is idle and not building or executing
+  idle,
+
+  /// The execution helper is currently building the graph
+  building,
+
+  /// The execution helper is currently executing the graph
+  executing,
+
+  /// The execution helper has been aborted
+  aborted,
+
+  /// The execution helper encountered an exception
+  exception,
+}
+
 /// A graph execution engine for visual scripting nodes.
 ///
 /// This class manages the execution of node-based visual scripts by:
@@ -92,6 +110,14 @@ class FlNodesExecutionHelper {
     _execState.clear();
     _nodeStates.clear();
     _independentGraphs.clear();
+
+    dispose();
+  }
+
+  void dispose() {
+    _buildGraphDelayTimer?.cancel();
+    _runGraphDelayTimer?.cancel();
+    _abortController.close();
   }
 
   /// Handles events from the controller and updates the graph accordingly.
@@ -103,7 +129,7 @@ class FlNodesExecutionHelper {
       _runGraphDelayTimer?.cancel();
 
       if (controller.config.autoBuildGraph) {
-        _buildGraph();
+        buildGraph();
 
         if (controller.config.autoExecGraph) {
           executeGraph();
@@ -123,7 +149,7 @@ class FlNodesExecutionHelper {
         _buildGraphDelayTimer?.cancel();
         _buildGraphDelayTimer =
             Timer(controller.config.autoBuildGraphDelay, () {
-          _buildGraph();
+          buildGraph();
 
           if (controller.config.autoExecGraph) {
             _runGraphDelayTimer?.cancel();
@@ -138,32 +164,108 @@ class FlNodesExecutionHelper {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
+  /// Abort handling.
+  ////////////////////////////////////////////////////////////////////////////////
+
+  final _abortController = StreamController<bool>.broadcast();
+  var _currentBuildToken = Object();
+  var _currentExecutionToken = Object();
+  ExecutionHelperState _state = ExecutionHelperState.idle;
+
+  ExecutionHelperState get state => _state;
+
+  /// Signal to abort current operations
+  void abort({String reason = 'User requested abort'}) {
+    if (_state == ExecutionHelperState.aborted) return;
+
+    final wasBuilding = _state == ExecutionHelperState.building;
+    final wasExecuting = _state == ExecutionHelperState.executing;
+
+    _state = ExecutionHelperState.aborted;
+    _abortController.add(true);
+    _buildGraphDelayTimer?.cancel();
+    _runGraphDelayTimer?.cancel();
+    _execState.clear();
+    _nodeStates.clear();
+
+    if (wasBuilding) {
+      controller.eventBus.emit(
+        FlGraphBuildAbortedEvent(
+          id: const Uuid().v4(),
+          reason: reason,
+        ),
+      );
+    } else if (wasExecuting) {
+      controller.eventBus.emit(
+        FlGraphRunAbortedEvent(
+          id: const Uuid().v4(),
+          reason: reason,
+        ),
+      );
+    }
+  }
+
+  /// Check if abort was requested
+  bool _shouldAbort(Object token) {
+    // Invalidate old tokens when new operations start
+    if (token != _currentBuildToken && token != _currentExecutionToken) {
+      return true;
+    }
+
+    return _state == ExecutionHelperState.aborted;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   /// Graph building.
-  //////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
 
   /// Builds the execution graph by analyzing node dependencies and control flow
-  void _buildGraph() {
-    projectData = controller.project.projectData.copyWith();
+  void buildGraph() {
+    if (_state == ExecutionHelperState.building) {
+      abort(reason: 'New build requested');
+    }
 
-    _independentGraphs.clear();
+    _state = ExecutionHelperState.building;
+    final buildToken = _currentBuildToken = Object();
 
-    final startTime = DateTime.now();
+    try {
+      projectData = controller.project.projectData.copyWith();
 
-    controller.eventBus.emit(
-      FlGraphBuildStartEvent(
-        id: const Uuid().v4(),
-        startTime: startTime,
-      ),
-    );
+      _independentGraphs.clear();
 
-    _independentGraphs.addAll(_findAndLinearizeSubgraphs());
+      final startTime = DateTime.now();
 
-    controller.eventBus.emit(
-      FlGraphBuildCompleteEvent(
-        id: const Uuid().v4(),
-        timeTaken: DateTime.now().difference(startTime).abs(),
-      ),
-    );
+      controller.eventBus.emit(
+        FlGraphBuildStartEvent(
+          id: const Uuid().v4(),
+          startTime: startTime,
+        ),
+      );
+
+      if (_shouldAbort(buildToken)) return;
+
+      _independentGraphs.addAll(
+        _findAndLinearizeSubgraphs(token: buildToken),
+      );
+
+      if (!_shouldAbort(buildToken)) {
+        _state = ExecutionHelperState.idle;
+      } else {
+        return;
+      }
+
+      controller.eventBus.emit(
+        FlGraphBuildCompleteEvent(
+          id: const Uuid().v4(),
+          timeTaken: DateTime.now().difference(startTime).abs(),
+        ),
+      );
+    } catch (e) {
+      if (!_shouldAbort(buildToken)) {
+        _state = ExecutionHelperState.exception;
+        rethrow;
+      }
+    }
   }
 
   /// Finds starting nodes and builds independent subgraphs
@@ -172,7 +274,8 @@ class FlNodesExecutionHelper {
   /// but at least one control output. These nodes serve as entry points for
   /// independent execution graphs. Such graphs will be executed sequentially and won't interfere with each other.
   /// It's in the nature of visul scripting that partially (but no totally) overlapping independent graphs can exist.
-  List<_LinearizedSubgraph> _findAndLinearizeSubgraphs() {
+  List<_LinearizedSubgraph> _findAndLinearizeSubgraphs(
+      {required Object token}) {
     // Find starting nodes (no data inputs, no control inputs, but has control outputs)
     final startingNodes = nodes.keys.where((nodeId) {
       final node = nodes[nodeId]!;
@@ -214,7 +317,10 @@ class FlNodesExecutionHelper {
         start,
         parent: null,
         nodeToSubgraph: nodeToSubgraph,
+        token: token,
       );
+
+      if (sub == null) return linearized; // Aborted during linearization
 
       linearized.add(sub);
     }
@@ -227,12 +333,15 @@ class FlNodesExecutionHelper {
   /// This method performs a modified topological sort that respects both:
   /// - Data dependencies (executed before dependent nodes, forbids cycles)
   /// - Control flow (creates subgraphs for branching, allows cycles)
-  _LinearizedSubgraph _linearizeSubgraphs(
+  _LinearizedSubgraph? _linearizeSubgraphs(
     String rootNodeId, {
     _LinearizedSubgraph? parent,
     String? parentControlPortIdName,
+    required Object token,
     required Map<String, _LinearizedSubgraph> nodeToSubgraph,
   }) {
+    if (_shouldAbort(token)) return null;
+
     // Create new child subgraph for this control port branch
     final current = _LinearizedSubgraph(
       parent: parent,
@@ -256,6 +365,8 @@ class FlNodesExecutionHelper {
       String nodeId,
       _LinearizedSubgraph owner,
     ) {
+      if (_shouldAbort(token)) return;
+
       // For simplicity, we don't check if data dependencies are already assigned to subgraphs.
       // Double execution of data dependencies is prevented in the execution phase by checking node states.
       // This means data dependencies can figure in multiple subgraphs without issues.
@@ -283,6 +394,8 @@ class FlNodesExecutionHelper {
       String nodeId,
       _LinearizedSubgraph owner,
     ) {
+      if (_shouldAbort(token)) return;
+
       // If the node is already assigned to a subgraph, abort traversal
       if (nodeToSubgraph.containsKey(nodeId)) return;
 
@@ -354,6 +467,7 @@ class FlNodesExecutionHelper {
               parent: owner,
               parentControlPortIdName: portIdName,
               nodeToSubgraph: nodeToSubgraph,
+              token: token,
             );
           }
         }
@@ -376,6 +490,7 @@ class FlNodesExecutionHelper {
               parent: owner,
               parentControlPortIdName: portIdName,
               nodeToSubgraph: nodeToSubgraph,
+              token: token,
             );
           }
         }
@@ -396,15 +511,23 @@ class FlNodesExecutionHelper {
   ///
   /// [BuildContext] context: The build context for localization of error messages (optional).
   void executeGraph({BuildContext? context}) async {
+    if (_state == ExecutionHelperState.executing) {
+      abort(reason: 'New execution requested');
+    }
+
+    _state = ExecutionHelperState.executing;
+    final executionToken = _currentExecutionToken = Object();
+
     context ??= controller.editorKey.currentContext;
 
     _execState.clear();
     _nodeStates.clear();
 
-    // Initialize all nodes to idle
-    for (final nodeState in _nodeStates.keys) {
-      _nodeStates[nodeState] = FlNodeExecutionState.idle;
+    for (final nodeId in nodes.keys) {
+      _nodeStates[nodeId] = FlNodeExecutionState.idle;
     }
+
+    if (_shouldAbort(executionToken)) return;
 
     final startTime = DateTime.now();
 
@@ -417,7 +540,14 @@ class FlNodesExecutionHelper {
 
     // Execute independent subgraphs sequentially
     for (final graph in _independentGraphs) {
+      if (_shouldAbort(executionToken)) return;
       await _executeLinearizedGraph(graph, context: context);
+    }
+
+    if (!_shouldAbort(executionToken)) {
+      _state = ExecutionHelperState.idle;
+    } else {
+      return;
     }
 
     controller.eventBus.emit(
@@ -492,6 +622,8 @@ class FlNodesExecutionHelper {
         node.fields.map((fieldId, field) => MapEntry(fieldId, field.data)),
         _execState.putIfAbsent(node.id, () => {}),
         (portIdNames, {definitive = false}) {
+          if (_shouldAbort(_currentExecutionToken)) return;
+
           selectedControlPortIdNames.addAll(portIdNames);
 
           // Check the definitive flag to determine if execution is complete or stepped (for feedback loops)
@@ -511,6 +643,9 @@ class FlNodesExecutionHelper {
       // Immediately set node state to exception on error
       setNodeState(FlNodeExecutionState.exception);
 
+      // Abort the entire execution on node error
+      abort(reason: 'Node ${node.id} execution failed');
+
       // Focus the node that caused the error (UI feedback)
       controller.focusNodesById({node.id});
 
@@ -519,6 +654,8 @@ class FlNodesExecutionHelper {
         FlCallbackType.error,
         strings.failedToExecuteNodeErrorMsg(e.toString()),
       );
+
+      return {};
     }
 
     return selectedControlPortIdNames;
