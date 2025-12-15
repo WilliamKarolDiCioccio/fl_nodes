@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:fl_nodes/fl_nodes.dart';
@@ -56,10 +55,9 @@ FlNodePrototype createValueNode<T>({
         editorBuilder: editorBuilder,
       ),
     ],
-    onExecute: (ports, fields, state, f, p) async {
-      p({('value', fields['value']!)});
-
-      unawaited(f({('completed')}));
+    onExecute: (ports, fields, state, forward, put) async {
+      put({('value', fields['value']!)});
+      forward({('completed')});
     },
   );
 }
@@ -353,23 +351,23 @@ void registerNodes(BuildContext context, FlNodesController controller) {
               ),
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         final a = ports['a']! as double;
         final b = ports['b']! as double;
         final op = fields['operation']! as Operator;
 
         switch (op) {
           case Operator.add:
-            p({('result', a + b)});
+            put({('result', a + b)});
           case Operator.subtract:
-            p({('result', a - b)});
+            put({('result', a - b)});
           case Operator.multiply:
-            p({('result', a * b)});
+            put({('result', a * b)});
           case Operator.divide:
-            p({('result', b == 0 ? 0 : a / b)});
+            put({('result', b == 0 ? 0 : a / b)});
         }
 
-        unawaited(f({('completed')}));
+        forward({('completed')});
       },
     ),
   );
@@ -397,10 +395,10 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
-        p({('value', Random().nextDouble())});
+      onExecute: (ports, fields, state, forward, put) async {
+        put({('value', Random().nextDouble())});
 
-        unawaited(f({('completed')}));
+        forward({('completed')});
       },
     ),
   );
@@ -438,12 +436,10 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         final condition = ports['condition']! as bool;
 
-        condition
-            ? unawaited(f({('trueBranch')}))
-            : unawaited(f({('falseBranch')}));
+        condition ? forward({('trueBranch')}) : forward({('falseBranch')});
       },
     ),
   );
@@ -500,7 +496,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         final List<dynamic> list = ports['list']! as List<dynamic>;
 
         late int i;
@@ -512,11 +508,11 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         }
 
         if (i < list.length) {
-          p({('listElem', list[i]), ('listIdx', i)});
+          put({('listElem', list[i]), ('listIdx', i)});
           state['iteration'] = ++i;
-          await f({'loopBody'});
+          forward({'loopBody'});
         } else {
-          unawaited(f({('completed')}));
+          forward({('completed')}, definitive: true);
         }
       },
     ),
@@ -603,27 +599,27 @@ void registerNodes(BuildContext context, FlNodesController controller) {
               ),
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         final a = ports['a']! as dynamic;
         final b = ports['b']! as dynamic;
         final comp = fields['comparator']! as Comparator;
 
         switch (comp) {
           case Comparator.equal:
-            p({('result', a == b)});
+            put({('result', a == b)});
           case Comparator.notEqual:
-            p({('result', a != b)});
+            put({('result', a != b)});
           case Comparator.greater:
-            p({('result', a > b)});
+            put({('result', a > b)});
           case Comparator.greaterEqual:
-            p({('result', a >= b)});
+            put({('result', a >= b)});
           case Comparator.less:
-            p({('result', a < b)});
+            put({('result', a < b)});
           case Comparator.lessEqual:
-            p({('result', a <= b)});
+            put({('result', a <= b)});
         }
 
-        unawaited(f({('completed')}));
+        forward({('completed')});
       },
     ),
   );
@@ -656,10 +652,10 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         TerminalController.instance.info('Value: ${ports['value']}');
 
-        unawaited(f({('completed')}));
+        forward({('completed')});
       },
     ),
   );
@@ -736,13 +732,13 @@ void registerNodes(BuildContext context, FlNodesController controller) {
               ),
         ),
       ],
-      onExecute: (ports, fields, state, f, p) async {
+      onExecute: (ports, fields, state, forward, put) async {
         final double value = ports['value']! as double;
         final int decimals = fields['decimals']! as int;
 
-        p({('rounded', double.parse(value.toStringAsFixed(decimals)))});
+        put({('rounded', double.parse(value.toStringAsFixed(decimals)))});
 
-        unawaited(f({('completed')}));
+        forward({('completed')});
       },
     ),
   );

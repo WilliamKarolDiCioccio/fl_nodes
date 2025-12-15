@@ -22,6 +22,8 @@
   "@toggleTerminalTooltip": {},
   "toggleSnapToGridTooltip": "Toggle Snap to Grid",
   "@toggleSnapToGridTooltip": {},
+  "buildGraphTooltip": "Build Graph",
+  "@buildGraphTooltip": {},
   "executeGraphTooltip": "Execute Graph",
   "@executeGraphTooltip": {},
   "clearTerminalTooltip": "Clear Terminal",
