@@ -32,7 +32,8 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   });
 }
 
-abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T> {
+abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
+    extends State<T> {
   // Interaction state for linking ports.
   bool _isLinking = false;
 
@@ -66,7 +67,14 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
       updatePortsPosition();
     });
 
-    widget.controller.eventBus.events.listen(_handleControllerEvents);
+    widget.controller.eventBus.events
+        .where((event) =>
+            event is! FlViewportClassEvent &&
+            event is! FlProjectClassEvent &&
+            event is! FlTempInteractionClassEvent &&
+            event is! FlClipboardClassEvent &&
+            event is! FlRunnerClassEvent)
+        .listen(_handleControllerEvents);
   }
 
   @override
@@ -92,6 +100,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
   void _handleControllerEvents(NodeEditorEvent event) {
     if (!mounted || event.isHandled) return;
 
+    print('Event received in node ${widget.node.id}: $event');
+
     if (event is FlDragSelectionEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
@@ -112,12 +122,15 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
       });
     } else if (event is FlNodeFieldEvent) {
       if (event.nodeId == widget.node.id &&
-          (event.eventType == FlFieldEventType.submit || event.eventType == FlFieldEventType.cancel)) {
+          (event.eventType == FlFieldEventType.submit ||
+              event.eventType == FlFieldEventType.cancel)) {
         setState(() {});
       }
     } else if (event is FlAddNodeEvent) {
       if (event.node.id == widget.node.id) setState(() {});
-    } else if (event is FlConfigurationChangeEvent || event is FlStyleChangeEvent || event is FlLocaleChangeEvent) {
+    } else if (event is FlConfigurationChangeEvent ||
+        event is FlStyleChangeEvent ||
+        event is FlLocaleChangeEvent) {
       _updatePortsAndFields();
       _updateStyleCache();
 
@@ -185,7 +198,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
       final node = widget.controller.getNodeById(nodeId)!;
       for (final port in node.ports.values) {
         final absolutePortPosition = node.offset + port.offset;
-        if ((worldPosition - absolutePortPosition).distance < kNearPortSnapDistance) {
+        if ((worldPosition - absolutePortPosition).distance <
+            kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
@@ -236,7 +250,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
   }
 
   Widget wrapWithControls(Widget child) {
-    return defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS
+    return defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS
         ? GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
@@ -256,10 +271,12 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
               }
 
               if (locator != null && !widget.node.state.isCollapsed) {
-                widget.showPortContextMenu(context, position, widget.controller, locator);
+                widget.showPortContextMenu(
+                    context, position, widget.controller, locator);
               } else {
                 widget.controller.selectNodesById({widget.node.id});
-                widget.showNodeContextMenu(context, position, widget.controller, widget.node);
+                widget.showNodeContextMenu(
+                    context, position, widget.controller, widget.node);
               }
             },
             onPanDown: (details) {
@@ -295,7 +312,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  widget.showNodeCreationMenu(context, _lastPanPosition!, widget.controller, locator, _onTmpLinkCancel);
+                  widget.showNodeCreationMenu(context, _lastPanPosition!,
+                      widget.controller, locator, _onTmpLinkCancel);
                 }
                 _isLinking = false;
               } else {
@@ -321,9 +339,11 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
                 }
 
                 if (locator != null && !widget.node.state.isCollapsed) {
-                  widget.showPortContextMenu(context, event.position, widget.controller, locator);
+                  widget.showPortContextMenu(
+                      context, event.position, widget.controller, locator);
                 } else {
-                  widget.showNodeContextMenu(context, event.position, widget.controller, widget.node);
+                  widget.showNodeContextMenu(
+                      context, event.position, widget.controller, widget.node);
                 }
               } else if (event.buttons == kPrimaryMouseButton) {
                 if (locator != null && !_isLinking && _portLocator == null) {
@@ -351,7 +371,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
                 if (locator != null) {
                   _onTmpLinkEnd(locator);
                 } else {
-                  widget.showNodeCreationMenu(context, event.position, widget.controller, locator, _onTmpLinkCancel);
+                  widget.showNodeCreationMenu(context, event.position,
+                      widget.controller, locator, _onTmpLinkCancel);
                 }
               } else {
                 _resetEdgeTimer();
@@ -363,8 +384,10 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
 
   void _updateStyleCache() {
     setState(() {
-      widget.node.builtStyle = widget.node.prototype.styleBuilder(widget.node.state);
-      widget.node.builtHeaderStyle = widget.node.prototype.headerStyleBuilder(widget.node.state);
+      widget.node.builtStyle =
+          widget.node.prototype.styleBuilder(widget.node.state);
+      widget.node.builtHeaderStyle =
+          widget.node.prototype.headerStyleBuilder(widget.node.state);
 
       fakeTransparentColor = Color.alphaBlend(
         widget.node.builtStyle.decoration.color!.withAlpha(255),
