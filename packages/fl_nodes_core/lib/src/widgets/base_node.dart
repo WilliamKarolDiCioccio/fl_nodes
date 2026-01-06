@@ -1,16 +1,18 @@
 import 'dart:async';
 
-import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+
 import '../constants.dart';
 import '../core/events/events.dart';
 import '../core/models/data.dart';
 import '../core/utils/rendering/renderbox.dart';
+
 import 'builders.dart';
 import 'improved_listener.dart';
 
@@ -99,8 +101,6 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   void _handleControllerEvents(NodeEditorEvent event) {
     if (!mounted || event.isHandled) return;
-
-    print('Event received in node ${widget.node.id}: $event');
 
     if (event is FlDragSelectionEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
