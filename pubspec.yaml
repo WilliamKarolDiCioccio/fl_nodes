@@ -34,9 +34,14 @@ melos:
       updateGitTagRefs: true
 
   scripts:
-    analyze: melos exec -- flutter analyze
-    format: melos exec -- dart format .
-    test: melos exec -- flutter test
+    format:
+      run: melos exec -- "dart format ."
+      description: Run dart format across all packages.
+
+    analyze:
+      run: melos exec -- "dart analyze --fatal-infos"
+      description: Run dart analyze across all packages.
+
     example: cd examples/fl_nodes_example && flutter run -d chrome
     example:profile: cd examples/fl_nodes_example && flutter run --profile -d chrome
     example:release: cd examples/fl_nodes_example && flutter run --release -d chrome

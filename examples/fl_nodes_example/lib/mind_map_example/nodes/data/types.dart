@@ -1,6 +1,1 @@
-enum ShapeType {
-  rectangle,
-  roundedRectangle,
-  circle,
-  ellipse,
-}
+enum ShapeType { rectangle, roundedRectangle, circle, ellipse }

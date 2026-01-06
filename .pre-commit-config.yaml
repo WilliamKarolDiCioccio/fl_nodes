@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: melos-format
+        name: Melos Format
+        entry: melos run format
+        language: system
+        files: \.dart$
+        pass_filenames: false
+
+      - id: melos-analyze
+        name: Melos Analyze
+        entry: melos run analyze
+        language: system
+        files: \.dart$
+        pass_filenames: false

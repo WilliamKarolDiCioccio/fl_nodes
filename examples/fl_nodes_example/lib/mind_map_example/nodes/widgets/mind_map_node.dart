@@ -35,26 +35,46 @@ class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
             key: widget.node.key,
             clipBehavior: Clip.none,
             children: [
-              _ShapePainterWidget(shapeType: shapeType, isSelected: widget.node.state.isSelected, text: text),
+              _ShapePainterWidget(
+                shapeType: shapeType,
+                isSelected: widget.node.state.isSelected,
+                text: text,
+              ),
               Positioned.fill(
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
                     Align(
                       alignment: Alignment.topCenter,
-                      child: SizedBox(width: 0, height: 0, key: widget.node.ports['top']!.key),
+                      child: SizedBox(
+                        width: 0,
+                        height: 0,
+                        key: widget.node.ports['top']!.key,
+                      ),
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
-                      child: SizedBox(width: 0, height: 0, key: widget.node.ports['bottom']!.key),
+                      child: SizedBox(
+                        width: 0,
+                        height: 0,
+                        key: widget.node.ports['bottom']!.key,
+                      ),
                     ),
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: SizedBox(width: 0, height: 0, key: widget.node.ports['left']!.key),
+                      child: SizedBox(
+                        width: 0,
+                        height: 0,
+                        key: widget.node.ports['left']!.key,
+                      ),
                     ),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: SizedBox(width: 0, height: 0, key: widget.node.ports['right']!.key),
+                      child: SizedBox(
+                        width: 0,
+                        height: 0,
+                        key: widget.node.ports['right']!.key,
+                      ),
                     ),
                   ],
                 ),
@@ -70,7 +90,8 @@ class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
   void updatePortsPosition() {
     // Early return with combined null checks
     final renderBox = context.findRenderObject() as RenderBox?;
-    final nodeBox = widget.node.key.currentContext?.findRenderObject() as RenderBox?;
+    final nodeBox =
+        widget.node.key.currentContext?.findRenderObject() as RenderBox?;
 
     if (renderBox == null || nodeBox == null) return;
 
@@ -100,7 +121,11 @@ class _ShapePainterWidget extends StatelessWidget {
   final bool isSelected;
   final String text;
 
-  const _ShapePainterWidget({required this.shapeType, required this.isSelected, required this.text});
+  const _ShapePainterWidget({
+    required this.shapeType,
+    required this.isSelected,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,5 +201,6 @@ class _ShapePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ShapePainter oldDelegate) =>
-      oldDelegate.shapeType != shapeType || oldDelegate.isSelected != isSelected;
+      oldDelegate.shapeType != shapeType ||
+      oldDelegate.isSelected != isSelected;
 }

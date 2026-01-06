@@ -6,10 +6,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.orange,
-              Colors.transparent,
-            ],
+            colors: [Colors.orange, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -24,10 +21,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.blue,
-              Colors.transparent,
-            ],
+            colors: [Colors.blue, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -42,10 +36,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.red,
-              Colors.transparent,
-            ],
+            colors: [Colors.red, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -60,10 +51,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.teal,
-              Colors.transparent,
-            ],
+            colors: [Colors.teal, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -78,10 +66,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.green,
-              Colors.transparent,
-            ],
+            colors: [Colors.green, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -96,10 +81,7 @@ class NodeHeaderStyles {
       flDefaultNodeHeaderStyleBuilder(state).copyWith(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.purple,
-              Colors.transparent,
-            ],
+            colors: [Colors.purple, Colors.transparent],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
