@@ -22,7 +22,7 @@ Workspace members (see `pubspec.yaml` `workspace:` section):
 - **`examples/fl_context_menu_example`**: Context menu example.
 - **`benchmarks`**: Performance benchmarks.
 
-`packages/fl_nodes_visual_scripting` and `packages/fl_nodes_mind_maps` exist as stubs but are **not** in the workspace.
+`packages/fl_nodes_visual_scripting` and `packages/fl_nodes_mind_maps` are stub packages in the workspace (not yet implemented).
 
 ## Commands
 

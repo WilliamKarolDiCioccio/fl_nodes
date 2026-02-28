@@ -18,6 +18,8 @@ workspace:
   - packages/fl_nodes
   - packages/fl_nodes_core
   - packages/fl_context_menu
+  - packages/fl_nodes_visual_scripting
+  - packages/fl_nodes_mind_maps
 
 melos:
   publish:
