@@ -2,16 +2,16 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import 'ar.dart';
-import 'de.dart';
-import 'en.dart';
-import 'es.dart';
-import 'fr.dart';
-import 'it.dart';
-import 'ja.dart';
-import 'ko.dart';
-import 'ru.dart';
-import 'zh.dart';
+import 'package:fl_nodes_core/src/core/localization/ar.dart';
+import 'package:fl_nodes_core/src/core/localization/de.dart';
+import 'package:fl_nodes_core/src/core/localization/en.dart';
+import 'package:fl_nodes_core/src/core/localization/es.dart';
+import 'package:fl_nodes_core/src/core/localization/fr.dart';
+import 'package:fl_nodes_core/src/core/localization/it.dart';
+import 'package:fl_nodes_core/src/core/localization/ja.dart';
+import 'package:fl_nodes_core/src/core/localization/ko.dart';
+import 'package:fl_nodes_core/src/core/localization/ru.dart';
+import 'package:fl_nodes_core/src/core/localization/zh.dart';
 
 /// An abstract class that defines the localizations for the Node Editor.
 abstract class FlNodesLocalizations {
@@ -22,7 +22,7 @@ abstract class FlNodesLocalizations {
   static FlNodesLocalizations of(BuildContext? context) {
     if (context == null) return _fallback;
 
-    final loc = Localizations.of<FlNodesLocalizations>(
+    final FlNodesLocalizations? loc = Localizations.of<FlNodesLocalizations>(
       context,
       FlNodesLocalizations,
     );
@@ -101,21 +101,20 @@ class FlNodesLocalizationsDelegate
       ].contains(locale.languageCode);
 
   @override
-  Future<FlNodesLocalizations> load(Locale locale) async {
-    return switch (locale.languageCode) {
-      'en' => FlNodesLocalizationsEn(locale),
-      'it' => FlNodesLocalizationsIt(locale),
-      'fr' => FlNodesLocalizationsFr(locale),
-      'es' => FlNodesLocalizationsEs(locale),
-      'de' => FlNodesLocalizationsDe(locale),
-      'ja' => FlNodesLocalizationsJa(locale),
-      'zh' => FlNodesLocalizationsZh(locale),
-      'ko' => FlNodesLocalizationsKo(locale),
-      'ru' => FlNodesLocalizationsRu(locale),
-      'ar' => FlNodesLocalizationsAr(locale),
-      _ => FlNodesLocalizationsEn(locale)
-    };
-  }
+  Future<FlNodesLocalizations> load(Locale locale) async =>
+      switch (locale.languageCode) {
+        'en' => FlNodesLocalizationsEn(locale),
+        'it' => FlNodesLocalizationsIt(locale),
+        'fr' => FlNodesLocalizationsFr(locale),
+        'es' => FlNodesLocalizationsEs(locale),
+        'de' => FlNodesLocalizationsDe(locale),
+        'ja' => FlNodesLocalizationsJa(locale),
+        'zh' => FlNodesLocalizationsZh(locale),
+        'ko' => FlNodesLocalizationsKo(locale),
+        'ru' => FlNodesLocalizationsRu(locale),
+        'ar' => FlNodesLocalizationsAr(locale),
+        _ => FlNodesLocalizationsEn(locale)
+      };
 
   @override
   bool shouldReload(covariant LocalizationsDelegate old) => false;

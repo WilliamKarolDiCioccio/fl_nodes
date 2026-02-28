@@ -45,7 +45,7 @@ class SparseSetIterate extends BenchmarkBase {
     // ignore: unused_local_variable
     var sum = 0;
 
-    for (var value in set.values) {
+    for (final int value in set.values) {
       sum += value;
     }
   }
@@ -71,7 +71,7 @@ class MapIterate extends BenchmarkBase {
 
 void main() {
   for (var exp = 10; exp <= 20; exp++) {
-    final size = 1 << exp;
+    final int size = 1 << exp;
 
     SparseSetInsert(size).report();
     MapInsert(size).report();

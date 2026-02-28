@@ -10,12 +10,11 @@ Future<T?> createPageRoute<T>({
   required FlMenuDataModel data,
   required FlMenuConfig config,
   required FlMenuStyle style,
-}) async {
-  return Navigator.of(context).push<T>(
-    PageRouteBuilder<T>(
-      opaque: false,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Material(
+}) async =>
+    Navigator.of(context).push<T>(
+      PageRouteBuilder<T>(
+        opaque: false,
+        pageBuilder: (context, animation, secondaryAnimation) => Material(
           type: MaterialType.transparency,
           child: FlMenuWidget(
             position: position,
@@ -23,14 +22,11 @@ Future<T?> createPageRoute<T>({
             config: config,
             style: style,
           ),
-        );
-      },
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            FadeTransition(
           opacity: animation,
           child: child,
-        );
-      },
-    ),
-  );
-}
+        ),
+      ),
+    );

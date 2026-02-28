@@ -1,82 +1,82 @@
-import 'delegate.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
 
 class FlNodesLocalizationsIt extends FlNodesLocalizations {
   FlNodesLocalizationsIt(super.locale);
 
   @override
-  String get closeAction => "Chiudi";
+  String get closeAction => 'Chiudi';
   @override
-  String get addNodeAction => "Aggiungi";
+  String get addNodeAction => 'Aggiungi';
   @override
-  String get deleteNodeAction => "Elimina";
+  String get deleteNodeAction => 'Elimina';
   @override
-  String get centerViewAction => "Centra Vista";
+  String get centerViewAction => 'Centra Vista';
   @override
-  String get resetZoomAction => "Reimposta Zoom";
+  String get resetZoomAction => 'Reimposta Zoom';
   @override
-  String get createNodeAction => "Crea";
+  String get createNodeAction => 'Crea';
   @override
-  String get copySelectionAction => "Copia";
+  String get copySelectionAction => 'Copia';
   @override
-  String get pasteSelectionAction => "Incolla";
+  String get pasteSelectionAction => 'Incolla';
   @override
-  String get cutSelectionAction => "Taglia";
+  String get cutSelectionAction => 'Taglia';
   @override
-  String get projectLabel => "Progetto";
+  String get projectLabel => 'Progetto';
   @override
-  String get undoAction => "Annulla";
+  String get undoAction => 'Annulla';
   @override
-  String get redoAction => "Ripeti";
+  String get redoAction => 'Ripeti';
   @override
-  String get newProjectAction => "Nuovo Progetto";
+  String get newProjectAction => 'Nuovo Progetto';
   @override
-  String get saveProjectAction => "Salva";
+  String get saveProjectAction => 'Salva';
   @override
-  String get openProjectAction => "Apri";
+  String get openProjectAction => 'Apri';
   @override
-  String get seeNodeDescriptionAction => "Vedi Descrizione";
+  String get seeNodeDescriptionAction => 'Vedi Descrizione';
   @override
-  String get collapseNodeAction => "Comprimi";
+  String get collapseNodeAction => 'Comprimi';
   @override
-  String get expandNodeAction => "Espandi";
+  String get expandNodeAction => 'Espandi';
   @override
-  String get cutLinksAction => "Taglia Collegamenti";
+  String get cutLinksAction => 'Taglia Collegamenti';
   @override
-  String get editorMenuLabel => "Menu Editor";
+  String get editorMenuLabel => 'Menu Editor';
   @override
-  String get nodeMenuLabel => "Menu Nodo";
+  String get nodeMenuLabel => 'Menu Nodo';
   @override
-  String get portMenuLabel => "Menu Porta";
+  String get portMenuLabel => 'Menu Porta';
   @override
-  String get linkMenuLabel => "Menu Collegamento";
+  String get linkMenuLabel => 'Menu Collegamento';
   @override
-  String get deleteLinkAction => "Elimina Collegamento";
+  String get deleteLinkAction => 'Elimina Collegamento';
   @override
-  String get navigateToSourceAction => "Naviga alla Fonte";
+  String get navigateToSourceAction => 'Naviga alla Fonte';
   @override
-  String get navigateToDestinationAction => "Naviga alla Destinazione";
+  String get navigateToDestinationAction => 'Naviga alla Destinazione';
   @override
   String failedToCopySelectionErrorMsg(String e) =>
-      "Impossibile copiare la selezione: $e";
+      'Impossibile copiare la selezione: $e';
   @override
-  String get selectionCopiedSuccessfullyMsg => "Selezione copiata con successo";
+  String get selectionCopiedSuccessfullyMsg => 'Selezione copiata con successo';
   @override
   String failedToPasteSelectionErrorMsg(String e) =>
-      "Impossibile incollare la selezione: $e";
+      'Impossibile incollare la selezione: $e';
   @override
   String failedToSaveProjectErrorMsg(String e) =>
-      "Impossibile salvare il progetto: $e";
+      'Impossibile salvare il progetto: $e';
   @override
-  String get projectSavedSuccessfullyMsg => "Progetto salvato con successo";
+  String get projectSavedSuccessfullyMsg => 'Progetto salvato con successo';
   @override
   String failedToLoadProjectErrorMsg(String e) =>
-      "Impossibile caricare il progetto: $e";
+      'Impossibile caricare il progetto: $e';
   @override
-  String get projectLoadedSuccessfullyMsg => "Progetto caricato con successo";
+  String get projectLoadedSuccessfullyMsg => 'Progetto caricato con successo';
   @override
   String get newProjectCreatedSuccessfullyMsg =>
-      "Nuovo progetto creato con successo";
+      'Nuovo progetto creato con successo';
   @override
   String failedToExecuteNodeErrorMsg(String e) =>
-      "Impossibile eseguire il nodo: $e";
+      'Impossibile eseguire il nodo: $e';
 }

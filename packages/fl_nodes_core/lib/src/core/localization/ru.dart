@@ -1,81 +1,81 @@
-import 'delegate.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
 
 class FlNodesLocalizationsRu extends FlNodesLocalizations {
   FlNodesLocalizationsRu(super.locale);
 
   @override
-  String get closeAction => "Закрыть";
+  String get closeAction => 'Закрыть';
   @override
-  String get addNodeAction => "Добавить";
+  String get addNodeAction => 'Добавить';
   @override
-  String get deleteNodeAction => "Удалить";
+  String get deleteNodeAction => 'Удалить';
   @override
-  String get centerViewAction => "Центрировать вид";
+  String get centerViewAction => 'Центрировать вид';
   @override
-  String get resetZoomAction => "Сбросить масштаб";
+  String get resetZoomAction => 'Сбросить масштаб';
   @override
-  String get createNodeAction => "Создать";
+  String get createNodeAction => 'Создать';
   @override
-  String get copySelectionAction => "Копировать";
+  String get copySelectionAction => 'Копировать';
   @override
-  String get pasteSelectionAction => "Вставить";
+  String get pasteSelectionAction => 'Вставить';
   @override
-  String get cutSelectionAction => "Вырезать";
+  String get cutSelectionAction => 'Вырезать';
   @override
-  String get projectLabel => "Проект";
+  String get projectLabel => 'Проект';
   @override
-  String get undoAction => "Отменить";
+  String get undoAction => 'Отменить';
   @override
-  String get redoAction => "Повторить";
+  String get redoAction => 'Повторить';
   @override
-  String get newProjectAction => "Новый проект";
+  String get newProjectAction => 'Новый проект';
   @override
-  String get saveProjectAction => "Сохранить";
+  String get saveProjectAction => 'Сохранить';
   @override
-  String get openProjectAction => "Открыть";
+  String get openProjectAction => 'Открыть';
   @override
-  String get seeNodeDescriptionAction => "Просмотреть описание";
+  String get seeNodeDescriptionAction => 'Просмотреть описание';
   @override
-  String get collapseNodeAction => "Свернуть";
+  String get collapseNodeAction => 'Свернуть';
   @override
-  String get expandNodeAction => "Развернуть";
+  String get expandNodeAction => 'Развернуть';
   @override
-  String get cutLinksAction => "Разорвать связи";
+  String get cutLinksAction => 'Разорвать связи';
   @override
-  String get editorMenuLabel => "Меню редактора";
+  String get editorMenuLabel => 'Меню редактора';
   @override
-  String get nodeMenuLabel => "Меню узла";
+  String get nodeMenuLabel => 'Меню узла';
   @override
-  String get portMenuLabel => "Меню порта";
+  String get portMenuLabel => 'Меню порта';
   @override
-  String get linkMenuLabel => "Меню ссылки";
+  String get linkMenuLabel => 'Меню ссылки';
   @override
-  String get deleteLinkAction => "Удалить связь";
+  String get deleteLinkAction => 'Удалить связь';
   @override
-  String get navigateToSourceAction => "Перейти к источнику";
+  String get navigateToSourceAction => 'Перейти к источнику';
   @override
-  String get navigateToDestinationAction => "Перейти к назначению";
+  String get navigateToDestinationAction => 'Перейти к назначению';
   @override
   String failedToCopySelectionErrorMsg(String e) =>
-      "Не удалось скопировать выделение: $e";
+      'Не удалось скопировать выделение: $e';
   @override
-  String get selectionCopiedSuccessfullyMsg => "Выделение успешно скопировано";
+  String get selectionCopiedSuccessfullyMsg => 'Выделение успешно скопировано';
   @override
   String failedToPasteSelectionErrorMsg(String e) =>
-      "Не удалось вставить выделение: $e";
+      'Не удалось вставить выделение: $e';
   @override
   String failedToSaveProjectErrorMsg(String e) =>
-      "Не удалось сохранить проект: $e";
+      'Не удалось сохранить проект: $e';
   @override
-  String get projectSavedSuccessfullyMsg => "Проект успешно сохранён";
+  String get projectSavedSuccessfullyMsg => 'Проект успешно сохранён';
   @override
   String failedToLoadProjectErrorMsg(String e) =>
-      "Не удалось загрузить проект: $e";
+      'Не удалось загрузить проект: $e';
   @override
-  String get projectLoadedSuccessfullyMsg => "Проект успешно загружен";
+  String get projectLoadedSuccessfullyMsg => 'Проект успешно загружен';
   @override
-  String get newProjectCreatedSuccessfullyMsg => "Новый проект успешно создан";
+  String get newProjectCreatedSuccessfullyMsg => 'Новый проект успешно создан';
   @override
   String failedToExecuteNodeErrorMsg(String e) =>
-      "Не удалось выполнить узел: $e";
+      'Не удалось выполнить узел: $e';
 }

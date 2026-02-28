@@ -1,5 +1,6 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,6 +16,15 @@ class HierarchyWidget extends StatefulWidget {
 
   @override
   State<HierarchyWidget> createState() => _HierarchyWidgetState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<FlNodesController>('controller', controller),
+    );
+    properties.add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed));
+  }
 }
 
 class _HierarchyWidgetState extends State<HierarchyWidget> {
@@ -54,16 +64,18 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   List<FlNodeDataModel> _getFilteredAndSortedNodes() {
-    var nodes = widget.controller.nodesAsList;
+    List<FlNodeDataModel> nodes = widget.controller.nodesAsList;
 
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
-      nodes = nodes.where((node) {
-        return node.prototype
-            .displayName(context)
-            .toLowerCase()
-            .contains(_searchQuery.toLowerCase());
-      }).toList();
+      nodes = nodes
+          .where(
+            (node) => node.prototype
+                .displayName(context)
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()),
+          )
+          .toList();
     }
 
     // Filter by selection if needed
@@ -89,8 +101,8 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
         break;
       case HierarchySortOption.position:
         nodes.sort((a, b) {
-          final aDistance = a.offset.dx + a.offset.dy;
-          final bDistance = b.offset.dx + b.offset.dy;
+          final double aDistance = a.offset.dx + a.offset.dy;
+          final double bDistance = b.offset.dx + b.offset.dy;
           return aDistance.compareTo(bDistance);
         });
         break;
@@ -100,69 +112,65 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          right: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withAlpha(51),
-          ),
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      border: Border(
+        right: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(2, 0),
-          ),
-        ],
       ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          _buildSearchAndFilters(),
-          _buildNodeStats(),
-          Expanded(child: _buildNodeList()),
-        ],
-      ),
-    );
-  }
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(25),
+          blurRadius: 8,
+          offset: const Offset(2, 0),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        _buildHeader(),
+        _buildSearchAndFilters(),
+        _buildNodeStats(),
+        Expanded(child: _buildNodeList()),
+      ],
+    ),
+  );
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withAlpha(51),
-          ),
+  Widget _buildHeader() => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      border: Border(
+        bottom: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
         ),
       ),
-      child: Row(
-        spacing: 8,
-        children: [
-          Icon(
-            Icons.account_tree,
-            color: Theme.of(context).colorScheme.primary,
-            size: 20,
+    ),
+    child: Row(
+      spacing: 8,
+      children: [
+        Icon(
+          Icons.account_tree,
+          color: Theme.of(context).colorScheme.primary,
+          size: 20,
+        ),
+        Text(
+          'Node Hierarchy',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
           ),
-          Text(
-            "Node Hierarchy",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 
   Widget _buildSearchAndFilters() {
-    final strings = AppLocalizations.of(context)!;
+    final AppLocalizations strings = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -231,16 +239,18 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                     ),
                     isDense: true,
                   ),
-                  items: HierarchySortOption.values.map((option) {
-                    return DropdownMenuItem(
-                      value: option,
-                      child: Text(
-                        option.displayName,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
+                  items: HierarchySortOption.values
+                      .map(
+                        (option) => DropdownMenuItem(
+                          value: option,
+                          child: Text(
+                            option.displayName,
+                            style: Theme.of(context).textTheme.bodySmall,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() {
@@ -283,10 +293,10 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   Widget _buildNodeStats() {
-    final strings = AppLocalizations.of(context)!;
-    final allNodes = widget.controller.nodesAsList;
-    final filteredNodes = _getFilteredAndSortedNodes();
-    final selectedCount = allNodes.where((n) => n.state.isSelected).length;
+    final AppLocalizations strings = AppLocalizations.of(context)!;
+    final List<FlNodeDataModel> allNodes = widget.controller.nodesAsList;
+    final List<FlNodeDataModel> filteredNodes = _getFilteredAndSortedNodes();
+    final int selectedCount = allNodes.where((n) => n.state.isSelected).length;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -332,8 +342,8 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   Widget _buildNodeList() {
-    final strings = AppLocalizations.of(context)!;
-    final nodes = _getFilteredAndSortedNodes();
+    final AppLocalizations strings = AppLocalizations.of(context)!;
+    final List<FlNodeDataModel> nodes = _getFilteredAndSortedNodes();
 
     if (nodes.isEmpty) {
       return Center(
@@ -380,8 +390,8 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
       itemCount: nodes.length,
       scrollDirection: Axis.vertical,
       itemBuilder: (context, index) {
-        final node = nodes[index];
-        final isSelected = node.state.isSelected;
+        final FlNodeDataModel node = nodes[index];
+        final bool isSelected = node.state.isSelected;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -484,7 +494,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   Color _getNodeTypeColor(FlNodeDataModel node) {
-    final idName = node.prototype.idName;
+    final String idName = node.prototype.idName;
 
     if (idName.contains('value')) return Colors.orange;
     if (idName.contains('generator')) return Colors.blue;
@@ -497,7 +507,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
   }
 
   IconData _getNodeTypeIcon(FlNodeDataModel node) {
-    final idName = node.prototype.idName;
+    final String idName = node.prototype.idName;
 
     if (idName.contains('value')) return Icons.data_object;
     if (idName.contains('generator')) return Icons.computer;

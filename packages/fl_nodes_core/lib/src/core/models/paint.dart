@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:fl_nodes_core/src/core/models/data.dart';
 
-import '../../styles/styles.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
 
 class LinkPaintModel {
   final String linkId;

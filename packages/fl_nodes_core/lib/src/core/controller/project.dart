@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../events/events.dart';
-import '../localization/delegate.dart';
-import '../models/data.dart';
-import 'callback.dart';
-import 'core.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/controller/callback.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
 
 typedef ProjectSaver = Future<bool> Function(Map<String, dynamic> jsonData);
 typedef ProjectLoader = Future<Map<String, dynamic>?> Function(bool isSaved);
@@ -68,12 +68,12 @@ class FlNodesProjectHelper {
     registerDataHandler<int>(
       appVersion: controller.appVersion,
       toJson: (data) => data.toString(),
-      fromJson: (json) => int.parse(json),
+      fromJson: int.parse,
     );
     registerDataHandler<double>(
       appVersion: controller.appVersion,
       toJson: (data) => data.toString(),
-      fromJson: (json) => double.parse(json),
+      fromJson: double.parse,
     );
     registerDataHandler<String>(
       appVersion: controller.appVersion,
@@ -82,12 +82,12 @@ class FlNodesProjectHelper {
     );
     registerDataHandler<List<dynamic>>(
       appVersion: controller.appVersion,
-      toJson: (data) => jsonEncode(data),
+      toJson: jsonEncode,
       fromJson: (json) => jsonDecode(json) as List<dynamic>,
     );
     registerDataHandler<Map<String, dynamic>>(
       appVersion: controller.appVersion,
-      toJson: (data) => jsonEncode(data),
+      toJson: jsonEncode,
       fromJson: (json) => jsonDecode(json) as Map<String, dynamic>,
     );
   }
@@ -115,9 +115,9 @@ class FlNodesProjectHelper {
 
   /// Registers a custom data handler for a specific type.
   void registerDataHandler<T>({
-    String? appVersion,
     required String Function(dynamic data) toJson,
     required T Function(String json) fromJson,
+    String? appVersion,
   }) {
     _dataHandlers[(T, appVersion ?? controller.appVersion)] = DataHandler(
       (data) => toJson(data),
@@ -146,12 +146,12 @@ class FlNodesProjectHelper {
   /// The behavior of this method is determined by the [projectSaver] callback and user defined logic.
   ///
   /// e.g. Save to a file, save to a database, etc.
-  void save({BuildContext? context}) async {
+  Future<void> save({BuildContext? context}) async {
     if (_saveDebounceTimer != null && _saveDebounceTimer!.isActive) return;
 
     _saveDebounceTimer = Timer(controller.config.manualSaveDebounce, () {});
 
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     late final Map<String, dynamic> jsonData;
 
@@ -167,7 +167,7 @@ class FlNodesProjectHelper {
 
     if (jsonData.isEmpty) return;
 
-    final hasSaved = await projectSaver?.call(jsonData);
+    final bool? hasSaved = await projectSaver?.call(jsonData);
     if (hasSaved == false) return;
 
     isSaved = true;
@@ -186,8 +186,8 @@ class FlNodesProjectHelper {
   /// The behavior of this method is determined by the [projectLoader] callback and user defined logic.
   ///
   /// e.g. If the project data is invalid, the user will be prompted to save the project.
-  void load({Map<String, dynamic>? data, BuildContext? context}) async {
-    final strings = FlNodesLocalizations.of(context);
+  Future<void> load({Map<String, dynamic>? data, BuildContext? context}) async {
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     late final Map<String, dynamic>? jsonData;
 
@@ -224,7 +224,7 @@ class FlNodesProjectHelper {
     // Normally this would be handled by the node editor itself, but since we're loading
     // a project, we need to manually set the offsets of unbound nodes otherwise we would,
     // once again, add the nodes to the project data, which would be incorrect.
-    for (final node in projectData.nodes.values) {
+    for (final FlNodeDataModel node in projectData.nodes.values) {
       controller.unboundNodeOffsets[node.id] = node.offset;
     }
 
@@ -249,10 +249,10 @@ class FlNodesProjectHelper {
   /// The behavior of this method is determined by the [projectCreator] callback and user defined logic.
   ///
   /// e.g. If the project is not saved, the user will be prompted to save the project.
-  void create({BuildContext? context}) async {
-    final strings = FlNodesLocalizations.of(context);
+  Future<void> create({BuildContext? context}) async {
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
-    final shouldProceed = await projectCreator?.call(isSaved);
+    final bool? shouldProceed = await projectCreator?.call(isSaved);
 
     if (shouldProceed == false) return;
 

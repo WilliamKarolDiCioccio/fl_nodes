@@ -6,19 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../styles/styles.dart';
-import '../containers/spatial_hash_grid.dart';
-import '../events/bus.dart';
-import '../events/events.dart';
-import '../models/config.dart';
-import '../models/data.dart';
-import '../utils/misc/nodes.dart';
-import '../utils/rendering/renderbox.dart';
-import 'callback.dart';
-import 'clipboard.dart';
-import 'history.dart';
-import 'project.dart';
-import 'runner.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:fl_nodes_core/src/core/containers/spatial_hash_grid.dart';
+import 'package:fl_nodes_core/src/core/events/bus.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/config.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
+import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes_core/src/core/controller/callback.dart';
+import 'package:fl_nodes_core/src/core/controller/clipboard.dart';
+import 'package:fl_nodes_core/src/core/controller/history.dart';
+import 'package:fl_nodes_core/src/core/controller/project.dart';
+import 'package:fl_nodes_core/src/core/controller/runner.dart';
 
 export '../models/config.dart';
 
@@ -145,9 +145,9 @@ class FlNodesController with ChangeNotifier {
 
     _viewportOffsetAnimController.stop();
 
-    final beginOffset = viewportOffset;
+    final Offset beginOffset = viewportOffset;
 
-    final tempOffset = absolute ? offset : offset + beginOffset;
+    final Offset tempOffset = absolute ? offset : offset + beginOffset;
 
     final Offset endOffset = Offset(
       tempOffset.dx.clamp(
@@ -163,8 +163,8 @@ class FlNodesController with ChangeNotifier {
     if (animate) {
       _viewportOffsetAnimController.reset();
 
-      final distance = (offset - endOffset).distance;
-      final durationFactor = (distance / 1000).clamp(0.5, 3.0);
+      final double distance = (offset - endOffset).distance;
+      final double durationFactor = (distance / 1000).clamp(0.5, 3.0);
 
       _viewportOffsetAnimController.duration = Duration(
         milliseconds: (1000 * durationFactor).toInt(),
@@ -223,9 +223,9 @@ class FlNodesController with ChangeNotifier {
 
     _viewportZoomAnimController.stop();
 
-    final beginZoom = viewportZoom;
+    final double beginZoom = viewportZoom;
 
-    final endZoom = (absolute ? zoom : viewportZoom + zoom).clamp(
+    final double endZoom = (absolute ? zoom : viewportZoom + zoom).clamp(
       config.minZoom,
       config.maxZoom,
     );
@@ -336,13 +336,13 @@ class FlNodesController with ChangeNotifier {
   /// Quick access to frequently used configuration properties.
 
   /// Enable or disable zooming in the node editor.
-  void enableSnapToGrid(bool enable) async {
+  Future<void> enableSnapToGrid(bool enable) async {
     if (!enable) {
-      for (final node in nodes.values) {
+      for (final FlNodeDataModel node in nodes.values) {
         node.offset = unboundNodeOffsets[node.id]!;
       }
     } else {
-      for (final node in nodes.values) {
+      for (final FlNodeDataModel node in nodes.values) {
         node.offset = Offset(
           (node.offset.dx / config.snapToGridSize).round() *
               config.snapToGridSize,
@@ -491,7 +491,7 @@ class FlNodesController with ChangeNotifier {
       );
     }
 
-    final instance = createNode(
+    final FlNodeDataModel instance = createNode(
       nodePrototypes[name]!,
       controller: this,
       offset: offset,
@@ -502,11 +502,11 @@ class FlNodesController with ChangeNotifier {
     unboundNodeOffsets.putIfAbsent(instance.id, () => instance.offset);
 
     if (links != null) {
-      for (final entry in links.entries) {
-        final fromPortIdName = entry.key;
-        final toPortLocator = entry.value;
+      for (final MapEntry<String, PortLocator> entry in links.entries) {
+        final String fromPortIdName = entry.key;
+        final PortLocator toPortLocator = entry.value;
 
-        final link = addLink(
+        final FlLinkDataModel? link = addLink(
           instance.id,
           fromPortIdName,
           toPortLocator.nodeId,
@@ -570,8 +570,8 @@ class FlNodesController with ChangeNotifier {
       ),
     );
 
-    for (final port in node.ports.values) {
-      for (final link in port.links) {
+    for (final FlPortDataModel port in node.ports.values) {
+      for (final FlLinkDataModel link in port.links) {
         addLinkFromExisting(link, isHandled: isHandled);
       }
     }
@@ -580,17 +580,18 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to remove a node by its ID.
   ///
   /// Emits a [FlRemoveNodeEvent] event.
-  void removeNodeById(
+  Future<void> removeNodeById(
     String id, {
     String? eventId,
     bool isHandled = false,
   }) async {
     if (!nodes.containsKey(id)) return;
 
-    final node = nodes[id]!;
+    final FlNodeDataModel node = nodes[id]!;
 
-    for (final port in node.ports.values) {
-      final linksToRemove = port.links.map((link) => link.id).toList();
+    for (final FlPortDataModel port in node.ports.values) {
+      final List<String> linksToRemove =
+          port.links.map((link) => link.id).toList();
 
       for (final linkId in linksToRemove) {
         removeLinkById(linkId, isHandled: true);
@@ -632,10 +633,10 @@ class FlNodesController with ChangeNotifier {
     // Check for self-links
     if (node1Id == node2Id) return null;
 
-    final node1 = nodes[node1Id]!;
-    final port1 = node1.ports[port1IdName]!;
-    final node2 = nodes[node2Id]!;
-    final port2 = node2.ports[port2IdName]!;
+    final FlNodeDataModel node1 = nodes[node1Id]!;
+    final FlPortDataModel port1 = node1.ports[port1IdName]!;
+    final FlNodeDataModel node2 = nodes[node2Id]!;
+    final FlPortDataModel port2 = node2.ports[port2IdName]!;
 
     // if this exact link already exists, don't do anything
     if (FlNodesUtils.linkExists(
@@ -653,7 +654,7 @@ class FlNodesController with ChangeNotifier {
       return null;
     }
 
-    final errorMessage = port1.canLinkTo(port2);
+    final String? errorMessage = port1.canLinkTo(port2);
 
     if (errorMessage != null) {
       onCallback?.call(
@@ -711,16 +712,18 @@ class FlNodesController with ChangeNotifier {
       return;
     }
 
-    final node1 = nodes[link.ports.$1.nodeId]!;
-    final node2 = nodes[link.ports.$2.nodeId]!;
+    final FlNodeDataModel node1 = nodes[link.ports.$1.nodeId]!;
+    final FlNodeDataModel node2 = nodes[link.ports.$2.nodeId]!;
 
     if (!node1.ports.containsKey(link.ports.$1.portId) ||
         !node2.ports.containsKey(link.ports.$2.portId)) {
       return;
     }
 
-    final port1 = nodes[link.ports.$1.nodeId]!.ports[link.ports.$1.portId]!;
-    final port2 = nodes[link.ports.$2.nodeId]!.ports[link.ports.$2.portId]!;
+    final FlPortDataModel port1 =
+        nodes[link.ports.$1.nodeId]!.ports[link.ports.$1.portId]!;
+    final FlPortDataModel port2 =
+        nodes[link.ports.$2.nodeId]!.ports[link.ports.$2.portId]!;
 
     port1.links.add(link);
     port2.links.add(link);
@@ -753,11 +756,13 @@ class FlNodesController with ChangeNotifier {
   }) {
     if (!links.containsKey(id)) return;
 
-    final link = links[id]!;
+    final FlLinkDataModel link = links[id]!;
 
     // Remove the link from its associated ports
-    final port1 = nodes[link.ports.$1.nodeId]?.ports[link.ports.$1.portId];
-    final port2 = nodes[link.ports.$2.nodeId]?.ports[link.ports.$2.portId];
+    final FlPortDataModel? port1 =
+        nodes[link.ports.$1.nodeId]?.ports[link.ports.$1.portId];
+    final FlPortDataModel? port2 =
+        nodes[link.ports.$2.nodeId]?.ports[link.ports.$2.portId];
 
     port1?.links.remove(link);
     port2?.links.remove(link);
@@ -828,8 +833,9 @@ class FlNodesController with ChangeNotifier {
     if (!nodes.containsKey(nodeId)) return;
     if (!nodes[nodeId]!.ports.containsKey(portId)) return;
 
-    final port = nodes[nodeId]!.ports[portId]!;
-    final linksToRemove = port.links.map((link) => link.id).toList();
+    final FlPortDataModel port = nodes[nodeId]!.ports[portId]!;
+    final List<String> linksToRemove =
+        port.links.map((link) => link.id).toList();
 
     for (final linkId in linksToRemove) {
       removeLinkById(linkId, isHandled: linkId != linksToRemove.last);
@@ -851,7 +857,7 @@ class FlNodesController with ChangeNotifier {
   }) {
     if (!nodes.containsKey(nodeId)) return;
 
-    final node = nodes[nodeId]!;
+    final FlNodeDataModel node = nodes[nodeId]!;
     node.customData[key] = value;
 
     if (needsLayout) {
@@ -900,13 +906,13 @@ class FlNodesController with ChangeNotifier {
   void setFieldData(
     String nodeId,
     String fieldId, {
-    dynamic data,
     required FlFieldEventType eventType,
+    dynamic data,
   }) {
     if (eventType == FlFieldEventType.change) return;
 
-    final node = nodes[nodeId]!;
-    final field = node.fields[fieldId]!;
+    final FlNodeDataModel node = nodes[nodeId]!;
+    final FlFieldDataModel field = node.fields[fieldId]!;
     field.data = data;
 
     eventBus.emit(
@@ -923,8 +929,8 @@ class FlNodesController with ChangeNotifier {
   ///
   /// Emit a [NodeRenderModeEvent] event.
   void toggleCollapseSelectedNodes(bool collapse) {
-    for (final id in selectedNodeIds) {
-      final node = nodes[id];
+    for (final String id in selectedNodeIds) {
+      final FlNodeDataModel? node = nodes[id];
       node?.state.isCollapsed = collapse;
     }
 
@@ -949,7 +955,7 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to drag the selected nodes by a given delta affecting their offsets.
   ///
   /// Emits a [FlDragSelectionEvent] event.
-  void dragSelection(
+  Future<void> dragSelection(
     Offset delta, {
     String? eventId,
     bool isWorldDelta = false,
@@ -961,8 +967,8 @@ class FlNodesController with ChangeNotifier {
     // convert it by dividing by the viewport zoom.
     final Offset effectiveDelta = isWorldDelta ? delta : delta / viewportZoom;
 
-    for (final id in selectedNodeIds) {
-      final node = nodes[id]!;
+    for (final String id in selectedNodeIds) {
+      final FlNodeDataModel node = nodes[id]!;
 
       // Reset the unbound offset if requested (e.g. during undo/redo)
       if (resetUnboundOffset) {
@@ -975,7 +981,7 @@ class FlNodesController with ChangeNotifier {
       unboundNodeOffsets[id] = unboundNodeOffsets[id]! + effectiveDelta;
 
       if (config.enableSnapToGrid) {
-        final unboundOffset = unboundNodeOffsets[id]!;
+        final Offset unboundOffset = unboundNodeOffsets[id]!;
 
         // Snap the node's offset to the grid using rounding.
         node.offset = Offset(
@@ -1016,7 +1022,7 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to select nodes by their IDs.
   ///
   /// Emits a [FlNodeSelectionEvent] event.
-  void selectNodesById(
+  Future<void> selectNodesById(
     Set<String> ids, {
     bool holdSelection = false,
     bool isHandled = false,
@@ -1030,8 +1036,8 @@ class FlNodesController with ChangeNotifier {
 
     selectedNodeIds.addAll(ids);
 
-    for (final id in selectedNodeIds) {
-      final node = nodes[id];
+    for (final String id in selectedNodeIds) {
+      final FlNodeDataModel? node = nodes[id];
       node?.state.isSelected = true;
     }
 
@@ -1055,12 +1061,13 @@ class FlNodesController with ChangeNotifier {
   /// hash grid to find nodes that are within the selection area and then selects them.
   ///
   /// See [selectNodesById] for more information.
-  void selectNodesByArea({bool holdSelection = false}) async {
+  Future<void> selectNodesByArea({bool holdSelection = false}) async {
     if (_highlightArea == null || _highlightArea == Rect.zero) {
       return clearSelection();
     }
 
-    final containedNodes = nodesSpatialHashGrid.queryArea(_highlightArea!);
+    final Set<String> containedNodes =
+        nodesSpatialHashGrid.queryArea(_highlightArea!);
 
     selectNodesById(
       containedNodes,
@@ -1073,7 +1080,7 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to select a link by its ID.
   ///
   /// Emits a [FlNodeSelectionEvent] event.
-  void selectLinkById(
+  Future<void> selectLinkById(
     String id, {
     bool holdSelection = false,
     bool isHandled = false,
@@ -1086,8 +1093,8 @@ class FlNodesController with ChangeNotifier {
 
     selectedLinkIds.add(id);
 
-    for (final id in selectedLinkIds) {
-      final link = links[id];
+    for (final String id in selectedLinkIds) {
+      final FlLinkDataModel? link = links[id];
       link?.state.isSelected = true;
     }
 
@@ -1107,13 +1114,13 @@ class FlNodesController with ChangeNotifier {
 
   /// This method is used to deselect all selected nodes.
   void clearSelection({bool isHandled = false}) {
-    for (final id in selectedNodeIds) {
-      final node = nodes[id];
+    for (final String id in selectedNodeIds) {
+      final FlNodeDataModel? node = nodes[id];
       node?.state.isSelected = false;
     }
 
-    for (final id in selectedLinkIds) {
-      final link = links[id];
+    for (final String id in selectedLinkIds) {
+      final FlLinkDataModel? link = links[id];
       link?.state.isSelected = false;
     }
 
@@ -1160,13 +1167,13 @@ class FlNodesController with ChangeNotifier {
   }) {
     selectNodesById(ids, holdSelection: holdSelection);
 
-    final encompassingRect = FlNodesUtils.calculateEncompassingRect(
+    final Rect encompassingRect = FlNodesUtils.calculateEncompassingRect(
       selectedNodeIds,
       nodes,
       margin: 256,
     );
 
-    final nodeEditorSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
+    final Size nodeEditorSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
 
     setViewportOffset(
       -encompassingRect.center,
@@ -1174,7 +1181,7 @@ class FlNodesController with ChangeNotifier {
       absolute: true,
     );
 
-    final fitZoom = min(
+    final double fitZoom = min(
       nodeEditorSize.width / encompassingRect.width,
       nodeEditorSize.height / encompassingRect.height,
     );
@@ -1198,7 +1205,7 @@ class FlNodesController with ChangeNotifier {
 
     final regex = RegExp(name, caseSensitive: false);
 
-    for (final node in nodes.values) {
+    for (final FlNodeDataModel node in nodes.values) {
       if (regex.hasMatch(node.prototype.displayName(context))) {
         results.add(node.id);
       }

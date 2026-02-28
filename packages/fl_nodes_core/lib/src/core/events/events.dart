@@ -1,9 +1,9 @@
 import 'package:fl_nodes_core/src/core/controller/runner.dart';
 import 'package:flutter/material.dart';
 
-import '../../styles/styles.dart';
-import '../controller/core.dart';
-import '../models/data.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
 
 /// Base event: small immutable payload common to all events.
 @immutable
@@ -107,8 +107,8 @@ final class FlViewportOffsetEvent extends FlViewportClassEvent
 
   const FlViewportOffsetEvent(
     this.offset, {
-    this.animate = true,
     required super.id,
+    this.animate = true,
     super.isHandled = false,
   });
 }
@@ -122,8 +122,8 @@ final class FlViewportZoomEvent extends FlViewportClassEvent
 
   const FlViewportZoomEvent(
     this.zoom, {
-    this.animate = true,
     required super.id,
+    this.animate = true,
     super.isHandled = false,
   });
 }
@@ -176,7 +176,7 @@ final class FlDragSelectionStartEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'nodeIds': nodeIds.toList(),
         'position': [position.dx, position.dy],
@@ -206,7 +206,7 @@ final class FlDragSelectionEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'nodeIds': nodeIds.toList(),
         'delta': [delta.dx, delta.dy],
@@ -236,7 +236,7 @@ final class FlDragSelectionEndEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'position': [position.dx, position.dy],
         'nodeIds': nodeIds.toList(),
@@ -326,7 +326,7 @@ final class FlAddNodeEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'node': node.toJson(dataHandlers),
       };
@@ -334,17 +334,16 @@ final class FlAddNodeEvent extends FlGraphEditClassEvent
   factory FlAddNodeEvent.fromJson(
     Map<String, dynamic> json, {
     required FlNodesController controller,
-  }) {
-    return FlAddNodeEvent(
-      FlNodeDataModel.fromJson(
-        json['node'] as Map<String, dynamic>,
-        nodePrototypes: controller.nodePrototypes,
-        dataHandlers: controller.project.dataHandlers,
-      ),
-      id: json['id'] as String,
-      isHandled: json['isHandled'] as bool,
-    );
-  }
+  }) =>
+      FlAddNodeEvent(
+        FlNodeDataModel.fromJson(
+          json['node'] as Map<String, dynamic>,
+          nodePrototypes: controller.nodePrototypes,
+          dataHandlers: controller.project.dataHandlers,
+        ),
+        id: json['id'] as String,
+        isHandled: json['isHandled'] as bool,
+      );
 }
 
 final class FlRemoveNodeEvent extends FlGraphEditClassEvent
@@ -358,7 +357,7 @@ final class FlRemoveNodeEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'node': node.toJson(dataHandlers),
       };
@@ -366,17 +365,16 @@ final class FlRemoveNodeEvent extends FlGraphEditClassEvent
   factory FlRemoveNodeEvent.fromJson(
     Map<String, dynamic> json, {
     required FlNodesController controller,
-  }) {
-    return FlRemoveNodeEvent(
-      FlNodeDataModel.fromJson(
-        json['node'] as Map<String, dynamic>,
-        nodePrototypes: controller.nodePrototypes,
-        dataHandlers: controller.project.dataHandlers,
-      ),
-      id: json['id'] as String,
-      isHandled: json['isHandled'] as bool,
-    );
-  }
+  }) =>
+      FlRemoveNodeEvent(
+        FlNodeDataModel.fromJson(
+          json['node'] as Map<String, dynamic>,
+          nodePrototypes: controller.nodePrototypes,
+          dataHandlers: controller.project.dataHandlers,
+        ),
+        id: json['id'] as String,
+        isHandled: json['isHandled'] as bool,
+      );
 }
 
 final class FlAddLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
@@ -389,7 +387,7 @@ final class FlAddLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'link': link.toJson(),
       };
@@ -397,18 +395,15 @@ final class FlAddLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   factory FlAddLinkEvent.fromJson(
     Map<String, dynamic> json,
     Map<Type, DataHandler> dataHandlers,
-    FlLinkPrototype prototype,
-  ) {
-    return FlAddLinkEvent(
-      FlLinkDataModel.fromJson(
-        json['link'] as Map<String, dynamic>,
-        dataHandlers,
-        prototype,
-      ),
-      id: json['id'] as String,
-      isHandled: json['isHandled'] as bool,
-    );
-  }
+  ) =>
+      FlAddLinkEvent(
+        FlLinkDataModel.fromJson(
+          json['link'] as Map<String, dynamic>,
+          dataHandlers,
+        ),
+        id: json['id'] as String,
+        isHandled: json['isHandled'] as bool,
+      );
 }
 
 final class FlRemoveLinkEvent extends FlGraphEditClassEvent
@@ -422,7 +417,7 @@ final class FlRemoveLinkEvent extends FlGraphEditClassEvent
   });
 
   @override
-  Map<String, dynamic> toJson(dataHandlers) => {
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => {
         ...super.toJson(dataHandlers),
         'link': link.toJson(),
       };
@@ -430,18 +425,15 @@ final class FlRemoveLinkEvent extends FlGraphEditClassEvent
   factory FlRemoveLinkEvent.fromJson(
     Map<String, dynamic> json,
     Map<Type, DataHandler> dataHandlers,
-    FlLinkPrototype prototype,
-  ) {
-    return FlRemoveLinkEvent(
-      FlLinkDataModel.fromJson(
-        json['link'] as Map<String, dynamic>,
-        dataHandlers,
-        prototype,
-      ),
-      id: json['id'] as String,
-      isHandled: json['isHandled'] as bool,
-    );
-  }
+  ) =>
+      FlRemoveLinkEvent(
+        FlLinkDataModel.fromJson(
+          json['link'] as Map<String, dynamic>,
+          dataHandlers,
+        ),
+        id: json['id'] as String,
+        isHandled: json['isHandled'] as bool,
+      );
 }
 
 enum FlFieldEventType {

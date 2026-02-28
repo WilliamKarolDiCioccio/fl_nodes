@@ -2,6 +2,7 @@ import 'package:fl_context_menu/src/core/models/config.dart';
 import 'package:fl_context_menu/src/core/models/entries.dart';
 import 'package:fl_context_menu/src/styles/styles.dart';
 import 'package:fl_context_menu/src/widgets/context_menu.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FlSubmenuTile extends StatefulWidget {
@@ -14,18 +15,32 @@ class FlSubmenuTile extends StatefulWidget {
   final FlMenuStyle submenuStyle;
 
   const FlSubmenuTile({
-    super.key,
     required this.id,
-    this.label,
-    this.iconData,
     required this.data,
     required this.menuLevel,
     required this.parentStyle,
     required this.submenuStyle,
+    super.key,
+    this.label,
+    this.iconData,
   });
 
   @override
   State<FlSubmenuTile> createState() => _FlSubmenuTileState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('id', id));
+    properties.add(StringProperty('label', label));
+    properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
+    properties.add(IterableProperty<FlMenuEntryDataModel>('data', data));
+    properties.add(IntProperty('menuLevel', menuLevel));
+    properties
+        .add(DiagnosticsProperty<FlMenuStyle>('parentStyle', parentStyle));
+    properties
+        .add(DiagnosticsProperty<FlMenuStyle>('submenuStyle', submenuStyle));
+  }
 }
 
 class _FlSubmenuTileState extends State<FlSubmenuTile> {
@@ -39,9 +54,9 @@ class _FlSubmenuTileState extends State<FlSubmenuTile> {
   void _showSubmenu(BuildContext context) {
     if (_submenuOverlay != null) return;
 
-    final renderBox = context.findRenderObject() as RenderBox;
-    final position = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
+    final renderBox = context.findRenderObject()! as RenderBox;
+    final Offset position = renderBox.localToGlobal(Offset.zero);
+    final Size size = renderBox.size;
 
     _submenuOverlay = OverlayEntry(
       builder: (context) => Stack(
@@ -56,9 +71,11 @@ class _FlSubmenuTileState extends State<FlSubmenuTile> {
                 _checkAndRemoveSubmenu();
               },
               child: FlMenuWidget(
-                data: FlMenuDataModel(sections: [
-                  FlMenuSectionDataModel(items: widget.data),
-                ]),
+                data: FlMenuDataModel(
+                  sections: [
+                    FlMenuSectionDataModel(items: widget.data),
+                  ],
+                ),
                 position: Offset(position.dx + size.width, position.dy),
                 config: const FlMenuConfig(),
                 style: _style,
@@ -93,10 +110,10 @@ class _FlSubmenuTileState extends State<FlSubmenuTile> {
 
   @override
   Widget build(BuildContext context) {
-    final hoverColor = _itemStyle.hoverColor;
-    final textStyle = _itemStyle.textStyle;
-    final iconSize = _itemStyle.iconSize;
-    final padding = _itemStyle.padding;
+    final Color hoverColor = _itemStyle.hoverColor;
+    final TextStyle textStyle = _itemStyle.textStyle;
+    final double iconSize = _itemStyle.iconSize;
+    final EdgeInsetsGeometry padding = _itemStyle.padding;
 
     return MouseRegion(
       onEnter: (_) {
@@ -122,7 +139,7 @@ class _FlSubmenuTileState extends State<FlSubmenuTile> {
             children: [
               if (widget.iconData != null) ...[
                 Icon(
-                  widget.iconData!,
+                  widget.iconData,
                   size: iconSize,
                   color: textStyle.color?.withAlpha(185),
                 ),

@@ -12,7 +12,7 @@ mixin SingleListenerChangeNotifier implements Listenable {
   void addListener(VoidCallback listener) {
     if (this.listener != null) {
       throw StateError(
-        "Trying to add another listener, but this Listenable only supports one listener at a time",
+        'Trying to add another listener, but this Listenable only supports one listener at a time',
       );
     }
 

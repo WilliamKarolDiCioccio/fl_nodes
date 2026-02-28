@@ -1,11 +1,11 @@
-import '../../models/data.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:flutter/widgets.dart';
 
 /// Utility class for working with RenderBox objects.
 final class RenderBoxUtils {
   /// Retrieves the global offset of a widget identified by a [GlobalKey].
   static Offset? getOffsetFromGlobalKey(GlobalKey key) {
-    final renderObject = key.currentContext?.findRenderObject();
+    final RenderObject? renderObject = key.currentContext?.findRenderObject();
     if (renderObject is RenderBox) {
       return renderObject.localToGlobal(Offset.zero);
     }
@@ -17,8 +17,9 @@ final class RenderBoxUtils {
     GlobalKey key,
     GlobalKey relativeTo,
   ) {
-    final renderObject = key.currentContext?.findRenderObject();
-    final relativeRenderObject = relativeTo.currentContext?.findRenderObject();
+    final RenderObject? renderObject = key.currentContext?.findRenderObject();
+    final RenderObject? relativeRenderObject =
+        relativeTo.currentContext?.findRenderObject();
     if (renderObject is RenderBox && relativeRenderObject is RenderBox) {
       return renderObject.localToGlobal(
         Offset.zero,
@@ -30,7 +31,7 @@ final class RenderBoxUtils {
 
   /// Retrieves the size of a widget identified by a [GlobalKey].
   static Size? getSizeFromGlobalKey(GlobalKey key) {
-    final renderObject = key.currentContext?.findRenderObject();
+    final RenderObject? renderObject = key.currentContext?.findRenderObject();
     if (renderObject is RenderBox) {
       return renderObject.size;
     }
@@ -39,7 +40,7 @@ final class RenderBoxUtils {
 
   /// Retrieves the bounds of a Node widget.
   static Rect? getEntityBoundsInWorld(FlNodeDataModel node) {
-    final size = getSizeFromGlobalKey(node.key);
+    final Size? size = getSizeFromGlobalKey(node.key);
     if (size != null) {
       return Rect.fromLTWH(
         node.offset.dx,
@@ -52,8 +53,8 @@ final class RenderBoxUtils {
   }
 
   static Rect? getEditorBoundsInScreen(GlobalKey key) {
-    final size = getSizeFromGlobalKey(key);
-    final offset = getOffsetFromGlobalKey(key);
+    final Size? size = getSizeFromGlobalKey(key);
+    final Offset? offset = getOffsetFromGlobalKey(key);
     if (size != null && offset != null) {
       return Rect.fromLTWH(
         offset.dx,
@@ -73,12 +74,13 @@ final class RenderBoxUtils {
     double zoom,
   ) {
     // Get the bounds of the editor widget on the screen
-    final nodeEditorBounds = getEditorBoundsInScreen(editorKey);
+    final Rect? nodeEditorBounds = getEditorBoundsInScreen(editorKey);
     if (nodeEditorBounds == null) return null;
-    final size = nodeEditorBounds.size;
+    final Size size = nodeEditorBounds.size;
 
     // Adjust the screen position relative to the top-left of the editor
-    final adjustedScreenPosition = screenPosition - nodeEditorBounds.topLeft;
+    final Offset adjustedScreenPosition =
+        screenPosition - nodeEditorBounds.topLeft;
 
     // Calculate the viewport rectangle in canvas space
     final viewport = Rect.fromLTWH(
@@ -89,9 +91,9 @@ final class RenderBoxUtils {
     );
 
     // Calculate the canvas position corresponding to the screen position
-    final canvasX = viewport.left +
+    final double canvasX = viewport.left +
         (adjustedScreenPosition.dx / size.width) * viewport.width;
-    final canvasY = viewport.top +
+    final double canvasY = viewport.top +
         (adjustedScreenPosition.dy / size.height) * viewport.height;
 
     return Offset(canvasX, canvasY);
@@ -108,7 +110,7 @@ final class RenderBoxUtils {
     if (rects.isEmpty) return Rect.zero;
 
     Rect boundingRect = rects.first;
-    for (final rect in rects.skip(1)) {
+    for (final Rect rect in rects.skip(1)) {
       boundingRect = boundingRect.expandToInclude(rect);
     }
 

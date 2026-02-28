@@ -55,14 +55,13 @@ class FlMenuDividerStyle {
     double? thickness,
     double? indent,
     double? endIndent,
-  }) {
-    return FlMenuDividerStyle(
-      color: color ?? this.color,
-      thickness: thickness ?? this.thickness,
-      indent: indent ?? this.indent,
-      endIndent: endIndent ?? this.endIndent,
-    );
-  }
+  }) =>
+      FlMenuDividerStyle(
+        color: color ?? this.color,
+        thickness: thickness ?? this.thickness,
+        indent: indent ?? this.indent,
+        endIndent: endIndent ?? this.endIndent,
+      );
 }
 
 /// Style configuration for a search bar within the context menu.
@@ -100,15 +99,14 @@ class FlSearchBarStyle {
     TextStyle? textStyle,
     String? hintText,
     TextStyle? hintStyle,
-  }) {
-    return FlSearchBarStyle(
-      decoration: decoration ?? this.decoration,
-      padding: padding ?? this.padding,
-      textStyle: textStyle ?? this.textStyle,
-      hintText: hintText ?? this.hintText,
-      hintStyle: hintStyle ?? this.hintStyle,
-    );
-  }
+  }) =>
+      FlSearchBarStyle(
+        decoration: decoration ?? this.decoration,
+        padding: padding ?? this.padding,
+        textStyle: textStyle ?? this.textStyle,
+        hintText: hintText ?? this.hintText,
+        hintStyle: hintStyle ?? this.hintStyle,
+      );
 }
 
 /// Style configuration for a single context menu.
@@ -165,17 +163,16 @@ class FlMenuStyle {
     FlMenuStyle? secondLevelMenuStyle,
     FlMenuStyle? thirdLevelMenuStyle,
     FlMenuStyle? nThLevelMenuStyle,
-  }) {
-    return FlMenuStyle(
-      decoration: decoration ?? this.decoration,
-      padding: padding ?? this.padding,
-      elevation: elevation ?? this.elevation,
-      itemStyle: itemStyle ?? this.itemStyle,
-      dividerStyle: dividerStyle ?? this.dividerStyle,
-      searchBarStyle: searchBarStyle ?? this.searchBarStyle,
-      secondLevelMenuStyle: secondLevelMenuStyle ?? this.secondLevelMenuStyle,
-      thirdLevelMenuStyle: thirdLevelMenuStyle ?? this.thirdLevelMenuStyle,
-      nThLevelMenuStyle: nThLevelMenuStyle ?? this.nThLevelMenuStyle,
-    );
-  }
+  }) =>
+      FlMenuStyle(
+        decoration: decoration ?? this.decoration,
+        padding: padding ?? this.padding,
+        elevation: elevation ?? this.elevation,
+        itemStyle: itemStyle ?? this.itemStyle,
+        dividerStyle: dividerStyle ?? this.dividerStyle,
+        searchBarStyle: searchBarStyle ?? this.searchBarStyle,
+        secondLevelMenuStyle: secondLevelMenuStyle ?? this.secondLevelMenuStyle,
+        thirdLevelMenuStyle: thirdLevelMenuStyle ?? this.thirdLevelMenuStyle,
+        nThLevelMenuStyle: nThLevelMenuStyle ?? this.nThLevelMenuStyle,
+      );
 }

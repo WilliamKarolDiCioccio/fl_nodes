@@ -21,46 +21,43 @@ FlNodePrototype createValueNode<T>({
     Function(dynamic data, {required FlFieldEventType eventType}) setData,
   )?
   editorBuilder,
-}) {
-  return FlNodePrototype(
-    idName: 'value.$idName',
-    displayName: displayName,
-    description: (context) =>
-        AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
-    headerStyleBuilder: NodeHeaderStyles.value,
-    portPrototypes: [
-      FlControlOutputPortPrototype(
-        idName: 'completed',
-        displayName: (context) =>
-            AppLocalizations.of(context)!.completedPortName,
-        styleBuilder: PortStyles.controlOutput,
-        geometricOrientation: FlPortGeometricOrientation.right,
-      ),
-      FlDataOutputPortPrototype<T>(
-        idName: 'value',
-        linkPrototype: FlLinkPrototype(label: (_) => T.toString()),
-        displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-        styleBuilder: PortStyles.dataOutput,
-        geometricOrientation: FlPortGeometricOrientation.right,
-      ),
-    ],
-    fieldPrototypes: [
-      FlFieldPrototype(
-        idName: 'value',
-        displayName: (context) => AppLocalizations.of(context)!.valueFieldName,
-        dataType: T,
-        defaultData: defaultValue,
-        visualizerBuilder: (data) => visualizerBuilder(data as T),
-        onVisualizerTap: onVisualizerTap,
-        editorBuilder: editorBuilder,
-      ),
-    ],
-    onExecute: (ports, fields, state, forward, put) async {
-      put({('value', fields['value']!)});
-      forward({('completed')});
-    },
-  );
-}
+}) => FlNodePrototype(
+  idName: 'value.$idName',
+  displayName: displayName,
+  description: (context) =>
+      AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
+  headerStyleBuilder: NodeHeaderStyles.value,
+  portPrototypes: [
+    FlControlOutputPortPrototype(
+      idName: 'completed',
+      displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+      styleBuilder: PortStyles.controlOutput,
+      geometricOrientation: FlPortGeometricOrientation.right,
+    ),
+    FlDataOutputPortPrototype<T>(
+      idName: 'value',
+      linkPrototype: FlLinkPrototype(label: (_) => T.toString()),
+      displayName: (context) => AppLocalizations.of(context)!.valuePortName,
+      styleBuilder: PortStyles.dataOutput,
+      geometricOrientation: FlPortGeometricOrientation.right,
+    ),
+  ],
+  fieldPrototypes: [
+    FlFieldPrototype(
+      idName: 'value',
+      displayName: (context) => AppLocalizations.of(context)!.valueFieldName,
+      dataType: T,
+      defaultData: defaultValue,
+      visualizerBuilder: (data) => visualizerBuilder(data as T),
+      onVisualizerTap: onVisualizerTap,
+      editorBuilder: editorBuilder,
+    ),
+  ],
+  onExecute: (ports, fields, state, forward, put) async {
+    put({('value', fields['value']!)});
+    forward({'completed'});
+  },
+);
 
 void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
@@ -195,7 +192,9 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: (data as List<bool>).map((e) => e ? 'true' : 'false').join(', '),
+          initialValue: (data as List<bool>)
+              .map((e) => e ? 'true' : 'false')
+              .join(', '),
           onChanged: (value) {
             setData(
               value.split(',').map((e) => e.trim() == 'true').toList(),
@@ -219,12 +218,11 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     return '[${data.length > 3 ? '${data.take(3).join(', ')}...' : data.join(', ')}]';
   }
 
-  String serializeStringList(List<String> data) {
-    return data.map((e) => '"$e"').join(', ');
-  }
+  String serializeStringList(List<String> data) =>
+      data.map((e) => '"$e"').join(', ');
 
   List<String> parseStringList(String input) {
-    final regex = RegExp(r'"(.*?)"');
+    final regex = RegExp('"(.*?)"');
     return regex.allMatches(input).map((e) => e.group(1)!).toList();
   }
 
@@ -367,7 +365,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
             put({('result', b == 0 ? 0 : a / b)});
         }
 
-        forward({('completed')});
+        forward({'completed'});
       },
     ),
   );
@@ -398,7 +396,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       onExecute: (ports, fields, state, forward, put) async {
         put({('value', Random().nextDouble())});
 
-        forward({('completed')});
+        forward({'completed'});
       },
     ),
   );
@@ -439,7 +437,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       onExecute: (ports, fields, state, forward, put) async {
         final condition = ports['condition']! as bool;
 
-        condition ? forward({('trueBranch')}) : forward({('falseBranch')});
+        condition ? forward({'trueBranch'}) : forward({'falseBranch'});
       },
     ),
   );
@@ -512,7 +510,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           state['iteration'] = ++i;
           forward({'loopBody'});
         } else {
-          forward({('completed')}, definitive: true);
+          forward({'completed'}, definitive: true);
         }
       },
     ),
@@ -619,7 +617,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
             put({('result', a <= b)});
         }
 
-        forward({('completed')});
+        forward({'completed'});
       },
     ),
   );
@@ -655,7 +653,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       onExecute: (ports, fields, state, forward, put) async {
         TerminalController.instance.info('Value: ${ports['value']}');
 
-        forward({('completed')});
+        forward({'completed'});
       },
     ),
   );
@@ -738,7 +736,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
 
         put({('rounded', double.parse(value.toStringAsFixed(decimals)))});
 
-        forward({('completed')});
+        forward({'completed'});
       },
     ),
   );

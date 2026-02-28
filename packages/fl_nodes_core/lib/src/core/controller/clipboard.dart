@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
-import '../events/bus.dart';
-import '../events/events.dart';
-import '../localization/delegate.dart';
-import '../models/data.dart';
-import '../utils/misc/json_extensions.dart';
-import '../utils/misc/nodes.dart';
-import '../utils/rendering/renderbox.dart';
-import 'callback.dart';
-import 'core.dart';
+import 'package:fl_nodes_core/src/core/events/bus.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/utils/misc/json_extensions.dart';
+import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
+import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes_core/src/core/controller/callback.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
 
 /// A class that manages the clipboard operations of the node editor.
 ///
@@ -37,24 +37,28 @@ class FlNodesClipboardHelper {
   /// to JSON and then encoded to base64 (to avoid direct tampering with the JSON data)
   /// and then copied to the clipboard.
   Future<String> copySelection({BuildContext? context}) async {
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     if (selectedNodeIds.isEmpty) return '';
 
-    final encompassingRect =
+    final Rect encompassingRect =
         FlNodesUtils.calculateEncompassingRect(selectedNodeIds, nodes);
 
-    final selectedNodes = selectedNodeIds.map((id) {
-      final nodeCopy = nodes[id]!.copyWith();
+    final List<FlNodeDataModel> selectedNodes = selectedNodeIds.map((id) {
+      final FlNodeDataModel nodeCopy = nodes[id]!.copyWith();
 
-      final relativeOffset = nodeCopy.offset - encompassingRect.topLeft;
+      final Offset relativeOffset = nodeCopy.offset - encompassingRect.topLeft;
 
       // We make deep copies as we only want to copy the links that are within the selection.
-      final updatedPorts = nodeCopy.ports.map((portId, port) {
-        final deepCopiedLinks = port.links.where((link) {
-          return selectedNodeIds.contains(link.ports.$1.nodeId) &&
-              selectedNodeIds.contains(link.ports.$2.nodeId);
-        }).toSet();
+      final Map<String, FlPortDataModel> updatedPorts =
+          nodeCopy.ports.map((portId, port) {
+        final Set<FlLinkDataModel> deepCopiedLinks = port.links
+            .where(
+              (link) =>
+                  selectedNodeIds.contains(link.ports.$1.nodeId) &&
+                  selectedNodeIds.contains(link.ports.$2.nodeId),
+            )
+            .toSet();
 
         return MapEntry(
           portId,
@@ -73,14 +77,15 @@ class FlNodesClipboardHelper {
     late final String base64Data;
 
     try {
-      final selectedNodesJson = selectedNodes
+      final List<Map<String, dynamic>> selectedNodesJson = selectedNodes
           .map((node) => node.toJson(controller.project.dataHandlers))
           .toList();
 
-      final nodesJsonData = jsonEncode(selectedNodesJson);
-      final encompassingRectJsonData = jsonEncode(encompassingRect.toJson());
+      final String nodesJsonData = jsonEncode(selectedNodesJson);
+      final String encompassingRectJsonData =
+          jsonEncode(encompassingRect.toJson());
 
-      final jsonData = jsonEncode({
+      final String jsonData = jsonEncode({
         'nodes': nodesJsonData,
         'encompassingRect': encompassingRectJsonData,
       });
@@ -119,25 +124,26 @@ class FlNodesClipboardHelper {
   /// The nodes are then deep copied with the new IDs and added to the node editor.
   ///
   /// See [mapToNewIds] for more info on how the new IDs are generated.
-  void pasteSelection({
+  Future<void> pasteSelection({
     Offset? position,
     BuildContext? context,
   }) async {
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
-    final clipboardData = await Clipboard.getData('text/plain');
+    final ClipboardData? clipboardData = await Clipboard.getData('text/plain');
     if (clipboardData == null || clipboardData.text!.isEmpty) return;
 
     late List<dynamic> nodesJson;
     late Rect encompassingRect;
 
     try {
-      final base64Data = utf8.decode(base64Decode(clipboardData.text!));
+      final String base64Data = utf8.decode(base64Decode(clipboardData.text!));
       final jsonData = jsonDecode(base64Data) as Map<String, dynamic>;
 
       nodesJson = jsonDecode(jsonData['nodes'] as String) as List<dynamic>;
       encompassingRect = JSONRect.fromJson(
-        jsonDecode(jsonData['encompassingRect'] as String) as Map<String, dynamic>,
+        jsonDecode(jsonData['encompassingRect'] as String)
+            as Map<String, dynamic>,
       );
     } catch (e) {
       controller.onCallback?.call(
@@ -148,7 +154,7 @@ class FlNodesClipboardHelper {
     }
 
     if (position == null) {
-      final viewportSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
+      final Size viewportSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
 
       position = Rect.fromLTWH(
         -viewportOffset.dx -
@@ -163,47 +169,54 @@ class FlNodesClipboardHelper {
     }
 
     // Create instances from the JSON data.
-    final instances = nodesJson.map((node) {
-      return FlNodeDataModel.fromJson(
-        node as Map<String, dynamic>,
-        nodePrototypes: controller.nodePrototypes,
-        dataHandlers: controller.project.dataHandlers,
-      );
-    }).toList();
+    final List<FlNodeDataModel> instances = nodesJson
+        .map(
+          (node) => FlNodeDataModel.fromJson(
+            node as Map<String, dynamic>,
+            nodePrototypes: controller.nodePrototypes,
+            dataHandlers: controller.project.dataHandlers,
+          ),
+        )
+        .toList();
 
     // Called on each paste, see [FlNodesController._mapToNewIds] for more info.
-    final newIds = await FlNodesUtils.mapToNewIds(instances);
+    final Map<String, String> newIds =
+        await FlNodesUtils.mapToNewIds(instances);
 
-    final deepCopiedNodes = instances.map((instance) {
-      return instance.copyWith(
-        id: newIds[instance.id],
-        offset: instance.offset + position!,
-        fields: instance.fields,
-        ports: instance.ports.map((key, port) {
-          return MapEntry(
-            port.prototype.idName,
-            port.copyWith(
-              links: port.links.map((link) {
-                return link.copyWith(
-                  state: FlLinkState(),
-                  id: newIds[link.id],
-                  ports: (
-                    (
-                      nodeId: newIds[link.ports.$1.nodeId]!,
-                      portId: link.ports.$1.portId,
-                    ),
-                    (
-                      nodeId: newIds[link.ports.$2.nodeId]!,
-                      portId: link.ports.$2.portId,
-                    ),
-                  ),
-                );
-              }).toSet(),
+    final List<FlNodeDataModel> deepCopiedNodes = instances
+        .map(
+          (instance) => instance.copyWith(
+            id: newIds[instance.id],
+            offset: instance.offset + position!,
+            fields: instance.fields,
+            ports: instance.ports.map(
+              (key, port) => MapEntry(
+                port.prototype.idName,
+                port.copyWith(
+                  links: port.links
+                      .map(
+                        (link) => link.copyWith(
+                          state: FlLinkState(),
+                          id: newIds[link.id],
+                          ports: (
+                            (
+                              nodeId: newIds[link.ports.$1.nodeId]!,
+                              portId: link.ports.$1.portId,
+                            ),
+                            (
+                              nodeId: newIds[link.ports.$2.nodeId]!,
+                              portId: link.ports.$2.portId,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toSet(),
+                ),
+              ),
             ),
-          );
-        }),
-      );
-    }).toList();
+          ),
+        )
+        .toList();
 
     for (final node in deepCopiedNodes) {
       controller.addNodeFromExisting(node, isHandled: true);
@@ -222,9 +235,9 @@ class FlNodesClipboardHelper {
   ///
   /// The selected nodes are copied to the clipboard and then removed from the node editor.
   /// The nodes are then removed from the node editor and the selection is cleared.
-  void cutSelection({BuildContext? context}) async {
-    final clipboardContent = await copySelection();
-    for (final id in selectedNodeIds) {
+  Future<void> cutSelection({BuildContext? context}) async {
+    final String clipboardContent = await copySelection();
+    for (final String id in selectedNodeIds) {
       controller.removeNodeById(id, isHandled: true);
     }
     controller.clearSelection(isHandled: true);

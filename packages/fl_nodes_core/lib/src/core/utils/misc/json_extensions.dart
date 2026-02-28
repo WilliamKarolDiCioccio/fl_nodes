@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 extension JSONColor on Color {
   static Color fromJson(String rgba) {
-    final values =
+    final List<double> values =
         rgba.split(',').map((value) => double.parse(value.trim())).toList();
 
     return Color.fromARGB(
@@ -14,10 +14,10 @@ extension JSONColor on Color {
   }
 
   String toJson(Color color) {
-    final r = color.r / 255.0;
-    final g = color.g / 255.0;
-    final b = color.b / 255.0;
-    final a = color.a / 255.0;
+    final double r = color.r / 255.0;
+    final double g = color.g / 255.0;
+    final double b = color.b / 255.0;
+    final double a = color.a / 255.0;
     return '$r,$g,$b,$a';
   }
 }
@@ -29,21 +29,17 @@ extension JSONOffset on Offset {
 }
 
 extension JSONRect on Rect {
-  static Rect fromJson(Map<String, dynamic> json) {
-    return Rect.fromLTWH(
-      json['left'] as double,
-      json['top'] as double,
-      json['width'] as double,
-      json['height'] as double,
-    );
-  }
+  static Rect fromJson(Map<String, dynamic> json) => Rect.fromLTWH(
+        json['left'] as double,
+        json['top'] as double,
+        json['width'] as double,
+        json['height'] as double,
+      );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'left': left,
-      'top': top,
-      'width': width,
-      'height': height,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'left': left,
+        'top': top,
+        'width': width,
+        'height': height,
+      };
 }

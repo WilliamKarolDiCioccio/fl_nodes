@@ -1,22 +1,23 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../core/controller/core.dart';
-import '../core/events/events.dart';
-import '../core/models/data.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
 
-import 'base_node.dart';
+import 'package:fl_nodes_core/src/widgets/base_node.dart';
 
 /// The main NodeWidget which represents a node in the editor.
 /// It now ensures that fields (regardless of whether a custom fieldBuilder is used)
 /// still respond to tap events in the same way as before.
 class FlDefaultNodeWidget extends FlBaseNodeWidget {
   const FlDefaultNodeWidget({
-    super.key,
     required super.controller,
     required super.node,
     required super.showPortContextMenu,
     required super.showNodeCreationMenu,
     required super.showNodeContextMenu,
+    super.key,
   });
 
   @override
@@ -26,99 +27,98 @@ class FlDefaultNodeWidget extends FlBaseNodeWidget {
 class _FlDefaultNodeWidgetState
     extends FlBaseNodeWidgetState<FlDefaultNodeWidget> {
   @override
-  Widget build(BuildContext context) {
-    return wrapWithControls(
-      IntrinsicHeight(
-        child: IntrinsicWidth(
-          child: Stack(
-            key: widget.node.key,
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                decoration: widget.node.builtStyle.decoration,
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _NodeHeaderWidget(
-                    controller: widget.controller,
-                    node: widget.node,
-                  ),
-                  Offstage(
-                    offstage: widget.node.state.isCollapsed,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: ports
-                                      .where(
-                                        (port) =>
-                                            port.prototype
-                                                is FlDataInputPortPrototype ||
-                                            port.prototype
-                                                is FlControlInputPortPrototype,
-                                      )
-                                      .map(
-                                        (port) => _PortWidget(
-                                          node: widget.node,
-                                          port: port,
-                                        ),
-                                      )
-                                      .toList(),
+  Widget build(BuildContext context) => wrapWithControls(
+        IntrinsicHeight(
+          child: IntrinsicWidth(
+            child: Stack(
+              key: widget.node.key,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  decoration: widget.node.builtStyle.decoration,
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _NodeHeaderWidget(
+                      controller: widget.controller,
+                      node: widget.node,
+                    ),
+                    Offstage(
+                      offstage: widget.node.state.isCollapsed,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: ports
+                                        .where(
+                                          (port) =>
+                                              port.prototype
+                                                  is FlDataInputPortPrototype ||
+                                              port.prototype
+                                                  is FlControlInputPortPrototype,
+                                        )
+                                        .map(
+                                          (port) => _PortWidget(
+                                            node: widget.node,
+                                            port: port,
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: ports
-                                      .where(
-                                        (port) =>
-                                            port.prototype
-                                                is FlDataOutputPortPrototype ||
-                                            port.prototype
-                                                is FlControlOutputPortPrototype,
-                                      )
-                                      .map(
-                                        (port) => _PortWidget(
-                                          node: widget.node,
-                                          port: port,
-                                        ),
-                                      )
-                                      .toList(),
+                                const SizedBox(width: 16),
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: ports
+                                        .where(
+                                          (port) =>
+                                              port.prototype
+                                                  is FlDataOutputPortPrototype ||
+                                              port.prototype
+                                                  is FlControlOutputPortPrototype,
+                                        )
+                                        .map(
+                                          (port) => _PortWidget(
+                                            node: widget.node,
+                                            port: port,
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          if (fields.isNotEmpty) const SizedBox(height: 16),
-                          ...fields.map(
-                            (field) => _FieldWidget(
-                              controller: widget.controller,
-                              node: widget.node,
-                              field: field,
+                              ],
                             ),
-                          ),
-                        ],
+                            if (fields.isNotEmpty) const SizedBox(height: 16),
+                            ...fields.map(
+                              (field) => _FieldWidget(
+                                controller: widget.controller,
+                                node: widget.node,
+                                field: field,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   @override
   void updatePortsPosition() {
@@ -130,22 +130,24 @@ class _FlDefaultNodeWidgetState
     if (renderBox == null || nodeBox == null) return;
 
     // Cache frequently used values
-    final renderBoxSize = renderBox.size;
-    final nodeOffset = nodeBox.localToGlobal(Offset.zero);
-    final isCollapsed = widget.node.state.isCollapsed;
-    final collapsedYAdjustment = isCollapsed ? -renderBoxSize.height + 8 : 0;
+    final Size renderBoxSize = renderBox.size;
+    final Offset nodeOffset = nodeBox.localToGlobal(Offset.zero);
+    final bool isCollapsed = widget.node.state.isCollapsed;
+    final num collapsedYAdjustment =
+        isCollapsed ? -renderBoxSize.height + 8 : 0;
 
     // Process ports
-    for (final port in widget.node.ports.values) {
+    for (final FlPortDataModel port in widget.node.ports.values) {
       final portBox = port.key.currentContext?.findRenderObject() as RenderBox?;
       if (portBox == null) continue;
 
       // Calculate relative offset with collapsed adjustment
-      final portOffset = portBox.localToGlobal(Offset.zero);
-      final relativeY = portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
+      final Offset portOffset = portBox.localToGlobal(Offset.zero);
+      final double relativeY =
+          portOffset.dy - nodeOffset.dy + collapsedYAdjustment;
 
       // Determine if the port is an input port
-      final isInput = port.prototype is FlDataInputPortPrototype ||
+      final bool isInput = port.prototype is FlDataInputPortPrototype ||
           port.prototype is FlControlInputPortPrototype;
 
       // Set port offset based on direction
@@ -167,36 +169,42 @@ class _NodeHeaderWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: node.builtHeaderStyle.padding,
-      decoration: node.builtHeaderStyle.decoration,
-      child: Row(
-        children: [
-          InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory,
-            onTap: () => controller.toggleCollapseSelectedNodes(
-              !node.state.isCollapsed,
+  Widget build(BuildContext context) => Container(
+        padding: node.builtHeaderStyle.padding,
+        decoration: node.builtHeaderStyle.decoration,
+        child: Row(
+          children: [
+            InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              onTap: () => controller.toggleCollapseSelectedNodes(
+                !node.state.isCollapsed,
+              ),
+              child: Icon(
+                node.builtHeaderStyle.icon,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-            child: Icon(
-              node.builtHeaderStyle.icon,
-              color: Colors.white,
-              size: 20,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                node.prototype.displayName(context),
+                style: node.builtHeaderStyle.textStyle,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              node.prototype.displayName(context),
-              style: node.builtHeaderStyle.textStyle,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
   }
 }
 
@@ -215,7 +223,7 @@ class _PortWidget extends StatelessWidget {
       return SizedBox(key: port.key, height: 0, width: 0);
     }
 
-    final isInput = port.prototype is FlDataInputPortPrototype ||
+    final bool isInput = port.prototype is FlDataInputPortPrototype ||
         port.prototype is FlControlInputPortPrototype;
 
     return Row(
@@ -235,6 +243,13 @@ class _PortWidget extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
+    properties.add(DiagnosticsProperty<FlPortDataModel>('port', port));
+  }
 }
 
 class _FieldWidget extends StatelessWidget {
@@ -252,39 +267,37 @@ class _FieldWidget extends StatelessWidget {
     BuildContext context,
     TapDownDetails details,
   ) {
-    final overlay = Overlay.of(context);
+    final OverlayState overlay = Overlay.of(context);
     OverlayEntry? overlayEntry;
 
     overlayEntry = OverlayEntry(
-      builder: (context) {
-        return Stack(
-          children: [
-            GestureDetector(
-              onTap: () => overlayEntry?.remove(),
-              child: Container(color: Colors.transparent),
-            ),
-            Positioned(
-              left: details.globalPosition.dx,
-              top: details.globalPosition.dy,
-              child: Material(
-                child: field.prototype.editorBuilder!(
-                  context,
-                  () => overlayEntry?.remove(),
-                  field.data,
-                  (dynamic data, {required FlFieldEventType eventType}) {
-                    controller.setFieldData(
-                      node.id,
-                      field.prototype.idName,
-                      data: data,
-                      eventType: eventType,
-                    );
-                  },
-                ),
+      builder: (context) => Stack(
+        children: [
+          GestureDetector(
+            onTap: () => overlayEntry?.remove(),
+            child: Container(color: Colors.transparent),
+          ),
+          Positioned(
+            left: details.globalPosition.dx,
+            top: details.globalPosition.dy,
+            child: Material(
+              child: field.prototype.editorBuilder!(
+                context,
+                () => overlayEntry?.remove(),
+                field.data,
+                (dynamic data, {required FlFieldEventType eventType}) {
+                  controller.setFieldData(
+                    node.id,
+                    field.prototype.idName,
+                    data: data,
+                    eventType: eventType,
+                  );
+                },
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
 
     overlay.insert(overlayEntry);
@@ -338,5 +351,14 @@ class _FieldWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
+    properties.add(DiagnosticsProperty<FlFieldDataModel>('field', field));
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/models/data.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
 
 enum FlLineDrawMode {
   solid,
@@ -57,17 +57,16 @@ class FlGridStyle {
     Color? intersectionColor,
     double? intersectionRadius,
     bool? showGrid,
-  }) {
-    return FlGridStyle(
-      gridSpacingX: gridSpacingX ?? this.gridSpacingX,
-      gridSpacingY: gridSpacingY ?? this.gridSpacingY,
-      lineWidth: lineWidth ?? this.lineWidth,
-      lineColor: lineColor ?? this.lineColor,
-      intersectionColor: intersectionColor ?? this.intersectionColor,
-      intersectionRadius: intersectionRadius ?? this.intersectionRadius,
-      showGrid: showGrid ?? this.showGrid,
-    );
-  }
+  }) =>
+      FlGridStyle(
+        gridSpacingX: gridSpacingX ?? this.gridSpacingX,
+        gridSpacingY: gridSpacingY ?? this.gridSpacingY,
+        lineWidth: lineWidth ?? this.lineWidth,
+        lineColor: lineColor ?? this.lineColor,
+        intersectionColor: intersectionColor ?? this.intersectionColor,
+        intersectionRadius: intersectionRadius ?? this.intersectionRadius,
+        showGrid: showGrid ?? this.showGrid,
+      );
 }
 
 class FlHighlightAreaStyle {
@@ -96,14 +95,13 @@ class FlHighlightAreaStyle {
     double? borderWidth,
     Color? borderColor,
     FlLineDrawMode? borderDrawMode,
-  }) {
-    return FlHighlightAreaStyle(
-      color: color ?? this.color,
-      borderWidth: borderWidth ?? this.borderWidth,
-      borderColor: borderColor ?? this.borderColor,
-      borderDrawMode: borderDrawMode ?? this.borderDrawMode,
-    );
-  }
+  }) =>
+      FlHighlightAreaStyle(
+        color: color ?? this.color,
+        borderWidth: borderWidth ?? this.borderWidth,
+        borderColor: borderColor ?? this.borderColor,
+        borderDrawMode: borderDrawMode ?? this.borderDrawMode,
+      );
 }
 
 enum FlLinkCurveType {
@@ -120,11 +118,11 @@ class FlLinkStyle {
   final FlLinkCurveType curveType;
 
   const FlLinkStyle({
-    this.color,
-    this.gradient,
     required this.lineWidth,
     required this.drawMode,
     required this.curveType,
+    this.color,
+    this.gradient,
   });
 
   const factory FlLinkStyle.basic() = FlLinkStyle._constBasic;
@@ -148,28 +146,26 @@ class FlLinkStyle {
     double? lineWidth,
     FlLineDrawMode? drawMode,
     FlLinkCurveType? curveType,
-  }) {
-    return FlLinkStyle(
-      color: color ?? this.color,
-      lineWidth: lineWidth ?? this.lineWidth,
-      drawMode: drawMode ?? this.drawMode,
-      curveType: curveType ?? this.curveType,
-    );
-  }
+  }) =>
+      FlLinkStyle(
+        color: color ?? this.color,
+        lineWidth: lineWidth ?? this.lineWidth,
+        drawMode: drawMode ?? this.drawMode,
+        curveType: curveType ?? this.curveType,
+      );
 
   FlLinkStyle copyWithGradient({
     required LinearGradient gradient,
     double? lineWidth,
     FlLineDrawMode? drawMode,
     FlLinkCurveType? curveType,
-  }) {
-    return FlLinkStyle.gradient(
-      gradient: gradient,
-      lineWidth: lineWidth ?? this.lineWidth,
-      drawMode: drawMode ?? this.drawMode,
-      curveType: curveType ?? this.curveType,
-    );
-  }
+  }) =>
+      FlLinkStyle.gradient(
+        gradient: gradient,
+        lineWidth: lineWidth ?? this.lineWidth,
+        drawMode: drawMode ?? this.drawMode,
+        curveType: curveType ?? this.curveType,
+      );
 
   @override
   bool operator ==(Object other) {
@@ -227,14 +223,13 @@ class FlPortStyle {
     Color? color,
     LinkStyleBuilder? linkStyleBuilder,
     double? radius,
-  }) {
-    return FlPortStyle(
-      shape: shape ?? this.shape,
-      color: color ?? this.color,
-      radius: radius ?? this.radius,
-      linkStyleBuilder: linkStyleBuilder ?? this.linkStyleBuilder,
-    );
-  }
+  }) =>
+      FlPortStyle(
+        shape: shape ?? this.shape,
+        color: color ?? this.color,
+        radius: radius ?? this.radius,
+        linkStyleBuilder: linkStyleBuilder ?? this.linkStyleBuilder,
+      );
 }
 
 typedef PortStyleBuilder = FlPortStyle Function(FlPortState style);
@@ -269,12 +264,11 @@ class FlFieldStyle {
   FlFieldStyle copyWith({
     BoxDecoration? decoration,
     EdgeInsetsGeometry? padding,
-  }) {
-    return FlFieldStyle(
-      decoration: decoration ?? this.decoration,
-      padding: padding ?? this.padding,
-    );
-  }
+  }) =>
+      FlFieldStyle(
+        decoration: decoration ?? this.decoration,
+        padding: padding ?? this.padding,
+      );
 }
 
 class FlNodeHeaderStyle {
@@ -321,14 +315,13 @@ class FlNodeHeaderStyle {
     BoxDecoration? decoration,
     TextStyle? textStyle,
     IconData? icon,
-  }) {
-    return FlNodeHeaderStyle(
-      padding: padding ?? this.padding,
-      decoration: decoration ?? this.decoration,
-      textStyle: textStyle ?? this.textStyle,
-      icon: icon ?? this.icon,
-    );
-  }
+  }) =>
+      FlNodeHeaderStyle(
+        padding: padding ?? this.padding,
+        decoration: decoration ?? this.decoration,
+        textStyle: textStyle ?? this.textStyle,
+        icon: icon ?? this.icon,
+      );
 }
 
 typedef NodeHeaderStyleBuilder = FlNodeHeaderStyle Function(
@@ -389,22 +382,19 @@ class FlNodeStyle {
 
   FlNodeStyle copyWith({
     BoxDecoration? decoration,
-  }) {
-    return FlNodeStyle(
-      decoration: decoration ?? this.decoration,
-    );
-  }
+  }) =>
+      FlNodeStyle(
+        decoration: decoration ?? this.decoration,
+      );
 }
 
 typedef NodeStyleBuilder = FlNodeStyle Function(FlNodeState style);
 
-FlNodeStyle flDefaultNodeStyleBuilder(FlNodeState state) {
-  return state.isSelected
-      ? const FlNodeStyle.selected()
-      : state.isHovered
-          ? const FlNodeStyle.hovered()
-          : const FlNodeStyle.basic();
-}
+FlNodeStyle flDefaultNodeStyleBuilder(FlNodeState state) => state.isSelected
+    ? const FlNodeStyle.selected()
+    : state.isHovered
+        ? const FlNodeStyle.hovered()
+        : const FlNodeStyle.basic();
 
 class FlNodesStyle {
   final BoxDecoration decoration;
@@ -440,13 +430,12 @@ class FlNodesStyle {
     FlGridStyle? gridStyle,
     FlHighlightAreaStyle? highlightAreaStyle,
     BoxShadow? nodesShadow,
-  }) {
-    return FlNodesStyle(
-      decoration: decoration ?? this.decoration,
-      padding: padding ?? this.padding,
-      gridStyle: gridStyle ?? this.gridStyle,
-      highlightAreaStyle: highlightAreaStyle ?? this.highlightAreaStyle,
-      nodesShadow: nodesShadow ?? this.nodesShadow,
-    );
-  }
+  }) =>
+      FlNodesStyle(
+        decoration: decoration ?? this.decoration,
+        padding: padding ?? this.padding,
+        gridStyle: gridStyle ?? this.gridStyle,
+        highlightAreaStyle: highlightAreaStyle ?? this.highlightAreaStyle,
+        nodesShadow: nodesShadow ?? this.nodesShadow,
+      );
 }

@@ -8,8 +8,8 @@ import 'package:fl_nodes_core/src/core/utils/misc/nodes.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../events/events.dart';
-import '../models/data.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
 
 /// The smallest units of execution in the graph, representing a
 /// linear sequence of nodes with defined control flow branching.
@@ -154,9 +154,7 @@ class FlNodesExecutionHelper {
           if (controller.config.autoExecGraph) {
             _runGraphDelayTimer?.cancel();
             _runGraphDelayTimer =
-                Timer(controller.config.autoExecGraphDelay, () {
-              executeGraph();
-            });
+                Timer(controller.config.autoExecGraphDelay, executeGraph);
           }
         });
       }
@@ -226,7 +224,7 @@ class FlNodesExecutionHelper {
     }
 
     _state = ExecutionHelperState.building;
-    final buildToken = _currentBuildToken = Object();
+    final Object buildToken = _currentBuildToken = Object();
 
     try {
       projectData = controller.project.projectData.copyWith();
@@ -274,25 +272,26 @@ class FlNodesExecutionHelper {
   /// but at least one control output. These nodes serve as entry points for
   /// independent execution graphs. Such graphs will be executed sequentially and won't interfere with each other.
   /// It's in the nature of visul scripting that partially (but no totally) overlapping independent graphs can exist.
-  List<_LinearizedSubgraph> _findAndLinearizeSubgraphs(
-      {required Object token}) {
+  List<_LinearizedSubgraph> _findAndLinearizeSubgraphs({
+    required Object token,
+  }) {
     // Find starting nodes (no data inputs, no control inputs, but has control outputs)
-    final startingNodes = nodes.keys.where((nodeId) {
-      final node = nodes[nodeId]!;
+    final List<String> startingNodes = nodes.keys.where((nodeId) {
+      final FlNodeDataModel node = nodes[nodeId]!;
 
-      final hasDataInputs =
+      final bool hasDataInputs =
           FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
         controller,
         node,
       ).isNotEmpty;
 
-      final hasControlInputs =
+      final bool hasControlInputs =
           FlNodesUtils.getConnectedNodesIdsForNode<FlControlInputPortPrototype>(
         controller,
         node,
       ).isNotEmpty;
 
-      final hasControlOutputs = FlNodesUtils.getConnectedNodesIdsForNode<
+      final bool hasControlOutputs = FlNodesUtils.getConnectedNodesIdsForNode<
           FlControlOutputPortPrototype>(
         controller,
         node,
@@ -313,7 +312,7 @@ class FlNodesExecutionHelper {
         );
       }
 
-      final sub = _linearizeSubgraphs(
+      final _LinearizedSubgraph? sub = _linearizeSubgraphs(
         start,
         parent: null,
         nodeToSubgraph: nodeToSubgraph,
@@ -335,10 +334,10 @@ class FlNodesExecutionHelper {
   /// - Control flow (creates subgraphs for branching, allows cycles)
   _LinearizedSubgraph? _linearizeSubgraphs(
     String rootNodeId, {
-    _LinearizedSubgraph? parent,
-    String? parentControlPortIdName,
     required Object token,
     required Map<String, _LinearizedSubgraph> nodeToSubgraph,
+    _LinearizedSubgraph? parent,
+    String? parentControlPortIdName,
   }) {
     if (_shouldAbort(token)) return null;
 
@@ -371,10 +370,12 @@ class FlNodesExecutionHelper {
       // Double execution of data dependencies is prevented in the execution phase by checking node states.
       // This means data dependencies can figure in multiple subgraphs without issues.
 
-      final node = nodes[nodeId]!;
-      final dataDeps =
+      final FlNodeDataModel node = nodes[nodeId]!;
+      final Set<String> dataDeps =
           FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
-              controller, node);
+        controller,
+        node,
+      );
 
       // First collect all data dependencies recursively to ensure execution order correctness
       for (final dep in dataDeps) {
@@ -409,11 +410,11 @@ class FlNodesExecutionHelper {
       nodeToSubgraph[nodeId] = owner;
       owner.order.add(nodeId);
 
-      final node = nodes[nodeId]!;
+      final FlNodeDataModel node = nodes[nodeId]!;
       final nodesForControlPort = <String, Set<String>>{};
 
       // Gather all control output connections
-      final controlPorts = node.ports.values
+      final Iterable<FlPortDataModel> controlPorts = node.ports.values
           .where((port) => port.prototype is FlControlOutputPortPrototype);
 
       if (controlPorts.isEmpty) return;
@@ -421,7 +422,9 @@ class FlNodesExecutionHelper {
       // Map all control outputs to their connected nodes
       for (final controlPort in controlPorts) {
         nodesForControlPort.putIfAbsent(
-            controlPort.prototype.idName, () => <String>{});
+          controlPort.prototype.idName,
+          () => <String>{},
+        );
         nodesForControlPort[controlPort.prototype.idName]!.addAll(
           FlNodesUtils.getConnectedNodesIdsForPort(
             controller,
@@ -442,11 +445,11 @@ class FlNodesExecutionHelper {
       // This phase also performs a lookahead to see if connected nodes are already assigned to subgraphs,
       // in which case it links to those subgraphs directly instead of creating new ones.
       if (controlPorts.length == 1) {
-        final portIdName = controlPorts.first.prototype.idName;
-        final connectedNodes = nodesForControlPort[portIdName]!;
+        final String portIdName = controlPorts.first.prototype.idName;
+        final Set<String> connectedNodes = nodesForControlPort[portIdName]!;
 
         if (connectedNodes.length == 1) {
-          final nextNodeId = connectedNodes.first;
+          final String nextNodeId = connectedNodes.first;
 
           if (nodeToSubgraph.containsKey(nextNodeId)) {
             current.children.putIfAbsent(portIdName, () => []);
@@ -472,9 +475,10 @@ class FlNodesExecutionHelper {
           }
         }
       } else {
-        for (final entry in nodesForControlPort.entries) {
-          final portIdName = entry.key;
-          final connectedNodes = entry.value;
+        for (final MapEntry<String, Set<String>> entry
+            in nodesForControlPort.entries) {
+          final String portIdName = entry.key;
+          final Set<String> connectedNodes = entry.value;
 
           if (connectedNodes.isEmpty) continue;
 
@@ -510,20 +514,20 @@ class FlNodesExecutionHelper {
   /// Executes the entire graph by processing independent subgraphs sequentially
   ///
   /// [BuildContext] context: The build context for localization of error messages (optional).
-  void executeGraph({BuildContext? context}) async {
+  Future<void> executeGraph({BuildContext? context}) async {
     if (_state == ExecutionHelperState.executing) {
       abort(reason: 'New execution requested');
     }
 
     _state = ExecutionHelperState.executing;
-    final executionToken = _currentExecutionToken = Object();
+    final Object executionToken = _currentExecutionToken = Object();
 
     context ??= controller.editorKey.currentContext;
 
     _execState.clear();
     _nodeStates.clear();
 
-    for (final nodeId in nodes.keys) {
+    for (final String nodeId in nodes.keys) {
       _nodeStates[nodeId] = FlNodeExecutionState.idle;
     }
 
@@ -539,7 +543,7 @@ class FlNodesExecutionHelper {
     );
 
     // Execute independent subgraphs sequentially
-    for (final graph in _independentGraphs) {
+    for (final _LinearizedSubgraph graph in _independentGraphs) {
       if (_shouldAbort(executionToken)) return;
       await _executeLinearizedGraph(graph, context: context);
     }
@@ -566,14 +570,15 @@ class FlNodesExecutionHelper {
     Set<String> lastSelectedControlPortIdNames = {};
 
     // Execute nodes in order
-    for (final nodeId in graph.order.toList()) {
+    for (final String nodeId in graph.order.toList()) {
       lastSelectedControlPortIdNames =
           await _executeNode(nodes[nodeId]!, context: context);
     }
 
     // Execute child subgraphs for the selected control ports
     for (final controlPortIdName in lastSelectedControlPortIdNames) {
-      final childSubgraphs = graph.children[controlPortIdName] ?? [];
+      final List<_LinearizedSubgraph> childSubgraphs =
+          graph.children[controlPortIdName] ?? [];
 
       // Execute each child subgraph for the selected control port sequentially
       for (final childSubgraph in childSubgraphs) {
@@ -600,7 +605,7 @@ class FlNodesExecutionHelper {
     }
 
     // Cache localization strings
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     final Set<String> selectedControlPortIdNames = {};
 
@@ -667,14 +672,14 @@ class FlNodesExecutionHelper {
 
   /// Check if all data dependencies for a node are ready (stepped and completed)
   bool _areDataDependenciesReady(String nodeId) {
-    final dataDependencies =
+    final Set<String> dataDependencies =
         FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
       controller,
       nodes[nodeId]!,
     );
 
     for (final depNodeId in dataDependencies) {
-      final depState = _nodeStates[depNodeId];
+      final FlNodeExecutionState? depState = _nodeStates[depNodeId];
 
       // Data dependency must be completed to be considered ready
       if (depState != FlNodeExecutionState.completed &&
@@ -704,7 +709,7 @@ class FlNodesExecutionHelper {
     for (final idNameAndData in idNamesAndData) {
       final (idName, data) = idNameAndData;
 
-      final port = node.ports[idName]!;
+      final FlPortDataModel port = node.ports[idName]!;
 
       if (port.prototype is! FlDataInputPortPrototype &&
           port.prototype is! FlDataOutputPortPrototype) {
@@ -713,13 +718,14 @@ class FlNodesExecutionHelper {
         );
       }
 
-      for (final link in port.links) {
-        final locator = FlNodesUtils.getDestination(
+      for (final FlLinkDataModel link in port.links) {
+        final PortLocator locator = FlNodesUtils.getDestination(
           controller,
           link,
         );
 
-        final connectedPort = nodes[locator.nodeId]!.ports[locator.portId]!;
+        final FlPortDataModel connectedPort =
+            nodes[locator.nodeId]!.ports[locator.portId]!;
 
         connectedPort.data = data;
       }

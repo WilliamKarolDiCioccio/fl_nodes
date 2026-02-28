@@ -300,7 +300,7 @@ linter:
     # Inline list item declarations where possible.
     prefer_inlined_adds: true
     # Prefer int literals over double literals.
-    prefer_int_literals: true
+    prefer_int_literals: false
     # Use interpolation to compose strings and values.
     prefer_interpolation_to_compose_strings: true
     # Use `isEmpty` for `Iterable`s and `Map`s.
@@ -346,7 +346,7 @@ linter:
     # Sort child properties last in widget instance creations.
     sort_child_properties_last: true
     # Sort constructor declarations before other members.
-    sort_constructors_first: true
+    sort_constructors_first: false
     # Sort pub dependencies alphabetically.
     sort_pub_dependencies: false
     # Sort unnamed constructor declarations first.

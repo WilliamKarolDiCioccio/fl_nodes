@@ -83,8 +83,8 @@ class FlMenuDataModel {
 
   /// Returns all flattened entries
   Iterable<FlMenuEntryDataModel> get allEntries sync* {
-    for (final section in sections) {
-      for (final entry in section.items) {
+    for (final FlMenuSectionDataModel section in sections) {
+      for (final FlMenuEntryDataModel entry in section.items) {
         yield entry;
         if (entry is FlSubmenuDataModel) {
           yield* entry.items;

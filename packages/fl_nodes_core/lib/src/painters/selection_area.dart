@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fl_nodes_core/src/painters/custom_painter.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
 
 final class SelectionAreaCustomPainter extends FlCustomPainter {
   Rect? highlightArea;
@@ -11,7 +12,7 @@ final class SelectionAreaCustomPainter extends FlCustomPainter {
   void paint(Canvas canvas, Rect viewport) {
     if (highlightArea == null) return;
 
-    final style = controller.style.highlightAreaStyle;
+    final FlHighlightAreaStyle style = controller.style.highlightAreaStyle;
 
     final Paint highlightPaint = Paint()
       ..color = style.color

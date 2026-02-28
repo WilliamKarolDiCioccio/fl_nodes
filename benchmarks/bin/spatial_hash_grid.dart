@@ -24,7 +24,7 @@ class InsertBenchmark extends BenchmarkBase {
   late List<({String id, Rect rect})> nodes;
   late SpatialHashGrid grid;
 
-  InsertBenchmark(this.count) : super("InsertBenchmark");
+  InsertBenchmark(this.count) : super('InsertBenchmark');
 
   @override
   void setup() {
@@ -34,7 +34,7 @@ class InsertBenchmark extends BenchmarkBase {
 
   @override
   void run() {
-    for (var node in nodes) {
+    for (final ({String id, Rect rect}) node in nodes) {
       grid.insert(node);
     }
   }
@@ -46,20 +46,20 @@ class RemoveBenchmark extends BenchmarkBase {
   late List<({String id, Rect rect})> nodes;
   late SpatialHashGrid grid;
 
-  RemoveBenchmark(this.count) : super("RemoveBenchmark");
+  RemoveBenchmark(this.count) : super('RemoveBenchmark');
 
   @override
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (var node in nodes) {
+    for (final ({String id, Rect rect}) node in nodes) {
       grid.insert(node);
     }
   }
 
   @override
   void run() {
-    for (var node in nodes) {
+    for (final ({String id, Rect rect}) node in nodes) {
       grid.remove(node.id);
     }
   }
@@ -71,13 +71,13 @@ class DirectUpdateBenchmark extends BenchmarkBase {
   late List<({String id, Rect rect})> nodes;
   late SpatialHashGrid grid;
 
-  DirectUpdateBenchmark(this.count) : super("DirectUpdateBenchmark");
+  DirectUpdateBenchmark(this.count) : super('DirectUpdateBenchmark');
 
   @override
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (var node in nodes) {
+    for (final ({String id, Rect rect}) node in nodes) {
       grid.insert(node);
     }
   }
@@ -87,7 +87,7 @@ class DirectUpdateBenchmark extends BenchmarkBase {
     final random = Random(1234);
     for (int i = 0; i < nodes.length; i++) {
       final bool shouldInflate = random.nextBool();
-      final node = nodes[i];
+      final ({String id, Rect rect}) node = nodes[i];
       Rect newRect;
       if (shouldInflate) {
         // Inflate by a factor between 1.0 and 1.5.
@@ -98,7 +98,7 @@ class DirectUpdateBenchmark extends BenchmarkBase {
       }
       // Directly remove and reinsert.
       grid.remove(node.id);
-      final updatedNode = (id: node.id, rect: newRect);
+      final ({String id, Rect rect}) updatedNode = (id: node.id, rect: newRect);
       grid.insert(updatedNode);
       nodes[i] = updatedNode;
     }
@@ -111,13 +111,13 @@ class UpdateMethodBenchmark extends BenchmarkBase {
   late List<({String id, Rect rect})> nodes;
   late SpatialHashGrid grid;
 
-  UpdateMethodBenchmark(this.count) : super("UpdateMethodBenchmark");
+  UpdateMethodBenchmark(this.count) : super('UpdateMethodBenchmark');
 
   @override
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (var node in nodes) {
+    for (final ({String id, Rect rect}) node in nodes) {
       grid.insert(node);
     }
   }
@@ -127,7 +127,7 @@ class UpdateMethodBenchmark extends BenchmarkBase {
     final random = Random(1234);
     for (int i = 0; i < nodes.length; i++) {
       final bool shouldInflate = random.nextBool();
-      final node = nodes[i];
+      final ({String id, Rect rect}) node = nodes[i];
       Rect newRect;
       if (shouldInflate) {
         final double factor = 1.0 + random.nextDouble() * 0.5;
@@ -135,7 +135,7 @@ class UpdateMethodBenchmark extends BenchmarkBase {
       } else {
         newRect = node.rect;
       }
-      final updatedNode = (id: node.id, rect: newRect);
+      final ({String id, Rect rect}) updatedNode = (id: node.id, rect: newRect);
       grid.update(updatedNode);
       nodes[i] = updatedNode;
     }

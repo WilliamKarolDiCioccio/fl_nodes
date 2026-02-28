@@ -1,4 +1,5 @@
 import 'package:fl_context_menu/fl_context_menu.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FlMenuItemTile extends StatefulWidget {
@@ -12,19 +13,33 @@ class FlMenuItemTile extends StatefulWidget {
   final bool isEnabled;
 
   const FlMenuItemTile({
-    super.key,
     required this.id,
+    required this.style,
+    super.key,
     this.isEnabled = true,
     this.label,
     this.iconData,
     this.onPressed,
     this.onTap,
     this.closeOnTap = true,
-    required this.style,
   });
 
   @override
   State<FlMenuItemTile> createState() => _FlMenuItemTileState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('id', id));
+    properties.add(StringProperty('label', label));
+    properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
+    properties.add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap));
+    properties
+        .add(ObjectFlagProperty<Function(String)?>.has('onPressed', onPressed));
+    properties.add(DiagnosticsProperty<bool>('closeOnTap', closeOnTap));
+    properties.add(DiagnosticsProperty<FlMenuItemStyle>('style', style));
+    properties.add(DiagnosticsProperty<bool>('isEnabled', isEnabled));
+  }
 }
 
 class _FlMenuItemTileState extends State<FlMenuItemTile> {
@@ -62,7 +77,7 @@ class _FlMenuItemTileState extends State<FlMenuItemTile> {
             children: [
               if (widget.iconData != null) ...[
                 Icon(
-                  widget.iconData!,
+                  widget.iconData,
                   size: 16,
                   color: Colors.white70,
                 ),

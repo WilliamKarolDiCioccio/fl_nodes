@@ -8,10 +8,10 @@ class InstructionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final comboKey = defaultTargetPlatform == TargetPlatform.macOS
-        ? "Meta"
-        : "Ctrl";
+        ? 'Meta'
+        : 'Ctrl';
 
-    final isMobile =
+    final bool isMobile =
         defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
 
@@ -74,18 +74,16 @@ class InstructionsPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        color: Theme.of(context).colorScheme.primary,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
+  Widget _buildSectionTitle(BuildContext context, String title) => Text(
+    title,
+    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    ),
+  );
 
   Widget _buildTouchInstructions(BuildContext context) {
-    final strings = AppLocalizations.of(context)!;
+    final AppLocalizations strings = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +104,7 @@ class InstructionsPanel extends StatelessWidget {
   }
 
   Widget _buildDesktopInstructions(BuildContext context, String comboKey) {
-    final strings = AppLocalizations.of(context)!;
+    final AppLocalizations strings = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,16 +131,14 @@ class InstructionsPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildBullet(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("• "),
-          Expanded(child: Text(text)),
-        ],
-      ),
-    );
-  }
+  Widget _buildBullet(String text) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('• '),
+        Expanded(child: Text(text)),
+      ],
+    ),
+  );
 }

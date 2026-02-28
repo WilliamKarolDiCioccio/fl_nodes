@@ -1,76 +1,76 @@
-import 'delegate.dart';
+import 'package:fl_nodes_core/src/core/localization/delegate.dart';
 
 class FlNodesLocalizationsJa extends FlNodesLocalizations {
   FlNodesLocalizationsJa(super.locale);
 
   @override
-  String get closeAction => "閉じる";
+  String get closeAction => '閉じる';
   @override
-  String get addNodeAction => "追加";
+  String get addNodeAction => '追加';
   @override
-  String get deleteNodeAction => "削除";
+  String get deleteNodeAction => '削除';
   @override
-  String get centerViewAction => "ビューを中央に";
+  String get centerViewAction => 'ビューを中央に';
   @override
-  String get resetZoomAction => "ズームをリセット";
+  String get resetZoomAction => 'ズームをリセット';
   @override
-  String get createNodeAction => "作成";
+  String get createNodeAction => '作成';
   @override
-  String get copySelectionAction => "コピー";
+  String get copySelectionAction => 'コピー';
   @override
-  String get pasteSelectionAction => "貼り付け";
+  String get pasteSelectionAction => '貼り付け';
   @override
-  String get cutSelectionAction => "切り取り";
+  String get cutSelectionAction => '切り取り';
   @override
-  String get projectLabel => "プロジェクト";
+  String get projectLabel => 'プロジェクト';
   @override
-  String get undoAction => "元に戻す";
+  String get undoAction => '元に戻す';
   @override
-  String get redoAction => "やり直す";
+  String get redoAction => 'やり直す';
   @override
-  String get newProjectAction => "新規プロジェクト";
+  String get newProjectAction => '新規プロジェクト';
   @override
-  String get saveProjectAction => "保存";
+  String get saveProjectAction => '保存';
   @override
-  String get openProjectAction => "開く";
+  String get openProjectAction => '開く';
   @override
-  String get seeNodeDescriptionAction => "説明を見る";
+  String get seeNodeDescriptionAction => '説明を見る';
   @override
-  String get collapseNodeAction => "折りたたむ";
+  String get collapseNodeAction => '折りたたむ';
   @override
-  String get expandNodeAction => "展開";
+  String get expandNodeAction => '展開';
   @override
-  String get cutLinksAction => "リンクを切断";
+  String get cutLinksAction => 'リンクを切断';
   @override
-  String get editorMenuLabel => "エディターメニュー";
+  String get editorMenuLabel => 'エディターメニュー';
   @override
-  String get nodeMenuLabel => "ノードメニュー";
+  String get nodeMenuLabel => 'ノードメニュー';
   @override
-  String get portMenuLabel => "ポートメニュー";
+  String get portMenuLabel => 'ポートメニュー';
   @override
-  String get linkMenuLabel => "リンクメニュー";
+  String get linkMenuLabel => 'リンクメニュー';
   @override
-  String get deleteLinkAction => "リンクを削除";
+  String get deleteLinkAction => 'リンクを削除';
   @override
-  String get navigateToSourceAction => "ソースに移動";
+  String get navigateToSourceAction => 'ソースに移動';
   @override
-  String get navigateToDestinationAction => "宛先に移動";
+  String get navigateToDestinationAction => '宛先に移動';
   @override
-  String failedToCopySelectionErrorMsg(String e) => "選択範囲のコピーに失敗しました: $e";
+  String failedToCopySelectionErrorMsg(String e) => '選択範囲のコピーに失敗しました: $e';
   @override
-  String get selectionCopiedSuccessfullyMsg => "選択範囲をコピーしました";
+  String get selectionCopiedSuccessfullyMsg => '選択範囲をコピーしました';
   @override
-  String failedToPasteSelectionErrorMsg(String e) => "選択範囲の貼り付けに失敗しました: $e";
+  String failedToPasteSelectionErrorMsg(String e) => '選択範囲の貼り付けに失敗しました: $e';
   @override
-  String failedToSaveProjectErrorMsg(String e) => "プロジェクトの保存に失敗しました: $e";
+  String failedToSaveProjectErrorMsg(String e) => 'プロジェクトの保存に失敗しました: $e';
   @override
-  String get projectSavedSuccessfullyMsg => "プロジェクトを保存しました";
+  String get projectSavedSuccessfullyMsg => 'プロジェクトを保存しました';
   @override
-  String failedToLoadProjectErrorMsg(String e) => "プロジェクトの読み込みに失敗しました: $e";
+  String failedToLoadProjectErrorMsg(String e) => 'プロジェクトの読み込みに失敗しました: $e';
   @override
-  String get projectLoadedSuccessfullyMsg => "プロジェクトを読み込みました";
+  String get projectLoadedSuccessfullyMsg => 'プロジェクトを読み込みました';
   @override
-  String get newProjectCreatedSuccessfullyMsg => "新しいプロジェクトを作成しました";
+  String get newProjectCreatedSuccessfullyMsg => '新しいプロジェクトを作成しました';
   @override
-  String failedToExecuteNodeErrorMsg(String e) => "ノードの実行に失敗しました: $e";
+  String failedToExecuteNodeErrorMsg(String e) => 'ノードの実行に失敗しました: $e';
 }

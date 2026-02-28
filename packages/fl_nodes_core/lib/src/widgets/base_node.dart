@@ -8,13 +8,13 @@ import 'package:flutter/services.dart';
 
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 
-import '../constants.dart';
-import '../core/events/events.dart';
-import '../core/models/data.dart';
-import '../core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
 
-import 'builders.dart';
-import 'improved_listener.dart';
+import 'package:fl_nodes_core/src/widgets/builders.dart';
+import 'package:fl_nodes_core/src/widgets/improved_listener.dart';
 
 abstract class FlBaseNodeWidget extends StatefulWidget {
   final FlNodesController controller;
@@ -25,13 +25,39 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   final ShowNodeContextMenu showNodeContextMenu;
 
   const FlBaseNodeWidget({
-    super.key,
     required this.controller,
     required this.node,
     required this.showPortContextMenu,
     required this.showNodeCreationMenu,
     required this.showNodeContextMenu,
+    super.key,
   });
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
+    properties.add(
+      ObjectFlagProperty<ShowPortContextMenu>.has(
+        'showPortContextMenu',
+        showPortContextMenu,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<ShowNodeCreationtMenu>.has(
+        'showNodeCreationMenu',
+        showNodeCreationMenu,
+      ),
+    );
+    properties.add(
+      ObjectFlagProperty<ShowNodeContextMenu>.has(
+        'showNodeContextMenu',
+        showNodeContextMenu,
+      ),
+    );
+  }
 }
 
 abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
@@ -70,12 +96,14 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
     });
 
     widget.controller.eventBus.events
-        .where((event) =>
-            event is! FlViewportClassEvent &&
-            event is! FlProjectClassEvent &&
-            event is! FlTempInteractionClassEvent &&
-            event is! FlClipboardClassEvent &&
-            event is! FlRunnerClassEvent)
+        .where(
+          (event) =>
+              event is! FlViewportClassEvent &&
+              event is! FlProjectClassEvent &&
+              event is! FlTempInteractionClassEvent &&
+              event is! FlClipboardClassEvent &&
+              event is! FlRunnerClassEvent,
+        )
         .listen(_handleControllerEvents);
   }
 
@@ -142,8 +170,9 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0;
-    final moveAmount = 5.0 / widget.controller.viewportZoom;
-    final editorBounds = RenderBoxUtils.getEditorBoundsInScreen(editorKey);
+    final double moveAmount = 5.0 / widget.controller.viewportZoom;
+    final Rect? editorBounds =
+        RenderBoxUtils.getEditorBoundsInScreen(editorKey);
     if (editorBounds == null) return;
 
     _edgeTimer?.cancel();
@@ -151,7 +180,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
     _edgeTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
       double dx = 0;
       double dy = 0;
-      final rect = editorBounds;
+      final Rect rect = editorBounds;
 
       if (position.dx < rect.left + edgeThreshold) {
         dx = -moveAmount;
@@ -179,7 +208,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   }
 
   PortLocator? _isNearPort(Offset position) {
-    final worldPosition = RenderBoxUtils.screenToWorld(
+    final Offset? worldPosition = RenderBoxUtils.screenToWorld(
       editorKey,
       position,
       viewportOffset,
@@ -192,12 +221,13 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       height: kNodesSpatialHashingCellSize,
     );
 
-    final nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
+    final Set<String> nearNodeIds =
+        widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
-      final node = widget.controller.getNodeById(nodeId)!;
-      for (final port in node.ports.values) {
-        final absolutePortPosition = node.offset + port.offset;
+      final FlNodeDataModel node = widget.controller.getNodeById(nodeId)!;
+      for (final FlPortDataModel port in node.ports.values) {
+        final Offset absolutePortPosition = node.offset + port.offset;
         if ((worldPosition - absolutePortPosition).distance <
             kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
@@ -214,15 +244,16 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   }
 
   void _onTmpLinkUpdate(Offset position) {
-    final worldPosition = RenderBoxUtils.screenToWorld(
+    final Offset? worldPosition = RenderBoxUtils.screenToWorld(
       editorKey,
       position,
       viewportOffset,
       viewportZoom,
     );
-    final node = widget.controller.getNodeById(_portLocator!.nodeId)!;
-    final port = node.ports[_portLocator!.portId]!;
-    final absolutePortOffset = node.offset + port.offset;
+    final FlNodeDataModel node =
+        widget.controller.getNodeById(_portLocator!.nodeId)!;
+    final FlPortDataModel port = node.ports[_portLocator!.portId]!;
+    final Offset absolutePortOffset = node.offset + port.offset;
 
     widget.controller.drawTempLink(
       port.style.linkStyleBuilder(FlLinkState()),
@@ -249,88 +280,20 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
     widget.controller.clearTempLink();
   }
 
-  Widget wrapWithControls(Widget child) {
-    return defaultTargetPlatform == TargetPlatform.android ||
-            defaultTargetPlatform == TargetPlatform.iOS
-        ? GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              if (!widget.node.state.isSelected) {
-                widget.controller.selectNodesById({widget.node.id});
-              }
-            },
-            onLongPressStart: (details) {
-              final position = details.globalPosition;
-              final locator = _isNearPort(position);
-
-              if (!widget.node.state.isSelected) {
-                widget.controller.selectNodesById(
-                  {widget.node.id},
-                  isSideEffect: true,
-                );
-              }
-
-              if (locator != null && !widget.node.state.isCollapsed) {
-                widget.showPortContextMenu(
-                    context, position, widget.controller, locator);
-              } else {
-                widget.controller.selectNodesById({widget.node.id});
-                widget.showNodeContextMenu(
-                    context, position, widget.controller, widget.node);
-              }
-            },
-            onPanDown: (details) {
-              _lastPanPosition = details.globalPosition;
-            },
-            onPanStart: (details) {
-              final position = details.globalPosition;
-              _isLinking = false;
-              _portLocator = null;
-
-              final locator = _isNearPort(position);
-              if (locator != null) {
-                _isLinking = true;
-                _onTmpLinkStart(locator);
-              } else {
+  Widget wrapWithControls(Widget child) =>
+      defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS
+          ? GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
                 if (!widget.node.state.isSelected) {
                   widget.controller.selectNodesById({widget.node.id});
                 }
-              }
-            },
-            onPanUpdate: (details) {
-              _lastPanPosition = details.globalPosition;
-              if (_isLinking) {
-                _onTmpLinkUpdate(details.globalPosition);
-              } else {
-                _startEdgeTimer(details.globalPosition);
-                widget.controller.dragSelection(details.delta);
-              }
-            },
-            onPanEnd: (details) {
-              if (_isLinking) {
-                final locator = _isNearPort(_lastPanPosition!);
-                if (locator != null) {
-                  _onTmpLinkEnd(locator);
-                } else {
-                  widget.showNodeCreationMenu(context, _lastPanPosition!,
-                      widget.controller, locator, _onTmpLinkCancel);
-                }
-                _isLinking = false;
-              } else {
-                _resetEdgeTimer();
-              }
-            },
-            child: child,
-          )
-        : ImprovedListener(
-            behavior: HitTestBehavior.translucent,
-            onPointerPressed: (event) async {
-              _isLinking = false;
-              _portLocator = null;
+              },
+              onLongPressStart: (details) {
+                final Offset position = details.globalPosition;
+                final PortLocator? locator = _isNearPort(position);
 
-              final locator = _isNearPort(event.position);
-
-              if (event.buttons == kSecondaryMouseButton) {
                 if (!widget.node.state.isSelected) {
                   widget.controller.selectNodesById(
                     {widget.node.id},
@@ -340,47 +303,140 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
                 if (locator != null && !widget.node.state.isCollapsed) {
                   widget.showPortContextMenu(
-                      context, event.position, widget.controller, locator);
+                    context,
+                    position,
+                    widget.controller,
+                    locator,
+                  );
                 } else {
+                  widget.controller.selectNodesById({widget.node.id});
                   widget.showNodeContextMenu(
-                      context, event.position, widget.controller, widget.node);
-                }
-              } else if (event.buttons == kPrimaryMouseButton) {
-                if (locator != null && !_isLinking && _portLocator == null) {
-                  _onTmpLinkStart(locator);
-                } else if (!widget.node.state.isSelected) {
-                  widget.controller.selectNodesById(
-                    {widget.node.id},
-                    holdSelection: HardwareKeyboard.instance.isControlPressed,
+                    context,
+                    position,
+                    widget.controller,
+                    widget.node,
                   );
                 }
-              }
-            },
-            onPointerMoved: (event) async {
-              if (_isLinking) {
-                _onTmpLinkUpdate(event.position);
-              } else if (event.buttons == kPrimaryMouseButton) {
-                _startEdgeTimer(event.position);
-                widget.controller.dragSelection(event.delta);
-              }
-            },
-            onPointerReleased: (event) async {
-              if (_isLinking) {
-                final locator = _isNearPort(event.position);
+              },
+              onPanDown: (details) {
+                _lastPanPosition = details.globalPosition;
+              },
+              onPanStart: (details) {
+                final Offset position = details.globalPosition;
+                _isLinking = false;
+                _portLocator = null;
 
+                final PortLocator? locator = _isNearPort(position);
                 if (locator != null) {
-                  _onTmpLinkEnd(locator);
+                  _isLinking = true;
+                  _onTmpLinkStart(locator);
                 } else {
-                  widget.showNodeCreationMenu(context, event.position,
-                      widget.controller, locator, _onTmpLinkCancel);
+                  if (!widget.node.state.isSelected) {
+                    widget.controller.selectNodesById({widget.node.id});
+                  }
                 }
-              } else {
-                _resetEdgeTimer();
-              }
-            },
-            child: child,
-          );
-  }
+              },
+              onPanUpdate: (details) {
+                _lastPanPosition = details.globalPosition;
+                if (_isLinking) {
+                  _onTmpLinkUpdate(details.globalPosition);
+                } else {
+                  _startEdgeTimer(details.globalPosition);
+                  widget.controller.dragSelection(details.delta);
+                }
+              },
+              onPanEnd: (details) {
+                if (_isLinking) {
+                  final PortLocator? locator = _isNearPort(_lastPanPosition!);
+                  if (locator != null) {
+                    _onTmpLinkEnd(locator);
+                  } else {
+                    widget.showNodeCreationMenu(
+                      context,
+                      _lastPanPosition!,
+                      widget.controller,
+                      locator,
+                      _onTmpLinkCancel,
+                    );
+                  }
+                  _isLinking = false;
+                } else {
+                  _resetEdgeTimer();
+                }
+              },
+              child: child,
+            )
+          : ImprovedListener(
+              behavior: HitTestBehavior.translucent,
+              onPointerPressed: (event) async {
+                _isLinking = false;
+                _portLocator = null;
+
+                final PortLocator? locator = _isNearPort(event.position);
+
+                if (event.buttons == kSecondaryMouseButton) {
+                  if (!widget.node.state.isSelected) {
+                    widget.controller.selectNodesById(
+                      {widget.node.id},
+                      isSideEffect: true,
+                    );
+                  }
+
+                  if (locator != null && !widget.node.state.isCollapsed) {
+                    widget.showPortContextMenu(
+                      context,
+                      event.position,
+                      widget.controller,
+                      locator,
+                    );
+                  } else {
+                    widget.showNodeContextMenu(
+                      context,
+                      event.position,
+                      widget.controller,
+                      widget.node,
+                    );
+                  }
+                } else if (event.buttons == kPrimaryMouseButton) {
+                  if (locator != null && !_isLinking && _portLocator == null) {
+                    _onTmpLinkStart(locator);
+                  } else if (!widget.node.state.isSelected) {
+                    widget.controller.selectNodesById(
+                      {widget.node.id},
+                      holdSelection: HardwareKeyboard.instance.isControlPressed,
+                    );
+                  }
+                }
+              },
+              onPointerMoved: (event) async {
+                if (_isLinking) {
+                  _onTmpLinkUpdate(event.position);
+                } else if (event.buttons == kPrimaryMouseButton) {
+                  _startEdgeTimer(event.position);
+                  widget.controller.dragSelection(event.delta);
+                }
+              },
+              onPointerReleased: (event) async {
+                if (_isLinking) {
+                  final PortLocator? locator = _isNearPort(event.position);
+
+                  if (locator != null) {
+                    _onTmpLinkEnd(locator);
+                  } else {
+                    widget.showNodeCreationMenu(
+                      context,
+                      event.position,
+                      widget.controller,
+                      locator,
+                      _onTmpLinkCancel,
+                    );
+                  }
+                } else {
+                  _resetEdgeTimer();
+                }
+              },
+              child: child,
+            );
 
   void _updateStyleCache() {
     setState(() {
@@ -404,4 +460,21 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   }
 
   void updatePortsPosition();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('fakeTransparentColor', fakeTransparentColor));
+    properties.add(IterableProperty<FlPortDataModel>('ports', ports));
+    properties.add(IterableProperty<FlFieldDataModel>('fields', fields));
+    properties.add(DoubleProperty('viewportZoom', viewportZoom));
+    properties
+        .add(DiagnosticsProperty<Offset>('viewportOffset', viewportOffset));
+    properties.add(
+      DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>(
+        'editorKey',
+        editorKey,
+      ),
+    );
+  }
 }

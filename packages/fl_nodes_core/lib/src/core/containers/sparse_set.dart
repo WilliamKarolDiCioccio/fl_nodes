@@ -26,8 +26,8 @@ class SparseSet<T> {
 
   /// Inserts or updates a key-value pair.
   void insert(int key, T value) {
-    final page = _ensurePageExists(key);
-    final offset = key % pageSize;
+    final _Page page = _ensurePageExists(key);
+    final int offset = key % pageSize;
 
     if (page.present[offset] == 0) {
       page.sparse[offset] = _denseKeys.length;
@@ -42,8 +42,8 @@ class SparseSet<T> {
 
   /// Tries to insert a key-value pair. Returns true if inserted.
   bool tryInsert(int key, T value) {
-    final page = _ensurePageExists(key);
-    final offset = key % pageSize;
+    final _Page page = _ensurePageExists(key);
+    final int offset = key % pageSize;
 
     if (page.present[offset] == 0) {
       page.sparse[offset] = _denseKeys.length;
@@ -59,21 +59,21 @@ class SparseSet<T> {
   /// Removes a key-value pair.
   void remove(int key) {
     if (_denseKeys.isEmpty) return;
-    final pageIndex = key ~/ pageSize;
+    final int pageIndex = key ~/ pageSize;
     if (pageIndex >= _pages.length) return;
-    final page = _pages[pageIndex];
+    final _Page? page = _pages[pageIndex];
     if (page == null) return;
-    final offset = key % pageSize;
+    final int offset = key % pageSize;
     if (page.present[offset] == 0) return;
 
-    final denseIdx = page.sparse[offset];
-    final lastIdx = _denseKeys.length - 1;
+    final int denseIdx = page.sparse[offset];
+    final int lastIdx = _denseKeys.length - 1;
 
     if (denseIdx < lastIdx) {
-      final lastKey = _denseKeys[lastIdx];
+      final int lastKey = _denseKeys[lastIdx];
       _denseKeys[denseIdx] = lastKey;
       _data[denseIdx] = _data[lastIdx];
-      final lastPage = _pages[lastKey ~/ pageSize]!;
+      final _Page lastPage = _pages[lastKey ~/ pageSize]!;
       lastPage.sparse[lastKey % pageSize] = denseIdx;
     }
 
@@ -89,20 +89,20 @@ class SparseSet<T> {
 
   /// Checks if the key is present.
   bool contains(int key) {
-    final pageIndex = key ~/ pageSize;
+    final int pageIndex = key ~/ pageSize;
     if (pageIndex >= _pages.length) return false;
-    final page = _pages[pageIndex];
+    final _Page? page = _pages[pageIndex];
     if (page == null) return false;
     return page.present[key % pageSize] == 1;
   }
 
   /// Retrieves the value for a key, or null if not found.
   T? get(int key) {
-    final pageIndex = key ~/ pageSize;
+    final int pageIndex = key ~/ pageSize;
     if (pageIndex >= _pages.length) return null;
-    final page = _pages[pageIndex];
+    final _Page? page = _pages[pageIndex];
     if (page == null) return null;
-    final offset = key % pageSize;
+    final int offset = key % pageSize;
     if (page.present[offset] == 0) return null;
     return _data[page.sparse[offset]];
   }
@@ -128,7 +128,7 @@ class SparseSet<T> {
   /// Reserves space for keys up to [maxKey] and values count [count].
   void reserve(int maxKey, int count) {
     if (aggressiveReclaim) return;
-    final requiredPages = (maxKey + pageSize) ~/ pageSize;
+    final int requiredPages = (maxKey + pageSize) ~/ pageSize;
     if (_pages.length < requiredPages) {
       _pages.length = requiredPages;
     }
@@ -148,13 +148,13 @@ class SparseSet<T> {
       aggressiveReclaim: aggressiveReclaim,
     );
     if (size < other.size) {
-      for (final key in _denseKeys) {
+      for (final int key in _denseKeys) {
         if (other.contains(key)) {
           result.insert(key, get(key) as T);
         }
       }
     } else {
-      for (final key in other._denseKeys) {
+      for (final int key in other._denseKeys) {
         if (contains(key)) {
           result.insert(key, get(key) as T);
         }
@@ -169,10 +169,10 @@ class SparseSet<T> {
       pageSize: pageSize,
       aggressiveReclaim: aggressiveReclaim,
     );
-    for (final key in _denseKeys) {
+    for (final int key in _denseKeys) {
       result.insert(key, get(key) as T);
     }
-    for (final key in other._denseKeys) {
+    for (final int key in other._denseKeys) {
       result.insert(key, other.get(key) as T);
     }
     return result;
@@ -180,7 +180,7 @@ class SparseSet<T> {
 
   /// Ensures the page for [key] exists and returns it.
   _Page _ensurePageExists(int key) {
-    final pageIndex = key ~/ pageSize;
+    final int pageIndex = key ~/ pageSize;
     if (pageIndex >= _pages.length) {
       _pages.length = pageIndex + 1;
     }

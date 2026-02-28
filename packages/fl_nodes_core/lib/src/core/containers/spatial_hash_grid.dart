@@ -23,12 +23,10 @@ class SpatialHashGrid {
   SpatialHashGrid({required this.cellSize});
 
   /// Calculates the grid cell index for a given point in 2D space.
-  ({int x, int y}) _getGridIndex(Offset point) {
-    return (
-      x: (point.dx / cellSize).floor(),
-      y: (point.dy / cellSize).floor(),
-    );
-  }
+  ({int x, int y}) _getGridIndex(Offset point) => (
+        x: (point.dx / cellSize).floor(),
+        y: (point.dy / cellSize).floor(),
+      );
 
   /// Determines all grid cells that a given rectangle (`Rect`) overlaps.
   ///
@@ -81,8 +79,8 @@ class SpatialHashGrid {
   }
 
   void update(({String id, Rect rect}) node) {
-    final newCells = _getCoveredCells(node.rect);
-    final oldCells = nodeToCells[node.id];
+    final Set<({int x, int y})> newCells = _getCoveredCells(node.rect);
+    final Set<({int x, int y})>? oldCells = nodeToCells[node.id];
     if (oldCells == null) {
       // Not present: perform an insert.
       insert(node);
@@ -91,7 +89,7 @@ class SpatialHashGrid {
 
     // If the sets of cells are identical, we only need to update the node record.
     if (oldCells.length == newCells.length &&
-        oldCells.every((cell) => newCells.contains(cell))) {
+        oldCells.every(newCells.contains)) {
       // Update the node in every cell without removing/reinserting.
       for (final cell in newCells) {
         if (grid[cell]?.any((n) => n.id == node.id) ?? false) {
@@ -104,9 +102,9 @@ class SpatialHashGrid {
 
     // Otherwise, determine which cells to remove from, update in common cells,
     // and add to new cells.
-    final cellsToRemove = oldCells.difference(newCells);
-    final cellsToAdd = newCells.difference(oldCells);
-    final commonCells = oldCells.intersection(newCells);
+    final Set<({int x, int y})> cellsToRemove = oldCells.difference(newCells);
+    final Set<({int x, int y})> cellsToAdd = newCells.difference(oldCells);
+    final Set<({int x, int y})> commonCells = oldCells.intersection(newCells);
 
     for (final cell in cellsToRemove) {
       grid[cell]?.removeWhere((n) => n.id == node.id);

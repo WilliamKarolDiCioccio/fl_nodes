@@ -5,7 +5,7 @@ import 'package:flutter_context_menu/flutter_context_menu.dart';
 bool isContextMenuVisible = false;
 
 class ContextMenuUtils {
-  static void createAndShowContextMenu(
+  static Future<void> createAndShowContextMenu(
     BuildContext context, {
     required List<ContextMenuEntry> entries,
     required Offset position,
@@ -15,7 +15,7 @@ class ContextMenuUtils {
 
     isContextMenuVisible = true;
 
-    final menu = ContextMenu(
+    final ContextMenu<dynamic> menu = ContextMenu(
       entries: entries,
       position: position,
       padding: const EdgeInsets.all(8),
@@ -37,7 +37,7 @@ class ContextMenuUtils {
     required FlNodesController controller,
     required PortLocator locator,
   }) {
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.portMenuLabel),
@@ -56,7 +56,7 @@ class ContextMenuUtils {
     FlNodesController controller,
     FlNodeDataModel node,
   ) {
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.nodeMenuLabel),
@@ -66,18 +66,16 @@ class ContextMenuUtils {
         onSelected: () {
           showDialog(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text(node.prototype.displayName(context)),
-                content: Text(node.prototype.description(context)),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(strings.closeAction),
-                  ),
-                ],
-              );
-            },
+            builder: (context) => AlertDialog(
+              title: Text(node.prototype.displayName(context)),
+              content: Text(node.prototype.description(context)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(strings.closeAction),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -98,11 +96,11 @@ class ContextMenuUtils {
         icon: Icons.delete,
         onSelected: () {
           if (node.state.isSelected) {
-            for (final nodeId in controller.selectedNodeIds) {
+            for (final String nodeId in controller.selectedNodeIds) {
               controller.removeNodeById(nodeId);
             }
           } else {
-            for (final nodeId in controller.selectedNodeIds) {
+            for (final String nodeId in controller.selectedNodeIds) {
               controller.removeNodeById(nodeId);
             }
           }
@@ -132,7 +130,7 @@ class ContextMenuUtils {
     final List<MapEntry<String, FlNodePrototype>> compatiblePrototypes = [];
 
     if (locator != null) {
-      final startPort = controller
+      final FlPortDataModel startPort = controller
           .getNodeById(locator.nodeId)!
           .ports[locator.portId]!;
 
@@ -149,42 +147,44 @@ class ContextMenuUtils {
       );
     }
 
-    final worldPosition = RenderBoxUtils.screenToWorld(
+    final Offset? worldPosition = RenderBoxUtils.screenToWorld(
       controller.editorKey,
       position,
       controller.viewportOffset,
       controller.viewportZoom,
     );
 
-    return compatiblePrototypes.map((entry) {
-      return MenuItem(
-        label: entry.value.displayName(context),
-        icon: Icons.widgets,
-        onSelected: () {
-          final addedNode = controller.addNode(
-            entry.key,
-            offset: worldPosition ?? Offset.zero,
-          );
+    return compatiblePrototypes
+        .map(
+          (entry) => MenuItem(
+            label: entry.value.displayName(context),
+            icon: Icons.widgets,
+            onSelected: () {
+              final FlNodeDataModel addedNode = controller.addNode(
+                entry.key,
+                offset: worldPosition ?? Offset.zero,
+              );
 
-          if (locator != null) {
-            final startPort =
-                controller.nodes[locator!.nodeId]!.ports[locator!.portId]!;
+              if (locator != null) {
+                final FlPortDataModel startPort =
+                    controller.nodes[locator!.nodeId]!.ports[locator!.portId]!;
 
-            controller.addLink(
-              locator!.nodeId,
-              locator!.portId,
-              addedNode.id,
-              addedNode.ports.values
-                  .firstWhere((port) => startPort.canLinkTo(port) == null)
-                  .prototype
-                  .idName,
-            );
+                controller.addLink(
+                  locator!.nodeId,
+                  locator!.portId,
+                  addedNode.id,
+                  addedNode.ports.values
+                      .firstWhere((port) => startPort.canLinkTo(port) == null)
+                      .prototype
+                      .idName,
+                );
 
-            locator = null;
-          }
-        },
-      );
-    }).toList();
+                locator = null;
+              }
+            },
+          ),
+        )
+        .toList();
   }
 
   static List<ContextMenuEntry> canvasMenuEntries(
@@ -193,13 +193,13 @@ class ContextMenuUtils {
     required FlNodesController controller,
     required PortLocator? locator,
   }) {
-    final worldPosition = RenderBoxUtils.screenToWorld(
+    final Offset worldPosition = RenderBoxUtils.screenToWorld(
       controller.editorKey,
       position,
       controller.viewportOffset,
       controller.viewportZoom,
     )!;
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.editorMenuLabel),
@@ -272,7 +272,7 @@ class ContextMenuUtils {
     required FlNodesController controller,
     required String linkId,
   }) {
-    final strings = FlNodesLocalizations.of(context);
+    final FlNodesLocalizations strings = FlNodesLocalizations.of(context);
 
     return [
       MenuHeader(text: strings.linkMenuLabel),
@@ -280,7 +280,7 @@ class ContextMenuUtils {
         label: strings.navigateToSourceAction,
         icon: Icons.launch,
         onSelected: () {
-          final link = controller.links[linkId];
+          final FlLinkDataModel? link = controller.links[linkId];
           if (link == null) return;
           controller.focusNodesById({
             FlNodesUtils.getSource(controller, link).nodeId,
@@ -291,7 +291,7 @@ class ContextMenuUtils {
         label: strings.navigateToDestinationAction,
         icon: Icons.call_received,
         onSelected: () {
-          final link = controller.links[linkId];
+          final FlLinkDataModel? link = controller.links[linkId];
           if (link == null) return;
           controller.focusNodesById({
             FlNodesUtils.getDestination(controller, link).nodeId,

@@ -2,6 +2,7 @@ import 'package:fl_context_menu/src/core/models/config.dart';
 import 'package:fl_context_menu/src/core/models/entries.dart';
 import 'package:fl_context_menu/src/styles/styles.dart';
 import 'package:fl_context_menu/src/widgets/context_menu_section.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FlMenuWidget extends StatelessWidget {
@@ -12,11 +13,11 @@ class FlMenuWidget extends StatelessWidget {
   final int menuLevel;
 
   const FlMenuWidget({
-    super.key,
     required this.data,
     required this.position,
     required this.config,
     required this.style,
+    super.key,
     this.menuLevel = 1,
   });
 
@@ -39,8 +40,8 @@ class FlMenuWidget extends StatelessWidget {
   }
 
   Widget _buildMenuMaterial() {
-    final resolvedStyle = _resolveStyle(style, menuLevel);
-    final dividerStyle = resolvedStyle.dividerStyle;
+    final FlMenuStyle resolvedStyle = _resolveStyle(style, menuLevel);
+    final FlMenuDividerStyle dividerStyle = resolvedStyle.dividerStyle;
 
     return Material(
       elevation: resolvedStyle.elevation,
@@ -100,5 +101,15 @@ class FlMenuWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<FlMenuDataModel>('data', data));
+    properties.add(DiagnosticsProperty<Offset>('position', position));
+    properties.add(DiagnosticsProperty<FlMenuConfig>('config', config));
+    properties.add(DiagnosticsProperty<FlMenuStyle>('style', style));
+    properties.add(IntProperty('menuLevel', menuLevel));
   }
 }

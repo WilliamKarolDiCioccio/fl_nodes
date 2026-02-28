@@ -27,7 +27,7 @@ class FlNodesOverlayHelper {
   }
 
   void clear() {
-    final idNames = data.keys.toSet();
+    final Set<String> idNames = data.keys.toSet();
 
     data.clear();
 

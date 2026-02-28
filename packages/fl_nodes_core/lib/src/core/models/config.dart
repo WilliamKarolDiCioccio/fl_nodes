@@ -65,23 +65,22 @@ class FlNodesConfig {
     bool? enableSnapToGrid,
     double? snapToGridSize,
     bool? enableAutoPlacement,
-  }) {
-    return FlNodesConfig(
-      enableZoom: enableZoom ?? this.enableZoom,
-      zoomSensitivity: zoomSensitivity ?? this.zoomSensitivity,
-      minZoom: minZoom ?? this.minZoom,
-      maxZoom: maxZoom ?? this.maxZoom,
-      enablePan: enablePan ?? this.enablePan,
-      panSensitivity: panSensitivity ?? this.panSensitivity,
-      maxPanX: maxPanX ?? this.maxPanX,
-      maxPanY: maxPanY ?? this.maxPanY,
-      enableKineticScrolling:
-          enableKineticScrolling ?? this.enableKineticScrolling,
-      enableAutoScrolling: enableAutoScrolling ?? this.enableAutoScrolling,
-      enableAreaSelection: enableAreaSelection ?? this.enableAreaSelection,
-      enableSnapToGrid: enableSnapToGrid ?? this.enableSnapToGrid,
-      snapToGridSize: snapToGridSize ?? this.snapToGridSize,
-      enableAutoPlacement: enableAutoPlacement ?? this.enableAutoPlacement,
-    );
-  }
+  }) =>
+      FlNodesConfig(
+        enableZoom: enableZoom ?? this.enableZoom,
+        zoomSensitivity: zoomSensitivity ?? this.zoomSensitivity,
+        minZoom: minZoom ?? this.minZoom,
+        maxZoom: maxZoom ?? this.maxZoom,
+        enablePan: enablePan ?? this.enablePan,
+        panSensitivity: panSensitivity ?? this.panSensitivity,
+        maxPanX: maxPanX ?? this.maxPanX,
+        maxPanY: maxPanY ?? this.maxPanY,
+        enableKineticScrolling:
+            enableKineticScrolling ?? this.enableKineticScrolling,
+        enableAutoScrolling: enableAutoScrolling ?? this.enableAutoScrolling,
+        enableAreaSelection: enableAreaSelection ?? this.enableAreaSelection,
+        enableSnapToGrid: enableSnapToGrid ?? this.enableSnapToGrid,
+        snapToGridSize: snapToGridSize ?? this.snapToGridSize,
+        enableAutoPlacement: enableAutoPlacement ?? this.enableAutoPlacement,
+      );
 }

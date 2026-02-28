@@ -43,7 +43,7 @@ class TmpLinkCustomPainter extends FlCustomPainter {
     final Paint paint = Paint();
 
     if (tmpLinkData!.linkStyle.gradient != null) {
-      final shader = tmpLinkData!.linkStyle.gradient!.createShader(
+      final Shader shader = tmpLinkData!.linkStyle.gradient!.createShader(
         Rect.fromPoints(
           tmpLinkData!.outPortOffset,
           tmpLinkData!.inPortOffset,

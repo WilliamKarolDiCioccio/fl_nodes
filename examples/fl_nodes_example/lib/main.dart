@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'l10n/app_localizations.dart';
+import 'package:fl_nodes_example/l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,10 +39,12 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
   void initState() {
     super.initState();
 
-    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-    final supportedLanguageCodes =
-        SupportedLocale.values.map((l) => l.languageCode).toSet();
-    final defaultLanguageCode =
+    final Locale systemLocale =
+        WidgetsBinding.instance.platformDispatcher.locale;
+    final Set<String> supportedLanguageCodes = SupportedLocale.values
+        .map((l) => l.languageCode)
+        .toSet();
+    final String defaultLanguageCode =
         supportedLanguageCodes.contains(systemLocale.languageCode)
         ? systemLocale.languageCode
         : 'en';
@@ -51,31 +53,29 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        const FlNodesLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: SupportedLocale.values.map((l) => l.locale).toList(),
-      locale: _locale,
-      title: 'Fl Nodes Example',
-      theme: ThemeData.dark().copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
+  Widget build(BuildContext context) => MaterialApp(
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      FlNodesLocalizationsDelegate(),
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: SupportedLocale.values.map((l) => l.locale).toList(),
+    locale: _locale,
+    title: 'Fl Nodes Example',
+    theme: ThemeData.dark().copyWith(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
       ),
-      home: ExampleGalleryScreen(
-        currentLocale: _locale,
-        onLocaleChanged: _setLocale,
-      ),
-      debugShowCheckedModeBanner: kDebugMode,
-    );
-  }
+    ),
+    home: ExampleGalleryScreen(
+      currentLocale: _locale,
+      onLocaleChanged: _setLocale,
+    ),
+    debugShowCheckedModeBanner: kDebugMode,
+  );
 }
 
 class ExampleGalleryScreen extends StatefulWidget {
@@ -83,13 +83,25 @@ class ExampleGalleryScreen extends StatefulWidget {
   final void Function(String) onLocaleChanged;
 
   const ExampleGalleryScreen({
-    super.key,
     required this.currentLocale,
     required this.onLocaleChanged,
+    super.key,
   });
 
   @override
   State<ExampleGalleryScreen> createState() => _ExampleGalleryScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
+    properties.add(
+      ObjectFlagProperty<void Function(String)>.has(
+        'onLocaleChanged',
+        onLocaleChanged,
+      ),
+    );
+  }
 }
 
 class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
@@ -120,45 +132,43 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withAlpha(51),
-                ),
+  Widget build(BuildContext context) => Scaffold(
+    body: Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withAlpha(51),
               ),
             ),
-            child: Row(
-              spacing: 8,
-              children: [
-                Icon(
-                  Icons.account_tree,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-                Text(
-                  "FlNodes Examples",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
           ),
-          Expanded(child: CustomScrollView(slivers: [_buildExampleGrid()])),
-        ],
-      ),
-    );
-  }
+          child: Row(
+            spacing: 8,
+            children: [
+              Icon(
+                Icons.account_tree,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
+              Text(
+                'FlNodes Examples',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: CustomScrollView(slivers: [_buildExampleGrid()])),
+      ],
+    ),
+  );
 
   Widget _buildExampleGrid() {
     if (_examples.isEmpty) {
@@ -185,7 +195,7 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
       padding: const EdgeInsets.all(16),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.crossAxisExtent;
+          final double width = constraints.crossAxisExtent;
           int crossAxisCount;
           double childAspectRatio;
 
@@ -246,6 +256,12 @@ class _ExampleCard extends StatefulWidget {
 
   @override
   State<_ExampleCard> createState() => _ExampleCardState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<_ExampleEntry>('entry', entry));
+  }
 }
 
 class _ExampleCardState extends State<_ExampleCard> {
@@ -253,7 +269,7 @@ class _ExampleCardState extends State<_ExampleCard> {
 
   @override
   Widget build(BuildContext context) {
-    final entry = widget.entry;
+    final _ExampleEntry entry = widget.entry;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -354,29 +370,34 @@ class _ExampleCardState extends State<_ExampleCard> {
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: entry.tags.take(3).map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              tag,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant.withAlpha(179),
+                        children: entry.tags
+                            .take(3)
+                            .map(
+                              (tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color:
+                                        Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant
+                                            .withAlpha(179),
+                                  ),
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            )
+                            .toList(),
                       ),
                     ],
                   ),
@@ -389,16 +410,14 @@ class _ExampleCardState extends State<_ExampleCard> {
     );
   }
 
-  Widget _buildIconPlaceholder() {
-    return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Icon(
-          widget.entry.icon,
-          size: 64,
-          color: Theme.of(context).colorScheme.primary.withAlpha(127),
-        ),
+  Widget _buildIconPlaceholder() => ColoredBox(
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: Center(
+      child: Icon(
+        widget.entry.icon,
+        size: 64,
+        color: Theme.of(context).colorScheme.primary.withAlpha(127),
       ),
-    );
-  }
+    ),
+  );
 }

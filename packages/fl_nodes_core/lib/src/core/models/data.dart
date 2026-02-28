@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../constants.dart';
-import '../../styles/styles.dart';
-import '../controller/core.dart';
-import '../events/events.dart';
-import '../helpers/single_listener_change_notifier.dart';
-import 'data_adapters_v1.dart';
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/helpers/single_listener_change_notifier.dart';
+import 'package:fl_nodes_core/src/core/models/data_adapters_v1.dart';
 
 typedef LocalizedString = String Function(BuildContext context);
 
@@ -26,8 +26,8 @@ class FlLinkPrototype {
   final LocalizedString label;
 
   const FlLinkPrototype({
-    this.idName = 'default',
     required this.label,
+    this.idName = 'default',
   });
 }
 
@@ -72,7 +72,6 @@ final class FlLinkDataModel {
   factory FlLinkDataModel.fromJson(
     Map<String, dynamic> json,
     Map<Type, DataHandler> dataHandlers,
-    FlLinkPrototype prototype,
   ) =>
       FlLinkDataModelV1Adapter.fromJsonV1(
         json,
@@ -84,13 +83,12 @@ final class FlLinkDataModel {
     (PortLocator, PortLocator)? ports,
     FlLinkState? state,
     List<Offset>? joints,
-  }) {
-    return FlLinkDataModel(
-      id: id ?? this.id,
-      ports: ports ?? this.ports,
-      state: state ?? this.state,
-    );
-  }
+  }) =>
+      FlLinkDataModel(
+        id: id ?? this.id,
+        ports: ports ?? this.ports,
+        state: state ?? this.state,
+      );
 
   @override
   bool operator ==(Object other) =>
@@ -142,11 +140,11 @@ abstract class FlPortPrototype {
   FlPortPrototype({
     required this.idName,
     required this.displayName,
+    required this.geometricOrientation,
+    required this.linkPrototype,
     this.styleBuilder = flDefaultPortStyleBuilder,
     this.dataType = dynamic,
     this.allowsMultipleLinks = true,
-    required this.geometricOrientation,
-    required this.linkPrototype,
   });
 
   String? compatibleWith(FlPortPrototype other) {
@@ -218,7 +216,7 @@ class FlControlInputPortPrototype extends FlPortPrototype {
   @override
   String? compatibleWith(FlPortPrototype other) {
     if (other is! FlControlOutputPortPrototype) {
-      return "Cannot connect a control input port to a non-control output port";
+      return 'Cannot connect a control input port to a non-control output port';
     }
     return super.compatibleWith(other);
   }
@@ -235,7 +233,7 @@ class FlControlOutputPortPrototype extends FlPortPrototype {
   @override
   String? compatibleWith(FlPortPrototype other) {
     if (other is! FlControlInputPortPrototype) {
-      return "Cannot connect a control output port to a non-control input port";
+      return 'Cannot connect a control output port to a non-control input port';
     }
     return super.compatibleWith(other);
   }
@@ -336,10 +334,11 @@ final class FlPortDataModel {
 
   String? canLinkTo(FlPortDataModel other) {
     // prevent linking a port to itself
-    if (identical(this, other)) return "Cannot connect a port to itself";
+    if (identical(this, other)) return 'Cannot connect a port to itself';
 
     // check prototype compatibility
-    final compatibilityError = prototype.compatibleWith(other.prototype);
+    final String? compatibilityError =
+        prototype.compatibleWith(other.prototype);
     if (compatibilityError != null) return compatibilityError;
 
     // check multiplicity constraints
@@ -384,10 +383,10 @@ class FlFieldPrototype {
   FlFieldPrototype({
     required this.idName,
     required this.displayName,
+    required this.visualizerBuilder,
     this.style = const FlFieldStyle.basic(),
     this.dataType = dynamic,
     this.defaultData,
-    required this.visualizerBuilder,
     this.onVisualizerTap,
     this.editorBuilder,
   }) : assert(onVisualizerTap != null || editorBuilder != null);
@@ -417,9 +416,8 @@ class FlFieldDataModel {
   ) =>
       FlFieldDataModelV1Adapter.fromJsonV1(json, fieldPrototypes, dataHandlers);
 
-  FlFieldDataModel copyWith({dynamic data}) {
-    return FlFieldDataModel(prototype: prototype, data: data ?? this.data);
-  }
+  FlFieldDataModel copyWith({dynamic data}) =>
+      FlFieldDataModel(prototype: prototype, data: data ?? this.data);
 }
 
 typedef OnNodeExecute = Future<void> Function(
@@ -545,17 +543,16 @@ final class FlNodeDataModel {
     Map<String, dynamic>? customData,
     Function(FlNodeDataModel node)? onRendered,
     Offset? offset,
-  }) {
-    return FlNodeDataModel(
-      id: id ?? this.id,
-      prototype: prototype,
-      ports: ports ?? this.ports,
-      state: state ?? this.state,
-      customData: customData ?? this.customData,
-      fields: fields ?? this.fields,
-      offset: offset ?? this.offset,
-    );
-  }
+  }) =>
+      FlNodeDataModel(
+        id: id ?? this.id,
+        prototype: prototype,
+        ports: ports ?? this.ports,
+        state: state ?? this.state,
+        customData: customData ?? this.customData,
+        fields: fields ?? this.fields,
+        offset: offset ?? this.offset,
+      );
 }
 
 final class FlNodesGroupDataModel {
@@ -575,64 +572,61 @@ final class FlNodesGroupDataModel {
       FlNodesGroupDataModelV1Adapter.fromJsonV1(json);
 }
 
-FlPortDataModel createPort(String idName, FlPortPrototype prototype) {
-  return FlPortDataModel(prototype: prototype, state: FlPortState());
-}
+FlPortDataModel createPort(String idName, FlPortPrototype prototype) =>
+    FlPortDataModel(prototype: prototype, state: FlPortState());
 
-FlFieldDataModel createField(String idName, FlFieldPrototype prototype) {
-  return FlFieldDataModel(prototype: prototype, data: prototype.defaultData);
-}
+FlFieldDataModel createField(String idName, FlFieldPrototype prototype) =>
+    FlFieldDataModel(prototype: prototype, data: prototype.defaultData);
 
 FlNodeState createNodeState(
   FlNodePrototype prototype,
-) {
-  return FlNodeState(
-    customState: Map.fromEntries(
-      prototype.customState.map((e) => MapEntry(e.$1, e.$3)),
-    ),
-  );
-}
+) =>
+    FlNodeState(
+      customState: Map.fromEntries(
+        prototype.customState.map((e) => MapEntry(e.$1, e.$3)),
+      ),
+    );
 
 FlNodeDataModel createNode(
   FlNodePrototype prototype, {
   required FlNodesController controller,
   required Offset offset,
   required Map<String, dynamic>? customData,
-}) {
-  return FlNodeDataModel(
-    id: const Uuid().v4(),
-    prototype: prototype,
-    ports: Map.fromEntries(
-      prototype.portPrototypes.map((prototype) {
-        final instance = createPort(prototype.idName, prototype);
-        return MapEntry(prototype.idName, instance);
-      }),
-    ),
-    fields: Map.fromEntries(
-      prototype.fieldPrototypes.map((prototype) {
-        final instance = createField(prototype.idName, prototype);
-        return MapEntry(prototype.idName, instance);
-      }),
-    ),
-    customData: customData ??
-        Map.fromEntries(
-          prototype.customData.map((e) => MapEntry(e.$1, e.$3)),
-        ),
-    state: createNodeState(prototype),
-    offset: offset,
-  );
-}
+}) =>
+    FlNodeDataModel(
+      id: const Uuid().v4(),
+      prototype: prototype,
+      ports: Map.fromEntries(
+        prototype.portPrototypes.map((prototype) {
+          final FlPortDataModel instance =
+              createPort(prototype.idName, prototype);
+          return MapEntry(prototype.idName, instance);
+        }),
+      ),
+      fields: Map.fromEntries(
+        prototype.fieldPrototypes.map((prototype) {
+          final FlFieldDataModel instance =
+              createField(prototype.idName, prototype);
+          return MapEntry(prototype.idName, instance);
+        }),
+      ),
+      customData: customData ??
+          Map.fromEntries(
+            prototype.customData.map((e) => MapEntry(e.$1, e.$3)),
+          ),
+      state: createNodeState(prototype),
+      offset: offset,
+    );
 
 FlNodesGroupDataModel createNodesGroup(
   String name,
   Set<String> nodeIds,
-) {
-  return FlNodesGroupDataModel(
-    id: const Uuid().v4(),
-    name: name,
-    nodeIds: nodeIds,
-  );
-}
+) =>
+    FlNodesGroupDataModel(
+      id: const Uuid().v4(),
+      name: name,
+      nodeIds: nodeIds,
+    );
 
 /// A container for all the data in a project.
 class FlNodesProjectDataModel {
@@ -644,10 +638,10 @@ class FlNodesProjectDataModel {
   final Map<String, FlLinkDataModel> links;
 
   FlNodesProjectDataModel({
-    this.packageVersion = kPackageVersion,
-    this.appVersion = '1.0.0',
     required this.nodes,
     required this.links,
+    this.packageVersion = kPackageVersion,
+    this.appVersion = '1.0.0',
     this.viewportOffset = Offset.zero,
     this.viewportZoom = 1.0,
   });
@@ -668,16 +662,14 @@ class FlNodesProjectDataModel {
         dataHandlers,
       );
 
-  FlNodesProjectDataModel copyWith() {
-    return FlNodesProjectDataModel(
-      viewportOffset: viewportOffset,
-      viewportZoom: viewportZoom,
-      nodes: Map.fromEntries(
-        nodes.entries.map((e) => MapEntry(e.key, e.value.copyWith())),
-      ),
-      links: Map.fromEntries(
-        links.entries.map((e) => MapEntry(e.key, e.value)),
-      ),
-    );
-  }
+  FlNodesProjectDataModel copyWith() => FlNodesProjectDataModel(
+        viewportOffset: viewportOffset,
+        viewportZoom: viewportZoom,
+        nodes: Map.fromEntries(
+          nodes.entries.map((e) => MapEntry(e.key, e.value.copyWith())),
+        ),
+        links: Map.fromEntries(
+          links.entries.map((e) => MapEntry(e.key, e.value)),
+        ),
+      );
 }

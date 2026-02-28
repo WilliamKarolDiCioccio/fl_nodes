@@ -1,15 +1,16 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/mind_map_example/nodes/data/types.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class MindMapNodeWidget extends FlBaseNodeWidget {
   const MindMapNodeWidget({
-    super.key,
     required super.controller,
     required super.node,
     required super.showPortContextMenu,
     required super.showNodeCreationMenu,
     required super.showNodeContextMenu,
+    super.key,
   });
 
   @override
@@ -19,10 +20,10 @@ class MindMapNodeWidget extends FlBaseNodeWidget {
 class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
   @override
   Widget build(BuildContext context) {
-    final shapeType =
+    final ShapeType shapeType =
         widget.node.customData['shape'] as ShapeType? ??
         ShapeType.roundedRectangle;
-    final text = widget.node.customData['text'] as String? ?? 'Node';
+    final String text = widget.node.customData['text'] as String? ?? 'Node';
 
     return wrapWithControls(
       SizedBox(
@@ -96,17 +97,19 @@ class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
     if (renderBox == null || nodeBox == null) return;
 
     // Cache frequently used values
-    final nodeOffset = nodeBox.localToGlobal(Offset.zero);
-    final isCollapsed = widget.node.state.isCollapsed;
-    final collapsedYAdjustment = isCollapsed ? -renderBox.size.height + 8 : 0;
+    final Offset nodeOffset = nodeBox.localToGlobal(Offset.zero);
+    final bool isCollapsed = widget.node.state.isCollapsed;
+    final num collapsedYAdjustment = isCollapsed
+        ? -renderBox.size.height + 8
+        : 0;
 
     // Process ports
-    for (final port in widget.node.ports.values) {
+    for (final FlPortDataModel port in widget.node.ports.values) {
       final portBox = port.key.currentContext?.findRenderObject() as RenderBox?;
       if (portBox == null) continue;
 
-      final portOffset = portBox.localToGlobal(Offset.zero);
-      final localOffset = portOffset - nodeOffset;
+      final Offset portOffset = portBox.localToGlobal(Offset.zero);
+      final Offset localOffset = portOffset - nodeOffset;
 
       port.offset = Offset(
         localOffset.dx + portBox.size.width / 2,
@@ -128,27 +131,33 @@ class _ShapePainterWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _ShapePainter(shapeType, isSelected),
-      child: Container(
-        width: 160,
-        height: 100,
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.black87,
-          ),
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
+  Widget build(BuildContext context) => CustomPaint(
+    painter: _ShapePainter(shapeType, isSelected),
+    child: Container(
+      width: 160,
+      height: 100,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: isSelected ? Colors.white : Colors.black87,
         ),
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
       ),
-    );
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<ShapeType>('shapeType', shapeType));
+    properties.add(DiagnosticsProperty<bool>('isSelected', isSelected));
+    properties.add(StringProperty('text', text));
   }
 }
 
@@ -170,7 +179,7 @@ class _ShapePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    final rect = Offset.zero & size;
+    final Rect rect = Offset.zero & size;
 
     switch (shapeType) {
       case ShapeType.rectangle:
@@ -183,7 +192,7 @@ class _ShapePainter extends CustomPainter {
         canvas.drawRRect(rrect, borderPaint);
         break;
       case ShapeType.circle:
-        final radius = size.shortestSide / 2;
+        final double radius = size.shortestSide / 2;
         canvas.drawCircle(size.center(Offset.zero), radius, paint);
         canvas.drawCircle(size.center(Offset.zero), radius, borderPaint);
         break;

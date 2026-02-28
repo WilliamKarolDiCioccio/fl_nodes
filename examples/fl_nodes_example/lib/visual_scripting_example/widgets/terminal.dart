@@ -1,4 +1,5 @@
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 enum LogLevel {
@@ -39,11 +40,9 @@ class TerminalController extends ChangeNotifier {
     return _instance!;
   }
 
-  TerminalController._internal();
+  factory TerminalController() => instance;
 
-  factory TerminalController() {
-    return instance;
-  }
+  TerminalController._internal();
 
   final List<LogEntry> _logs = [];
 
@@ -116,6 +115,15 @@ class TerminalWidget extends StatefulWidget {
 
   @override
   State<TerminalWidget> createState() => _TerminalWidgetState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed));
+    properties.add(
+      DiagnosticsProperty<TerminalController>('controller', controller),
+    );
+  }
 }
 
 class _TerminalWidgetState extends State<TerminalWidget> {
@@ -162,76 +170,72 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          left: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withAlpha(51),
-          ),
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      border: Border(
+        left: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(25),
-            blurRadius: 8,
-            offset: const Offset(-2, 0),
-          ),
-        ],
       ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          Expanded(child: _buildLogList()),
-        ],
-      ),
-    );
-  }
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(25),
+          blurRadius: 8,
+          offset: const Offset(-2, 0),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        _buildHeader(),
+        Expanded(child: _buildLogList()),
+      ],
+    ),
+  );
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withAlpha(51),
-          ),
+  Widget _buildHeader() => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      border: Border(
+        bottom: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withAlpha(51),
         ),
       ),
-      child: Row(
-        spacing: 8,
-        children: [
-          Icon(
-            Icons.terminal,
-            color: Theme.of(context).colorScheme.primary,
-            size: 20,
+    ),
+    child: Row(
+      spacing: 8,
+      children: [
+        Icon(
+          Icons.terminal,
+          color: Theme.of(context).colorScheme.primary,
+          size: 20,
+        ),
+        Text(
+          'Output Terminal',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
           ),
-          Text(
-            "Output Terminal",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, size: 18),
-            tooltip: AppLocalizations.of(context)!.clearLogsTooltip,
-            onPressed: widget.controller.logs.isEmpty
-                ? null
-                : widget.controller.clearLogs,
-            visualDensity: VisualDensity.compact,
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        const Spacer(),
+        IconButton(
+          icon: const Icon(Icons.delete_outline, size: 18),
+          tooltip: AppLocalizations.of(context)!.clearLogsTooltip,
+          onPressed: widget.controller.logs.isEmpty
+              ? null
+              : widget.controller.clearLogs,
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    ),
+  );
 
   Widget _buildLogList() {
-    final logs = widget.controller.logs;
+    final List<LogEntry> logs = widget.controller.logs;
 
     if (logs.isEmpty) {
       return Center(
@@ -275,14 +279,14 @@ class _TerminalWidgetState extends State<TerminalWidget> {
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       itemCount: logs.length,
       itemBuilder: (context, index) {
-        final log = logs[index];
+        final LogEntry log = logs[index];
         return _buildLogEntry(log);
       },
     );
   }
 
   Widget _buildLogEntry(LogEntry log) {
-    final timeStr = _formatTime(log.timestamp);
+    final String timeStr = _formatTime(log.timestamp);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -351,9 +355,8 @@ class _TerminalWidgetState extends State<TerminalWidget> {
     );
   }
 
-  String _formatTime(DateTime time) {
-    return '${time.hour.toString().padLeft(2, '0')}:'
-        '${time.minute.toString().padLeft(2, '0')}:'
-        '${time.second.toString().padLeft(2, '0')}';
-  }
+  String _formatTime(DateTime time) =>
+      '${time.hour.toString().padLeft(2, '0')}:'
+      '${time.minute.toString().padLeft(2, '0')}:'
+      '${time.second.toString().padLeft(2, '0')}';
 }

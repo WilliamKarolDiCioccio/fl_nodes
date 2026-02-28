@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
 
 import 'package:fl_nodes_core/src/core/models/data.dart';
 
-import '../../models/paint.dart';
+import 'package:fl_nodes_core/src/core/models/paint.dart';
 
 /// Utility class for working with paths in the node editor.
 final class PathUtils {
@@ -13,25 +13,25 @@ final class PathUtils {
     required FlPortGeometricOrientation outOrientation,
     required FlPortGeometricOrientation inOrientation,
   }) {
-    final curve = computeBezierLinkPath(
+    final Path curve = computeBezierLinkPath(
       outPortOffset: outPortOffset,
       inPortOffset: inPortOffset,
       outPortGeometricOrientation: outOrientation,
       inPortGeometricOrientation: inOrientation,
     );
 
-    final metrics = curve.computeMetrics();
+    final PathMetrics metrics = curve.computeMetrics();
     double minDistance = double.infinity;
 
     for (final metric in metrics) {
-      final pathLength = metric.length;
+      final double pathLength = metric.length;
       const int segments = 100;
 
       for (int i = 0; i <= segments; i++) {
-        final t = i / segments;
-        final pointOnCurve =
+        final double t = i / segments;
+        final Offset pointOnCurve =
             metric.getTangentForOffset(t * pathLength)!.position;
-        final distance = (point - pointOnCurve).distance;
+        final double distance = (point - pointOnCurve).distance;
 
         minDistance = distance < minDistance ? distance : minDistance;
       }
@@ -45,21 +45,21 @@ final class PathUtils {
     required Offset outPortOffset,
     required Offset inPortOffset,
   }) {
-    final lineVector = inPortOffset - outPortOffset;
-    final pointVector = point - outPortOffset;
-    final lineLengthSquared =
+    final Offset lineVector = inPortOffset - outPortOffset;
+    final Offset pointVector = point - outPortOffset;
+    final double lineLengthSquared =
         lineVector.dx * lineVector.dx + lineVector.dy * lineVector.dy;
 
     // Line is a single point
     if (lineLengthSquared == 0) return (point - outPortOffset).distance;
 
     // Project pointVector onto lineVector to find the projection's scale
-    final t =
+    final double t =
         (pointVector.dx * lineVector.dx + pointVector.dy * lineVector.dy) /
             lineLengthSquared;
-    final clampedT = t.clamp(0.0, 1.0); // Clamp to line segment
+    final double clampedT = t.clamp(0.0, 1.0); // Clamp to line segment
 
-    final closestPoint = outPortOffset + lineVector * clampedT;
+    final Offset closestPoint = outPortOffset + lineVector * clampedT;
     return (point - closestPoint).distance;
   }
 
@@ -70,24 +70,24 @@ final class PathUtils {
     required FlPortGeometricOrientation outOrientation,
     required FlPortGeometricOrientation inOrientation,
   }) {
-    final path = computeNinetyDegreesLinkPath(
+    final Path path = computeNinetyDegreesLinkPath(
       outPortOffset: outPortOffset,
       inPortOffset: inPortOffset,
       outPortGeometricOrientation: outOrientation,
       inPortGeometricOrientation: inOrientation,
     );
 
-    final metrics = path.computeMetrics();
+    final PathMetrics metrics = path.computeMetrics();
     double minDistance = double.infinity;
 
     for (final metric in metrics) {
-      final pathLength = metric.length;
+      final double pathLength = metric.length;
       const int segments = 50; // Fewer segments needed for straight lines
       for (int i = 0; i <= segments; i++) {
-        final t = i / segments;
-        final pointOnPath =
+        final double t = i / segments;
+        final Offset pointOnPath =
             metric.getTangentForOffset(t * pathLength)!.position;
-        final distance = (point - pointOnPath).distance;
+        final double distance = (point - pointOnPath).distance;
 
         minDistance = distance < minDistance ? distance : minDistance;
       }
@@ -97,14 +97,13 @@ final class PathUtils {
   }
 
   // Helper to get offset direction vector from orientation
-  static Offset _getOrientationVector(FlPortGeometricOrientation orientation) {
-    return switch (orientation) {
-      FlPortGeometricOrientation.right => const Offset(1, 0),
-      FlPortGeometricOrientation.left => const Offset(-1, 0),
-      FlPortGeometricOrientation.top => const Offset(0, -1),
-      FlPortGeometricOrientation.bottom => const Offset(0, 1),
-    };
-  }
+  static Offset _getOrientationVector(FlPortGeometricOrientation orientation) =>
+      switch (orientation) {
+        FlPortGeometricOrientation.right => const Offset(1, 0),
+        FlPortGeometricOrientation.left => const Offset(-1, 0),
+        FlPortGeometricOrientation.top => const Offset(0, -1),
+        FlPortGeometricOrientation.bottom => const Offset(0, 1),
+      };
 
   static Path computeBezierLinkPath({
     required Offset outPortOffset,
@@ -117,14 +116,14 @@ final class PathUtils {
     const double defaultOffset = 400.0;
     const double minOffset = 50.0;
 
-    final outDir = _getOrientationVector(outPortGeometricOrientation);
-    final inDir = _getOrientationVector(inPortGeometricOrientation);
+    final Offset outDir = _getOrientationVector(outPortGeometricOrientation);
+    final Offset inDir = _getOrientationVector(inPortGeometricOrientation);
 
     // Calculate distance between ports
-    final distance = (inPortOffset - outPortOffset).distance;
+    final double distance = (inPortOffset - outPortOffset).distance;
 
     // Adaptive control offset based on distance and orientation
-    final baseControlOffset = distance < defaultOffset * 2
+    final double baseControlOffset = distance < defaultOffset * 2
         ? (distance / 2).clamp(minOffset, defaultOffset)
         : defaultOffset;
 
@@ -132,7 +131,7 @@ final class PathUtils {
     double outControlScale = 1.0;
     double inControlScale = 1.0;
 
-    final facingEachOther =
+    final bool facingEachOther =
         (outDir.dx * inDir.dx + outDir.dy * inDir.dy) < -0.5;
 
     // More pronounced curves for ports not facing each other
@@ -168,11 +167,10 @@ final class PathUtils {
   static Path computeStraightLinkPath({
     required Offset outPortOffset,
     required Offset inPortOffset,
-  }) {
-    return Path()
-      ..moveTo(outPortOffset.dx, outPortOffset.dy)
-      ..lineTo(inPortOffset.dx, inPortOffset.dy);
-  }
+  }) =>
+      Path()
+        ..moveTo(outPortOffset.dx, outPortOffset.dy)
+        ..lineTo(inPortOffset.dx, inPortOffset.dy);
 
   static Path computeNinetyDegreesLinkPath({
     required Offset outPortOffset,
@@ -180,32 +178,32 @@ final class PathUtils {
     required FlPortGeometricOrientation outPortGeometricOrientation,
     required FlPortGeometricOrientation inPortGeometricOrientation,
   }) {
-    bool isHorizontal(FlPortGeometricOrientation orientation) {
-      return orientation == FlPortGeometricOrientation.left ||
-          orientation == FlPortGeometricOrientation.right;
-    }
+    bool isHorizontal(FlPortGeometricOrientation orientation) =>
+        orientation == FlPortGeometricOrientation.left ||
+        orientation == FlPortGeometricOrientation.right;
 
     final path = Path()..moveTo(outPortOffset.dx, outPortOffset.dy);
 
     const double minSegmentLength = 30.0;
 
-    final outDir = _getOrientationVector(outPortGeometricOrientation);
-    final inDir = _getOrientationVector(inPortGeometricOrientation);
+    final Offset outDir = _getOrientationVector(outPortGeometricOrientation);
+    final Offset inDir = _getOrientationVector(inPortGeometricOrientation);
 
-    final outIsHorizontal = isHorizontal(outPortGeometricOrientation);
-    final inIsHorizontal = isHorizontal(inPortGeometricOrientation);
+    final bool outIsHorizontal = isHorizontal(outPortGeometricOrientation);
+    final bool inIsHorizontal = isHorizontal(inPortGeometricOrientation);
 
-    final dx = inPortOffset.dx - outPortOffset.dx;
-    final dy = inPortOffset.dy - outPortOffset.dy;
+    final double dx = inPortOffset.dx - outPortOffset.dx;
+    final double dy = inPortOffset.dy - outPortOffset.dy;
 
     // Same orientation axis
     if (outIsHorizontal == inIsHorizontal) {
       // Both horizontal
       if (outIsHorizontal) {
-        final midY = (outPortOffset.dy + inPortOffset.dy) / 2;
+        final double midY = (outPortOffset.dy + inPortOffset.dy) / 2;
 
         // Extend from output in its direction
-        final firstCornerX = outPortOffset.dx + outDir.dx * minSegmentLength;
+        final double firstCornerX =
+            outPortOffset.dx + outDir.dx * minSegmentLength;
 
         path
           ..lineTo(firstCornerX, outPortOffset.dy)
@@ -219,10 +217,11 @@ final class PathUtils {
       }
       // Both vertical
       else {
-        final midX = (outPortOffset.dx + inPortOffset.dx) / 2;
+        final double midX = (outPortOffset.dx + inPortOffset.dx) / 2;
 
         // Extend from output in its direction
-        final firstCornerY = outPortOffset.dy + outDir.dy * minSegmentLength;
+        final double firstCornerY =
+            outPortOffset.dy + outDir.dy * minSegmentLength;
 
         path
           ..lineTo(outPortOffset.dx, firstCornerY)
@@ -240,23 +239,25 @@ final class PathUtils {
       // Out is horizontal, in is vertical
       if (outIsHorizontal) {
         // Check if we can make a simple two-segment path
-        final goingRight = outDir.dx > 0;
-        final goingDown = inDir.dy > 0;
+        final bool goingRight = outDir.dx > 0;
+        final bool goingDown = inDir.dy > 0;
 
         // Determine turning point
-        final canTurnAtOut = (goingRight && dx > 0) || (!goingRight && dx < 0);
-        final canTurnAtIn = (goingDown && dy > 0) || (!goingDown && dy < 0);
+        final bool canTurnAtOut =
+            (goingRight && dx > 0) || (!goingRight && dx < 0);
+        final bool canTurnAtIn =
+            (goingDown && dy > 0) || (!goingDown && dy < 0);
 
         if (canTurnAtOut && canTurnAtIn) {
           // Extend out horizontally then turn to reach input (L-shape)
-          final turnX = inPortOffset.dx;
+          final double turnX = inPortOffset.dx;
 
           path
             ..lineTo(turnX, outPortOffset.dy)
             ..lineTo(turnX, inPortOffset.dy);
         } else if (canTurnAtOut) {
           // Turn at output's preferred distance
-          final turnX = outPortOffset.dx + outDir.dx * minSegmentLength;
+          final double turnX = outPortOffset.dx + outDir.dx * minSegmentLength;
 
           path
             ..lineTo(turnX, outPortOffset.dy)
@@ -268,7 +269,7 @@ final class PathUtils {
             ..lineTo(inPortOffset.dx, inPortOffset.dy);
         } else if (canTurnAtIn) {
           // Turn at input's preferred distance
-          final turnY = inPortOffset.dy;
+          final double turnY = inPortOffset.dy;
 
           path
             ..lineTo(
@@ -279,9 +280,10 @@ final class PathUtils {
             ..lineTo(inPortOffset.dx, turnY);
         } else {
           // Extend from both ports in their preferred directions first then connect in the middle (Z-shape)
-          final extendX = outPortOffset.dx + outDir.dx * minSegmentLength;
-          final extendY = inPortOffset.dy + inDir.dy * minSegmentLength;
-          final midY = (outPortOffset.dy + extendY) / 2;
+          final double extendX =
+              outPortOffset.dx + outDir.dx * minSegmentLength;
+          final double extendY = inPortOffset.dy + inDir.dy * minSegmentLength;
+          final double midY = (outPortOffset.dy + extendY) / 2;
 
           path
             ..lineTo(extendX, outPortOffset.dy)
@@ -292,23 +294,25 @@ final class PathUtils {
       }
       // In is vertical, out is horizontal
       else {
-        final goingDown = outDir.dy > 0;
-        final goingRight = inDir.dx > 0;
+        final bool goingDown = outDir.dy > 0;
+        final bool goingRight = inDir.dx > 0;
 
         // Determine turning point
-        final canTurnAtOut = (goingDown && dy > 0) || (!goingDown && dy < 0);
-        final canTurnAtIn = (goingRight && dx > 0) || (!goingRight && dx < 0);
+        final bool canTurnAtOut =
+            (goingDown && dy > 0) || (!goingDown && dy < 0);
+        final bool canTurnAtIn =
+            (goingRight && dx > 0) || (!goingRight && dx < 0);
 
         if (canTurnAtOut && canTurnAtIn) {
           // Extend out vertically then turn to reach input (L-shape)
-          final turnY = inPortOffset.dy;
+          final double turnY = inPortOffset.dy;
 
           path
             ..lineTo(outPortOffset.dx, turnY)
             ..lineTo(inPortOffset.dx, turnY);
         } else if (canTurnAtOut) {
           // Turn at output's preferred distance
-          final turnY = outPortOffset.dy + outDir.dy * minSegmentLength;
+          final double turnY = outPortOffset.dy + outDir.dy * minSegmentLength;
 
           path
             ..lineTo(outPortOffset.dx, turnY)
@@ -320,7 +324,7 @@ final class PathUtils {
             ..lineTo(inPortOffset.dx, inPortOffset.dy);
         } else if (canTurnAtIn) {
           // Turn at input's preferred distance
-          final turnX = inPortOffset.dx;
+          final double turnX = inPortOffset.dx;
 
           path
             ..lineTo(
@@ -331,9 +335,10 @@ final class PathUtils {
             ..lineTo(turnX, inPortOffset.dy);
         } else {
           // Extend from both ports in their preferred directions first then connect in the middle (Z-shape)
-          final extendY = outPortOffset.dy + outDir.dy * minSegmentLength;
-          final extendX = inPortOffset.dx + inDir.dx * minSegmentLength;
-          final midX = (outPortOffset.dx + extendX) / 2;
+          final double extendY =
+              outPortOffset.dy + outDir.dy * minSegmentLength;
+          final double extendX = inPortOffset.dx + inDir.dx * minSegmentLength;
+          final double midX = (outPortOffset.dx + extendX) / 2;
 
           path
             ..lineTo(outPortOffset.dx, extendY)
@@ -347,38 +352,34 @@ final class PathUtils {
     return path;
   }
 
-  static Path computeCirclePortPath(PortPaintModel data) {
-    return Path()
-      ..addOval(
-        Rect.fromCircle(
-          center: data.offset,
-          radius: data.style.radius,
-        ),
-      );
-  }
+  static Path computeCirclePortPath(PortPaintModel data) => Path()
+    ..addOval(
+      Rect.fromCircle(
+        center: data.offset,
+        radius: data.style.radius,
+      ),
+    );
 
-  static Path computeTrianglePortPath(PortPaintModel data) {
-    return Path()
-      ..moveTo(
-        data.offset.dx - data.style.radius,
-        data.offset.dy - data.style.radius,
-      ) // Top-left
-      ..lineTo(
-        data.offset.dx + data.style.radius,
-        data.offset.dy,
-      ) // Middle-right (apex)
-      ..lineTo(
-        data.offset.dx - data.style.radius,
-        data.offset.dy + data.style.radius,
-      ) // Bottom-left
-      ..close();
-  }
+  static Path computeTrianglePortPath(PortPaintModel data) => Path()
+    ..moveTo(
+      data.offset.dx - data.style.radius,
+      data.offset.dy - data.style.radius,
+    ) // Top-left
+    ..lineTo(
+      data.offset.dx + data.style.radius,
+      data.offset.dy,
+    ) // Middle-right (apex)
+    ..lineTo(
+      data.offset.dx - data.style.radius,
+      data.offset.dy + data.style.radius,
+    ) // Bottom-left
+    ..close();
 
   /// Checks if a point is near a path within the given tolerance
   static bool isPointNearPath(Path path, Offset point, double tolerance) {
-    for (final metric in path.computeMetrics()) {
+    for (final PathMetric metric in path.computeMetrics()) {
       for (double t = 0; t < metric.length; t += 1.0) {
-        final pos = metric.getTangentForOffset(t)?.position;
+        final Offset? pos = metric.getTangentForOffset(t)?.position;
 
         if (pos != null && (point - pos).distance <= tolerance) return true;
       }

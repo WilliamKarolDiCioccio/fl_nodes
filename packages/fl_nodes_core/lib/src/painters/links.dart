@@ -1,3 +1,4 @@
+import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fl_nodes_core/src/core/utils/rendering/paths.dart';
@@ -22,7 +23,7 @@ class LinksCustomPainter extends FlCustomPainter {
     bool transformChanged = false,
     bool portsChanged = false,
   }) {
-    final shouldDrawLabels = controller.lodLevel >= 3;
+    final bool shouldDrawLabels = controller.lodLevel >= 3;
 
     if (controller.linksDataDirty ||
         controller.nodesDataDirty ||
@@ -38,26 +39,29 @@ class LinksCustomPainter extends FlCustomPainter {
         _labelTextPainters.clear();
       }
 
-      for (final link in controller.links.values) {
-        final node1 = controller.getNodeById(link.ports.$1.nodeId);
-        final node2 = controller.getNodeById(link.ports.$2.nodeId);
+      for (final FlLinkDataModel link in controller.links.values) {
+        final FlNodeDataModel? node1 =
+            controller.getNodeById(link.ports.$1.nodeId);
+        final FlNodeDataModel? node2 =
+            controller.getNodeById(link.ports.$2.nodeId);
         if (node1 == null || node2 == null) continue;
 
-        final port1 = node1.ports[link.ports.$1.portId];
-        final port2 = node2.ports[link.ports.$2.portId];
+        final FlPortDataModel? port1 = node1.ports[link.ports.$1.portId];
+        final FlPortDataModel? port2 = node2.ports[link.ports.$2.portId];
         if (port1 == null || port2 == null) continue;
 
-        final outPortOffset = node1.offset + port1.offset;
-        final inPortOffset = node2.offset + port2.offset;
-        final outPortGeometricOrientation =
+        final Offset outPortOffset = node1.offset + port1.offset;
+        final Offset inPortOffset = node2.offset + port2.offset;
+        final FlPortGeometricOrientation outPortGeometricOrientation =
             port1.prototype.geometricOrientation;
-        final inPortGeometricOrientation = port2.prototype.geometricOrientation;
+        final FlPortGeometricOrientation inPortGeometricOrientation =
+            port2.prototype.geometricOrientation;
 
         final Rect pathBounds = Rect.fromPoints(outPortOffset, inPortOffset);
 
         if (!viewport.overlaps(pathBounds)) continue;
 
-        final linkStyle = port1.style.linkStyleBuilder(link.state);
+        final FlLinkStyle linkStyle = port1.style.linkStyleBuilder(link.state);
 
         String? labelText;
         Rect? fromNodeBounds;
@@ -73,26 +77,28 @@ class LinksCustomPainter extends FlCustomPainter {
           }
         }
 
-        linkDrawData.add(LinkPaintModel(
-          linkId: link.id,
-          outPortOffset: outPortOffset,
-          inPortOffset: inPortOffset,
-          outPortGeometricOrientation: outPortGeometricOrientation,
-          inPortGeometricOrientation: inPortGeometricOrientation,
-          linkStyle: linkStyle,
-          labelText: labelText,
-          fromNodeBounds: fromNodeBounds,
-          toNodeBounds: toNodeBounds,
-        ));
+        linkDrawData.add(
+          LinkPaintModel(
+            linkId: link.id,
+            outPortOffset: outPortOffset,
+            inPortOffset: inPortOffset,
+            outPortGeometricOrientation: outPortGeometricOrientation,
+            inPortGeometricOrientation: inPortGeometricOrientation,
+            linkStyle: linkStyle,
+            labelText: labelText,
+            fromNodeBounds: fromNodeBounds,
+            toNodeBounds: toNodeBounds,
+          ),
+        );
       }
 
       for (final data in linkDrawData) {
-        final path = _computeLinkPath(data.linkStyle.curveType, data);
+        final Path path = _computeLinkPath(data.linkStyle.curveType, data);
 
         linksHitTestData[data.linkId] = (path.getBounds(), path);
 
         if (data.linkStyle.gradient != null) {
-          final shader = data.linkStyle.gradient!.createShader(
+          final Shader shader = data.linkStyle.gradient!.createShader(
             Rect.fromPoints(data.outPortOffset, data.inPortOffset),
           );
 
@@ -109,16 +115,17 @@ class LinksCustomPainter extends FlCustomPainter {
             _cacheTextPainter(data.linkId, data.labelText!);
           }
         } else {
-          final style = data.linkStyle;
-          _solidColorLinkBatches.putIfAbsent(style, () {
-            return (
+          final FlLinkStyle style = data.linkStyle;
+          _solidColorLinkBatches.putIfAbsent(
+            style,
+            () => (
               Path(),
               Paint()
                 ..color = style.color!
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = style.lineWidth
-            );
-          });
+            ),
+          );
 
           _solidColorLinkBatches[style]!.$1.addPath(path, Offset.zero);
 
@@ -133,8 +140,9 @@ class LinksCustomPainter extends FlCustomPainter {
 
     canvas.saveLayer(viewport, Paint());
 
-    for (final entry in _solidColorLinkBatches.entries) {
-      final (path, paint) = entry.value;
+    for (final MapEntry<FlLinkStyle, (Path, Paint)> entry
+        in _solidColorLinkBatches.entries) {
+      final (Path path, Paint paint) = entry.value;
       canvas.drawPath(path, paint);
     }
 
@@ -149,26 +157,25 @@ class LinksCustomPainter extends FlCustomPainter {
     canvas.restore();
   }
 
-  Path _computeLinkPath(FlLinkCurveType curveType, LinkPaintModel data) {
-    return switch (curveType) {
-      FlLinkCurveType.straight => PathUtils.computeStraightLinkPath(
-          outPortOffset: data.outPortOffset,
-          inPortOffset: data.inPortOffset,
-        ),
-      FlLinkCurveType.bezier => PathUtils.computeBezierLinkPath(
-          outPortOffset: data.outPortOffset,
-          inPortOffset: data.inPortOffset,
-          outPortGeometricOrientation: data.outPortGeometricOrientation,
-          inPortGeometricOrientation: data.inPortGeometricOrientation,
-        ),
-      FlLinkCurveType.ninetyDegree => PathUtils.computeNinetyDegreesLinkPath(
-          outPortOffset: data.outPortOffset,
-          inPortOffset: data.inPortOffset,
-          outPortGeometricOrientation: data.outPortGeometricOrientation,
-          inPortGeometricOrientation: data.inPortGeometricOrientation,
-        ),
-    };
-  }
+  Path _computeLinkPath(FlLinkCurveType curveType, LinkPaintModel data) =>
+      switch (curveType) {
+        FlLinkCurveType.straight => PathUtils.computeStraightLinkPath(
+            outPortOffset: data.outPortOffset,
+            inPortOffset: data.inPortOffset,
+          ),
+        FlLinkCurveType.bezier => PathUtils.computeBezierLinkPath(
+            outPortOffset: data.outPortOffset,
+            inPortOffset: data.inPortOffset,
+            outPortGeometricOrientation: data.outPortGeometricOrientation,
+            inPortGeometricOrientation: data.inPortGeometricOrientation,
+          ),
+        FlLinkCurveType.ninetyDegree => PathUtils.computeNinetyDegreesLinkPath(
+            outPortOffset: data.outPortOffset,
+            inPortOffset: data.inPortOffset,
+            outPortGeometricOrientation: data.outPortGeometricOrientation,
+            inPortGeometricOrientation: data.inPortGeometricOrientation,
+          ),
+      };
 
   void _cacheTextPainter(String linkId, String labelText) {
     if (_labelTextPainters.containsKey(linkId)) return;
@@ -197,23 +204,26 @@ class LinksCustomPainter extends FlCustomPainter {
     const padding = 4.0;
     final clearPaint = Paint()..blendMode = BlendMode.clear;
 
-    for (final entry in linksHitTestData.entries) {
-      final id = entry.key;
-      final pathData = entry.value.$1;
+    for (final MapEntry<String, (Rect, Path)> entry
+        in linksHitTestData.entries) {
+      final String id = entry.key;
+      final Rect pathData = entry.value.$1;
 
-      final textPainter = _labelTextPainters[id];
+      final TextPainter? textPainter = _labelTextPainters[id];
       if (textPainter == null) continue;
 
-      final controllerLink = controller.links[id];
+      final FlLinkDataModel? controllerLink = controller.links[id];
       if (controllerLink == null) continue;
 
-      final fromNode = controller.getNodeById(controllerLink.ports.$1.nodeId);
-      final toNode = controller.getNodeById(controllerLink.ports.$2.nodeId);
+      final FlNodeDataModel? fromNode =
+          controller.getNodeById(controllerLink.ports.$1.nodeId);
+      final FlNodeDataModel? toNode =
+          controller.getNodeById(controllerLink.ports.$2.nodeId);
       if (fromNode == null || toNode == null) continue;
 
-      final fromNodeBounds = fromNode.cachedRenderboxRect;
-      final toNodeBounds = toNode.cachedRenderboxRect;
-      final center = pathData.center;
+      final Rect fromNodeBounds = fromNode.cachedRenderboxRect;
+      final Rect toNodeBounds = toNode.cachedRenderboxRect;
+      final Offset center = pathData.center;
 
       // Define the rect that the label would occupy (with margin)
       final textRect = Rect.fromCenter(
@@ -223,8 +233,9 @@ class LinksCustomPainter extends FlCustomPainter {
       );
 
       // Detect overlap with either node
-      final overlapsNode = fromNodeBounds.inflate(margin).overlaps(textRect) ||
-          toNodeBounds.inflate(margin).overlaps(textRect);
+      final bool overlapsNode =
+          fromNodeBounds.inflate(margin).overlaps(textRect) ||
+              toNodeBounds.inflate(margin).overlaps(textRect);
 
       if (overlapsNode) {
         continue;
@@ -251,7 +262,7 @@ class LinksCustomPainter extends FlCustomPainter {
   }
 
   Offset? getLinkLabelCenter(String linkId) {
-    final pathData = linksHitTestData[linkId]?.$1;
+    final Rect? pathData = linksHitTestData[linkId]?.$1;
     return pathData?.center;
   }
 }
