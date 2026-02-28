@@ -56,27 +56,21 @@ class FlNodesLocalizationsFr extends FlNodesLocalizations {
   @override
   String get portMenuLabel => 'Menu port';
   @override
-  String failedToCopySelectionErrorMsg(String e) =>
-      'Échec de la copie de la sélection : $e';
+  String failedToCopySelectionErrorMsg(String e) => 'Échec de la copie de la sélection : $e';
   @override
   String get selectionCopiedSuccessfullyMsg => 'Sélection copiée avec succès';
   @override
-  String failedToPasteSelectionErrorMsg(String e) =>
-      'Échec du collage de la sélection : $e';
+  String failedToPasteSelectionErrorMsg(String e) => 'Échec du collage de la sélection : $e';
   @override
-  String failedToSaveProjectErrorMsg(String e) =>
-      'Échec de l’enregistrement du projet : $e';
+  String failedToSaveProjectErrorMsg(String e) => 'Échec de l’enregistrement du projet : $e';
   @override
   String get projectSavedSuccessfullyMsg => 'Projet enregistré avec succès';
   @override
-  String failedToLoadProjectErrorMsg(String e) =>
-      'Échec du chargement du projet : $e';
+  String failedToLoadProjectErrorMsg(String e) => 'Échec du chargement du projet : $e';
   @override
   String get projectLoadedSuccessfullyMsg => 'Projet chargé avec succès';
   @override
-  String get newProjectCreatedSuccessfullyMsg =>
-      'Nouveau projet créé avec succès';
+  String get newProjectCreatedSuccessfullyMsg => 'Nouveau projet créé avec succès';
   @override
-  String failedToExecuteNodeErrorMsg(String e) =>
-      'Échec de l’exécution du nœud : $e';
+  String failedToExecuteNodeErrorMsg(String e) => 'Échec de l’exécution du nœud : $e';
 }

@@ -24,8 +24,7 @@ FlNodePrototype createValueNode<T>({
 }) => FlNodePrototype(
   idName: 'value.$idName',
   displayName: displayName,
-  description: (context) =>
-      AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
+  description: (context) => AppLocalizations.of(context)!.valueNodeDescription(T.toString()),
   headerStyleBuilder: NodeHeaderStyles.value,
   portPrototypes: [
     FlControlOutputPortPrototype(
@@ -65,8 +64,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<double>(
       idName: 'numericValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.numericValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.numericValueNodeName,
       defaultValue: 0.0,
       visualizerBuilder: (data) => Text(
         data.toString(),
@@ -101,8 +99,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<bool>(
       idName: 'boolValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.booleanValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.booleanValueNodeName,
       defaultValue: false,
       visualizerBuilder: (data) =>
           Icon(data ? Icons.check : Icons.close, color: Colors.white, size: 18),
@@ -113,8 +110,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<String>(
       idName: 'stringValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.stringValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.stringValueNodeName,
       defaultValue: '',
       visualizerBuilder: (data) => Text(
         '"$data"',
@@ -142,13 +138,10 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<List<int>>(
       idName: 'numericListValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.numericListValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.numericListValueNodeName,
       defaultValue: [],
       visualizerBuilder: (data) => Text(
-        data.length > 3
-            ? '[${data.take(3).join(', ')}...]'
-            : '[${data.join(', ')}]',
+        data.length > 3 ? '[${data.take(3).join(', ')}...]' : '[${data.join(', ')}]',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         softWrap: false,
@@ -179,8 +172,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<List<bool>>(
       idName: 'boolListValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.booleanListValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.booleanListValueNodeName,
       defaultValue: [],
       visualizerBuilder: (data) => Text(
         data.length > 3
@@ -194,9 +186,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: (data as List<bool>)
-              .map((e) => e ? 'true' : 'false')
-              .join(', '),
+          initialValue: (data as List<bool>).map((e) => e ? 'true' : 'false').join(', '),
           onChanged: (value) {
             setData(
               value.split(',').map((e) => e.trim() == 'true').toList(),
@@ -220,18 +210,15 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     return '[${data.length > 3 ? '${data.take(3).join(', ')}...' : data.join(', ')}]';
   }
 
-  String serializeStringList(List<String> data) =>
-      data.map((e) => '"$e"').join(', ');
+  String serializeStringList(List<String> data) => data.map((e) => '"$e"').join(', ');
 
-  List<String> parseStringList(String input) {
-    return _stringListRegex.allMatches(input).map((e) => e.group(1)!).toList();
-  }
+  List<String> parseStringList(String input) =>
+      _stringListRegex.allMatches(input).map((e) => e.group(1)!).toList();
 
   controller.registerNodePrototype(
     createValueNode<List<String>>(
       idName: 'stringListValue',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.stringListValueNodeName,
+      displayName: (context) => AppLocalizations.of(context)!.stringListValueNodeName,
       defaultValue: [],
       visualizerBuilder: (data) => Text(
         formatStringList(data),
@@ -261,8 +248,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     FlNodePrototype(
       idName: 'math.operator',
       displayName: (context) => AppLocalizations.of(context)!.operatorNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.operatorNodeDescription,
+      description: (context) => AppLocalizations.of(context)!.operatorNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.math,
       portPrototypes: [
         FlControlInputPortPrototype(
@@ -285,16 +271,14 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<double>(
           idName: 'result',
           linkPrototype: FlLinkPrototype(label: (_) => 'double'),
-          displayName: (context) =>
-              AppLocalizations.of(context)!.resultPortName,
+          displayName: (context) => AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -302,8 +286,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       fieldPrototypes: [
         FlFieldPrototype(
           idName: 'operation',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.operationPortName,
+          displayName: (context) => AppLocalizations.of(context)!.operationPortName,
           dataType: Operator,
           defaultData: Operator.add,
           visualizerBuilder: (data) => Text(
@@ -312,42 +295,41 @@ void registerNodes(BuildContext context, FlNodesController controller) {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.white),
           ),
-          editorBuilder: (context, removeOverlay, data, setData) =>
-              SegmentedButton<Operator>(
-                segments: [
-                  ButtonSegment(
-                    value: Operator.add,
-                    label: Text(AppLocalizations.of(context)!.addFieldOption),
-                  ),
-                  ButtonSegment(
-                    value: Operator.subtract,
-                    label: Text(
-                      AppLocalizations.of(context)!.subtractFieldOption,
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: Operator.multiply,
-                    label: Text(
-                      AppLocalizations.of(context)!.multiplyFieldOption,
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: Operator.divide,
-                    label: Text(
-                      AppLocalizations.of(context)!.divideFieldOption,
-                    ),
-                  ),
-                ],
-                selected: {data as Operator},
-                onSelectionChanged: (newSelection) {
-                  setData(
-                    newSelection.first,
-                    eventType: FlFieldEventType.submit,
-                  );
-                  removeOverlay();
-                },
-                direction: Axis.horizontal,
+          editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Operator>(
+            segments: [
+              ButtonSegment(
+                value: Operator.add,
+                label: Text(AppLocalizations.of(context)!.addFieldOption),
               ),
+              ButtonSegment(
+                value: Operator.subtract,
+                label: Text(
+                  AppLocalizations.of(context)!.subtractFieldOption,
+                ),
+              ),
+              ButtonSegment(
+                value: Operator.multiply,
+                label: Text(
+                  AppLocalizations.of(context)!.multiplyFieldOption,
+                ),
+              ),
+              ButtonSegment(
+                value: Operator.divide,
+                label: Text(
+                  AppLocalizations.of(context)!.divideFieldOption,
+                ),
+              ),
+            ],
+            selected: {data as Operator},
+            onSelectionChanged: (newSelection) {
+              setData(
+                newSelection.first,
+                eventType: FlFieldEventType.submit,
+              );
+              removeOverlay();
+            },
+            direction: Axis.horizontal,
+          ),
         ),
       ],
       onExecute: (ports, fields, state, forward, put) async {
@@ -375,14 +357,12 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     FlNodePrototype(
       idName: 'generator.random',
       displayName: (context) => AppLocalizations.of(context)!.randomNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.randomNodeDescription,
+      description: (context) => AppLocalizations.of(context)!.randomNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.generator,
       portPrototypes: [
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -417,8 +397,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlDataInputPortPrototype<bool>(
           idName: 'condition',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.conditionPortName,
+          displayName: (context) => AppLocalizations.of(context)!.conditionPortName,
           styleBuilder: PortStyles.dataInput,
           geometricOrientation: FlPortGeometricOrientation.left,
         ),
@@ -446,10 +425,8 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     FlNodePrototype(
       idName: 'flow.forEachLoop',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.forEachLoopNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.forEachLoopNodeDescription,
+      displayName: (context) => AppLocalizations.of(context)!.forEachLoopNodeName,
+      description: (context) => AppLocalizations.of(context)!.forEachLoopNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.flow,
       portPrototypes: [
         FlControlInputPortPrototype(
@@ -466,31 +443,27 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlControlOutputPortPrototype(
           idName: 'loopBody',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.loopBodyPortName,
+          displayName: (context) => AppLocalizations.of(context)!.loopBodyPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<dynamic>(
           idName: 'listElem',
           linkPrototype: FlLinkPrototype(label: (_) => 'dynamic'),
-          displayName: (context) =>
-              AppLocalizations.of(context)!.listElementPortName,
+          displayName: (context) => AppLocalizations.of(context)!.listElementPortName,
           styleBuilder: PortStyles.dataOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'listIdx',
           linkPrototype: FlLinkPrototype(label: (_) => 'int'),
-          displayName: (context) =>
-              AppLocalizations.of(context)!.listIndexPortName,
+          displayName: (context) => AppLocalizations.of(context)!.listIndexPortName,
           styleBuilder: PortStyles.dataOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -520,10 +493,8 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     FlNodePrototype(
       idName: 'logic.comparator',
-      displayName: (context) =>
-          AppLocalizations.of(context)!.comparatorNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.comparatorNodeDescription,
+      displayName: (context) => AppLocalizations.of(context)!.comparatorNodeName,
+      description: (context) => AppLocalizations.of(context)!.comparatorNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.logic,
       portPrototypes: [
         FlControlInputPortPrototype(
@@ -546,16 +517,14 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<bool>(
           idName: 'result',
           linkPrototype: FlLinkPrototype(label: (_) => 'bool'),
-          displayName: (context) =>
-              AppLocalizations.of(context)!.resultPortName,
+          displayName: (context) => AppLocalizations.of(context)!.resultPortName,
           styleBuilder: PortStyles.dataOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -563,8 +532,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       fieldPrototypes: [
         FlFieldPrototype(
           idName: 'comparator',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.comparatorPortName,
+          displayName: (context) => AppLocalizations.of(context)!.comparatorPortName,
           dataType: Comparator,
           defaultData: Comparator.equal,
           visualizerBuilder: (data) => Text(
@@ -573,29 +541,28 @@ void registerNodes(BuildContext context, FlNodesController controller) {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.white),
           ),
-          editorBuilder: (context, removeOverlay, data, setData) =>
-              SegmentedButton<Comparator>(
-                segments: const [
-                  ButtonSegment(value: Comparator.equal, label: Text('==')),
-                  ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
-                  ButtonSegment(value: Comparator.greater, label: Text('>')),
-                  ButtonSegment(
-                    value: Comparator.greaterEqual,
-                    label: Text('>='),
-                  ),
-                  ButtonSegment(value: Comparator.less, label: Text('<')),
-                  ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
-                ],
-                selected: {data as Comparator},
-                onSelectionChanged: (newSelection) {
-                  setData(
-                    newSelection.first,
-                    eventType: FlFieldEventType.submit,
-                  );
-                  removeOverlay();
-                },
-                direction: Axis.horizontal,
+          editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Comparator>(
+            segments: const [
+              ButtonSegment(value: Comparator.equal, label: Text('==')),
+              ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
+              ButtonSegment(value: Comparator.greater, label: Text('>')),
+              ButtonSegment(
+                value: Comparator.greaterEqual,
+                label: Text('>='),
               ),
+              ButtonSegment(value: Comparator.less, label: Text('<')),
+              ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
+            ],
+            selected: {data as Comparator},
+            onSelectionChanged: (newSelection) {
+              setData(
+                newSelection.first,
+                eventType: FlFieldEventType.submit,
+              );
+              removeOverlay();
+            },
+            direction: Axis.horizontal,
+          ),
         ),
       ],
       onExecute: (ports, fields, state, forward, put) async {
@@ -627,8 +594,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     FlNodePrototype(
       idName: 'io.print',
       displayName: (context) => AppLocalizations.of(context)!.printNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.printNodeDescription,
+      description: (context) => AppLocalizations.of(context)!.printNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.io,
       portPrototypes: [
         FlControlInputPortPrototype(
@@ -645,8 +611,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -663,8 +628,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
     FlNodePrototype(
       idName: 'math.round',
       displayName: (context) => AppLocalizations.of(context)!.roundNodeName,
-      description: (context) =>
-          AppLocalizations.of(context)!.roundNodeDescription,
+      description: (context) => AppLocalizations.of(context)!.roundNodeDescription,
       headerStyleBuilder: NodeHeaderStyles.math,
       portPrototypes: [
         FlControlInputPortPrototype(
@@ -681,16 +645,14 @@ void registerNodes(BuildContext context, FlNodesController controller) {
         ),
         FlControlOutputPortPrototype(
           idName: 'completed',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.completedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
         FlDataOutputPortPrototype<int>(
           idName: 'rounded',
           linkPrototype: FlLinkPrototype(label: (_) => 'int'),
-          displayName: (context) =>
-              AppLocalizations.of(context)!.roundedPortName,
+          displayName: (context) => AppLocalizations.of(context)!.roundedPortName,
           styleBuilder: PortStyles.dataOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
@@ -698,8 +660,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       fieldPrototypes: [
         FlFieldPrototype(
           idName: 'decimals',
-          displayName: (context) =>
-              AppLocalizations.of(context)!.decimalsFieldName,
+          displayName: (context) => AppLocalizations.of(context)!.decimalsFieldName,
           dataType: int,
           defaultData: 2,
           visualizerBuilder: (data) => Text(
@@ -708,27 +669,26 @@ void registerNodes(BuildContext context, FlNodesController controller) {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.white),
           ),
-          editorBuilder: (context, removeOverlay, data, setData) =>
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 100),
-                child: TextFormField(
-                  initialValue: data.toString(),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    setData(
-                      int.tryParse(value) ?? 0,
-                      eventType: FlFieldEventType.change,
-                    );
-                  },
-                  onFieldSubmitted: (value) {
-                    setData(
-                      int.tryParse(value) ?? 0,
-                      eventType: FlFieldEventType.submit,
-                    );
-                    removeOverlay();
-                  },
-                ),
-              ),
+          editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: TextFormField(
+              initialValue: data.toString(),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setData(
+                  int.tryParse(value) ?? 0,
+                  eventType: FlFieldEventType.change,
+                );
+              },
+              onFieldSubmitted: (value) {
+                setData(
+                  int.tryParse(value) ?? 0,
+                  eventType: FlFieldEventType.submit,
+                );
+                removeOverlay();
+              },
+            ),
+          ),
         ),
       ],
       onExecute: (ports, fields, state, forward, put) async {

@@ -56,27 +56,21 @@ class FlNodesLocalizationsDe extends FlNodesLocalizations {
   @override
   String get navigateToDestinationAction => 'Zur Destination navigieren';
   @override
-  String failedToCopySelectionErrorMsg(String e) =>
-      'Auswahl konnte nicht kopiert werden: $e';
+  String failedToCopySelectionErrorMsg(String e) => 'Auswahl konnte nicht kopiert werden: $e';
   @override
   String get selectionCopiedSuccessfullyMsg => 'Auswahl erfolgreich kopiert';
   @override
-  String failedToPasteSelectionErrorMsg(String e) =>
-      'Auswahl konnte nicht eingefügt werden: $e';
+  String failedToPasteSelectionErrorMsg(String e) => 'Auswahl konnte nicht eingefügt werden: $e';
   @override
-  String failedToSaveProjectErrorMsg(String e) =>
-      'Projekt konnte nicht gespeichert werden: $e';
+  String failedToSaveProjectErrorMsg(String e) => 'Projekt konnte nicht gespeichert werden: $e';
   @override
   String get projectSavedSuccessfullyMsg => 'Projekt erfolgreich gespeichert';
   @override
-  String failedToLoadProjectErrorMsg(String e) =>
-      'Projekt konnte nicht geladen werden: $e';
+  String failedToLoadProjectErrorMsg(String e) => 'Projekt konnte nicht geladen werden: $e';
   @override
   String get projectLoadedSuccessfullyMsg => 'Projekt erfolgreich geladen';
   @override
-  String get newProjectCreatedSuccessfullyMsg =>
-      'Neues Projekt erfolgreich erstellt';
+  String get newProjectCreatedSuccessfullyMsg => 'Neues Projekt erfolgreich erstellt';
   @override
-  String failedToExecuteNodeErrorMsg(String e) =>
-      'Knoten konnte nicht ausgeführt werden: $e';
+  String failedToExecuteNodeErrorMsg(String e) => 'Knoten konnte nicht ausgeführt werden: $e';
 }

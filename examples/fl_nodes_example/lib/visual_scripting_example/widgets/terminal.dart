@@ -225,9 +225,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
         IconButton(
           icon: const Icon(Icons.delete_outline, size: 18),
           tooltip: AppLocalizations.of(context)!.clearLogsTooltip,
-          onPressed: widget.controller.logs.isEmpty
-              ? null
-              : widget.controller.clearLogs,
+          onPressed: widget.controller.logs.isEmpty ? null : widget.controller.clearLogs,
           visualDensity: VisualDensity.compact,
         ),
       ],

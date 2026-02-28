@@ -99,14 +99,11 @@ class FlNodesProjectHelper {
         event is FlAddLinkEvent ||
         event is FlRemoveLinkEvent ||
         event is FlDragSelectionEndEvent ||
-        (event is FlNodeFieldEvent &&
-            event.eventType == FlFieldEventType.submit)) {
+        (event is FlNodeFieldEvent && event.eventType == FlFieldEventType.submit)) {
       isSaved = false;
 
-      if ((_autoSaveTimer == null || !_autoSaveTimer!.isActive) &&
-          controller.config.autoSave) {
-        _autoSaveTimer =
-            Timer.periodic(controller.config.autoSaveInterval, (timer) {
+      if ((_autoSaveTimer == null || !_autoSaveTimer!.isActive) && controller.config.autoSave) {
+        _autoSaveTimer = Timer.periodic(controller.config.autoSaveInterval, (timer) {
           if (!isSaved) save();
         });
       }

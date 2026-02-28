@@ -36,10 +36,8 @@ class FlSubmenuTile extends StatefulWidget {
     properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
     properties.add(IterableProperty<FlMenuEntryDataModel>('data', data));
     properties.add(IntProperty('menuLevel', menuLevel));
-    properties
-        .add(DiagnosticsProperty<FlMenuStyle>('parentStyle', parentStyle));
-    properties
-        .add(DiagnosticsProperty<FlMenuStyle>('submenuStyle', submenuStyle));
+    properties.add(DiagnosticsProperty<FlMenuStyle>('parentStyle', parentStyle));
+    properties.add(DiagnosticsProperty<FlMenuStyle>('submenuStyle', submenuStyle));
   }
 }
 

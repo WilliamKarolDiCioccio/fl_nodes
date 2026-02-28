@@ -98,12 +98,10 @@ class FlNodesWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
     properties.add(DiagnosticsProperty<bool>('expandToParent', expandToParent));
     properties.add(DiagnosticsProperty<Size?>('fixedSize', fixedSize));
-    properties
-        .add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
+    properties.add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
     properties.add(
       ObjectFlagProperty<
           void Function(
@@ -167,8 +165,7 @@ class _OverlayLayer extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
   }
 }
 

@@ -7,9 +7,7 @@ class InstructionsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final comboKey = defaultTargetPlatform == TargetPlatform.macOS
-        ? 'Meta'
-        : 'Ctrl';
+    final comboKey = defaultTargetPlatform == TargetPlatform.macOS ? 'Meta' : 'Ctrl';
 
     final bool isMobile =
         defaultTargetPlatform == TargetPlatform.android ||

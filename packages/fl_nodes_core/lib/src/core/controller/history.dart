@@ -39,9 +39,7 @@ class FlNodesHistoryHelper {
   void _handleUndoableEvents(NodeEditorEvent event) {
     if (!event.isUndoable || _isTraversingHistory) return;
 
-    if (event is FlNodeFieldEvent ||
-        event is FlNodeCustomDataEvent ||
-        event is FlLinkLabelEvent) {
+    if (event is FlNodeFieldEvent || event is FlNodeCustomDataEvent || event is FlLinkLabelEvent) {
       // TODO: Implement undo/redo for these events later.
       return;
     }
@@ -58,8 +56,7 @@ class FlNodesHistoryHelper {
       return;
     }
 
-    if (event is FlDragSelectionEvent &&
-        previousEvent is FlDragSelectionEvent) {
+    if (event is FlDragSelectionEvent && previousEvent is FlDragSelectionEvent) {
       if (event.nodeIds.length == previousEvent.nodeIds.length &&
           event.nodeIds.every(previousEvent.nodeIds.contains)) {
         _undoStack.pop();

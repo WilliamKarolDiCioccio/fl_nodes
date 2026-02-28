@@ -83,7 +83,6 @@ class DebugInfoWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
   }
 }

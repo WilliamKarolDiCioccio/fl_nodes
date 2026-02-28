@@ -87,9 +87,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
     switch (_sortOption) {
       case HierarchySortOption.name:
         nodes.sort(
-          (a, b) => a.prototype
-              .displayName(context)
-              .compareTo(b.prototype.displayName(context)),
+          (a, b) => a.prototype.displayName(context).compareTo(b.prototype.displayName(context)),
         );
         break;
       case HierarchySortOption.type:
@@ -360,9 +358,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
               ).colorScheme.onSurfaceVariant.withAlpha(127),
             ),
             Text(
-              _searchQuery.isNotEmpty
-                  ? strings.noNodesFound
-                  : strings.noNodesInGraph,
+              _searchQuery.isNotEmpty ? strings.noNodesFound : strings.noNodesInGraph,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -408,9 +404,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                       ).colorScheme.surfaceContainerHighest.withAlpha(76),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.transparent,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
                   width: 1.5,
                 ),
               ),
@@ -440,9 +434,7 @@ class _HierarchyWidgetState extends State<HierarchyWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           color: isSelected
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(context).colorScheme.onSurface,

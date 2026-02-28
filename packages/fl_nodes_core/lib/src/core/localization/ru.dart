@@ -56,26 +56,21 @@ class FlNodesLocalizationsRu extends FlNodesLocalizations {
   @override
   String get navigateToDestinationAction => 'Перейти к назначению';
   @override
-  String failedToCopySelectionErrorMsg(String e) =>
-      'Не удалось скопировать выделение: $e';
+  String failedToCopySelectionErrorMsg(String e) => 'Не удалось скопировать выделение: $e';
   @override
   String get selectionCopiedSuccessfullyMsg => 'Выделение успешно скопировано';
   @override
-  String failedToPasteSelectionErrorMsg(String e) =>
-      'Не удалось вставить выделение: $e';
+  String failedToPasteSelectionErrorMsg(String e) => 'Не удалось вставить выделение: $e';
   @override
-  String failedToSaveProjectErrorMsg(String e) =>
-      'Не удалось сохранить проект: $e';
+  String failedToSaveProjectErrorMsg(String e) => 'Не удалось сохранить проект: $e';
   @override
   String get projectSavedSuccessfullyMsg => 'Проект успешно сохранён';
   @override
-  String failedToLoadProjectErrorMsg(String e) =>
-      'Не удалось загрузить проект: $e';
+  String failedToLoadProjectErrorMsg(String e) => 'Не удалось загрузить проект: $e';
   @override
   String get projectLoadedSuccessfullyMsg => 'Проект успешно загружен';
   @override
   String get newProjectCreatedSuccessfullyMsg => 'Новый проект успешно создан';
   @override
-  String failedToExecuteNodeErrorMsg(String e) =>
-      'Не удалось выполнить узел: $e';
+  String failedToExecuteNodeErrorMsg(String e) => 'Не удалось выполнить узел: $e';
 }

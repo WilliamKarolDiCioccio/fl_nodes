@@ -143,18 +143,15 @@ class FlNodesExecutionHelper {
         event is FlRemoveLinkEvent ||
         event is FlCutSelectionEvent ||
         event is FlPasteSelectionEvent ||
-        (event is FlNodeFieldEvent &&
-            event.eventType == FlFieldEventType.submit)) {
+        (event is FlNodeFieldEvent && event.eventType == FlFieldEventType.submit)) {
       if (controller.config.autoBuildGraph) {
         _buildGraphDelayTimer?.cancel();
-        _buildGraphDelayTimer =
-            Timer(controller.config.autoBuildGraphDelay, () {
+        _buildGraphDelayTimer = Timer(controller.config.autoBuildGraphDelay, () {
           buildGraph();
 
           if (controller.config.autoExecGraph) {
             _runGraphDelayTimer?.cancel();
-            _runGraphDelayTimer =
-                Timer(controller.config.autoExecGraphDelay, executeGraph);
+            _runGraphDelayTimer = Timer(controller.config.autoExecGraphDelay, executeGraph);
           }
         });
       }
@@ -291,8 +288,8 @@ class FlNodesExecutionHelper {
         node,
       ).isNotEmpty;
 
-      final bool hasControlOutputs = FlNodesUtils.getConnectedNodesIdsForNode<
-          FlControlOutputPortPrototype>(
+      final bool hasControlOutputs =
+          FlNodesUtils.getConnectedNodesIdsForNode<FlControlOutputPortPrototype>(
         controller,
         node,
       ).isNotEmpty;
@@ -383,8 +380,7 @@ class FlNodesExecutionHelper {
       }
 
       // Then add the current node itself if not already added (which would mean all its dependencies are already added too)
-      if (!owner.order.contains(nodeId) &&
-          !nodeToSubgraph.containsKey(nodeId)) {
+      if (!owner.order.contains(nodeId) && !nodeToSubgraph.containsKey(nodeId)) {
         owner.order.add(nodeId);
         nodeToSubgraph[nodeId] = owner;
       }
@@ -414,8 +410,8 @@ class FlNodesExecutionHelper {
       final nodesForControlPort = <String, Set<String>>{};
 
       // Gather all control output connections
-      final Iterable<FlPortDataModel> controlPorts = node.ports.values
-          .where((port) => port.prototype is FlControlOutputPortPrototype);
+      final Iterable<FlPortDataModel> controlPorts =
+          node.ports.values.where((port) => port.prototype is FlControlOutputPortPrototype);
 
       if (controlPorts.isEmpty) return;
 
@@ -475,8 +471,7 @@ class FlNodesExecutionHelper {
           }
         }
       } else {
-        for (final MapEntry<String, Set<String>> entry
-            in nodesForControlPort.entries) {
+        for (final MapEntry<String, Set<String>> entry in nodesForControlPort.entries) {
           final String portIdName = entry.key;
           final Set<String> connectedNodes = entry.value;
 
@@ -571,14 +566,12 @@ class FlNodesExecutionHelper {
 
     // Execute nodes in order
     for (final String nodeId in graph.order.toList()) {
-      lastSelectedControlPortIdNames =
-          await _executeNode(nodes[nodeId]!, context: context);
+      lastSelectedControlPortIdNames = await _executeNode(nodes[nodeId]!, context: context);
     }
 
     // Execute child subgraphs for the selected control ports
     for (final controlPortIdName in lastSelectedControlPortIdNames) {
-      final List<_LinearizedSubgraph> childSubgraphs =
-          graph.children[controlPortIdName] ?? [];
+      final List<_LinearizedSubgraph> childSubgraphs = graph.children[controlPortIdName] ?? [];
 
       // Execute each child subgraph for the selected control port sequentially
       for (final childSubgraph in childSubgraphs) {
@@ -682,8 +675,7 @@ class FlNodesExecutionHelper {
       final FlNodeExecutionState? depState = _nodeStates[depNodeId];
 
       // Data dependency must be completed to be considered ready
-      if (depState != FlNodeExecutionState.completed &&
-          depState != FlNodeExecutionState.stepped) {
+      if (depState != FlNodeExecutionState.completed && depState != FlNodeExecutionState.stepped) {
         return false;
       }
     }
@@ -724,8 +716,7 @@ class FlNodesExecutionHelper {
           link,
         );
 
-        final FlPortDataModel connectedPort =
-            nodes[locator.nodeId]!.ports[locator.portId]!;
+        final FlPortDataModel connectedPort = nodes[locator.nodeId]!.ports[locator.portId]!;
 
         connectedPort.data = data;
       }

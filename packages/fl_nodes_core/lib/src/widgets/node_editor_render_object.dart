@@ -75,8 +75,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
         );
 
   @override
-  NodeEditorRenderBox createRenderObject(BuildContext context) =>
-      NodeEditorRenderBox(
+  NodeEditorRenderBox createRenderObject(BuildContext context) => NodeEditorRenderBox(
         controller: controller,
         gridShader: gridShader,
         isModalPresent: ModalRoute.of(context)?.isCurrent ?? false,
@@ -95,12 +94,9 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties
-        .add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
-    properties
-        .add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
+    properties.add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
     properties.add(
       ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has(
         'showLinkContextMenu',
@@ -133,8 +129,7 @@ class NodeEditorRenderBox extends RenderBox
     _offset = _controller.viewportOffset;
     _zoom = _controller.viewportZoom;
 
-    _eventSubscription =
-        _controller.eventBus.events.listen(_handleControllerEvent);
+    _eventSubscription = _controller.eventBus.events.listen(_handleControllerEvent);
   }
 
   late final StreamSubscription<NodeEditorEvent> _eventSubscription;
@@ -457,8 +452,7 @@ class NodeEditorRenderBox extends RenderBox
 
       childParentData.rect = renderBoxRect;
 
-      _controller.nodesSpatialHashGrid
-          .update((id: nodeId, rect: renderBoxRect));
+      _controller.nodesSpatialHashGrid.update((id: nodeId, rect: renderBoxRect));
 
       _controller.getNodeById(nodeId)!.cachedRenderboxRect = renderBoxRect;
     }
@@ -615,8 +609,7 @@ class NodeEditorRenderBox extends RenderBox
 
           if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
-          for (final FlPortDataModel port
-              in _controller.getNodeById(nodeId)!.ports.values) {
+          for (final FlPortDataModel port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
               PortPaintModel(
                 locator: (nodeId: nodeId, portId: port.prototype.idName),
@@ -642,8 +635,7 @@ class NodeEditorRenderBox extends RenderBox
 
           if (lodLevel <= 2 || childParentData.state.isCollapsed) continue;
 
-          for (final FlPortDataModel port
-              in _controller.getNodeById(nodeId)!.ports.values) {
+          for (final FlPortDataModel port in _controller.getNodeById(nodeId)!.ports.values) {
             portData.add(
               PortPaintModel(
                 locator: (nodeId: nodeId, portId: port.prototype.idName),
@@ -660,9 +652,7 @@ class NodeEditorRenderBox extends RenderBox
         final FlPortStyle style = data.style;
 
         final Map<FlPortStyle, (ui.Path, ui.Paint)> batchPortByStyle =
-            data.isSelected
-                ? batchSelectedPortByStyle
-                : batchUnselectedPortByStyle;
+            data.isSelected ? batchSelectedPortByStyle : batchUnselectedPortByStyle;
 
         batchPortByStyle.putIfAbsent(
           style,
@@ -785,8 +775,7 @@ class NodeEditorRenderBox extends RenderBox
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    final Offset centeredPosition =
-        position - Offset(size.width / 2, size.height / 2);
+    final Offset centeredPosition = position - Offset(size.width / 2, size.height / 2);
     final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
@@ -829,8 +818,7 @@ class NodeEditorRenderBox extends RenderBox
   ) {
     if (event is! PointerDownEvent && event is! PointerHoverEvent) return false;
 
-    final Set<String> nodeIds =
-        _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
+    final Set<String> nodeIds = _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
 
     if (nodeIds.isEmpty) {
       if (event is PointerHoverEvent) {
@@ -910,8 +898,7 @@ class NodeEditorRenderBox extends RenderBox
 
     // Check if there's a node overlapping the link at this position
     // Nodes have higher priority than links
-    final Set<String> nodeIds =
-        _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
+    final Set<String> nodeIds = _controller.nodesSpatialHashGrid.queryCoords(transformedPosition);
 
     if (nodeIds.isNotEmpty) {
       for (final nodeId in nodeIds) {
@@ -952,8 +939,7 @@ class NodeEditorRenderBox extends RenderBox
   ) {
     if (event is! PointerHoverEvent) return false;
 
-    final PortLocator? hitPortLocator =
-        _findHitPort(transformedPosition, checkRect);
+    final PortLocator? hitPortLocator = _findHitPort(transformedPosition, checkRect);
     final isHit = hitPortLocator != null;
 
     if (isHit) {
@@ -1053,11 +1039,7 @@ class NodeEditorRenderBox extends RenderBox
     _clearNodeHover();
     _clearPortHover();
 
-    _controller
-        .getNodeById(portLocator.nodeId)!
-        .ports[portLocator.portId]!
-        .state
-        .isHovered = true;
+    _controller.getNodeById(portLocator.nodeId)!.ports[portLocator.portId]!.state.isHovered = true;
     _controller.nodesDataDirty = true;
     lastHoveredPortLocator = portLocator;
 
@@ -1070,8 +1052,7 @@ class NodeEditorRenderBox extends RenderBox
 
   /// Clears hover state for nodes
   void _clearNodeHover() {
-    if (lastHoveredNodeId == null ||
-        !_controller.isNodePresent(lastHoveredNodeId!)) {
+    if (lastHoveredNodeId == null || !_controller.isNodePresent(lastHoveredNodeId!)) {
       return;
     }
 
@@ -1093,8 +1074,7 @@ class NodeEditorRenderBox extends RenderBox
 
   /// Clears hover state for links
   void _clearLinkHover() {
-    if (lastHoveredLinkId == null ||
-        !_controller.links.containsKey(lastHoveredLinkId)) {
+    if (lastHoveredLinkId == null || !_controller.links.containsKey(lastHoveredLinkId)) {
       return;
     }
 
@@ -1136,8 +1116,7 @@ class NodeEditorRenderBox extends RenderBox
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
     super.handleEvent(event, entry);
 
-    final Offset centeredPosition =
-        event.localPosition - Offset(size.width / 2, size.height / 2);
+    final Offset centeredPosition = event.localPosition - Offset(size.width / 2, size.height / 2);
     final Offset scaledPosition = centeredPosition.scale(1 / _zoom, 1 / _zoom);
     final Offset transformedPosition = scaledPosition - _offset;
 
@@ -1221,11 +1200,9 @@ class NodeEditorRenderBox extends RenderBox
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
+    properties.add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
     properties.add(IntProperty('lodLevel', lodLevel));
-    properties
-        .add(IterableProperty<RenderBox>('selectedChildren', selectedChildren));
+    properties.add(IterableProperty<RenderBox>('selectedChildren', selectedChildren));
     properties.add(
       DiagnosticsProperty<ui.Path>('selectedShadowPath', selectedShadowPath),
     );

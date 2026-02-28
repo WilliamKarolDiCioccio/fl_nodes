@@ -88,8 +88,7 @@ class SpatialHashGrid {
     }
 
     // If the sets of cells are identical, we only need to update the node record.
-    if (oldCells.length == newCells.length &&
-        oldCells.every(newCells.contains)) {
+    if (oldCells.length == newCells.length && oldCells.every(newCells.contains)) {
       // Update the node in every cell without removing/reinserting.
       for (final cell in newCells) {
         if (grid[cell]?.any((n) => n.id == node.id) ?? false) {

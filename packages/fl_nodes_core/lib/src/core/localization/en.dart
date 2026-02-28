@@ -56,13 +56,11 @@ class FlNodesLocalizationsEn extends FlNodesLocalizations {
   @override
   String get navigateToDestinationAction => 'Navigate to Destination';
   @override
-  String failedToCopySelectionErrorMsg(String e) =>
-      'Failed to copy selection: $e';
+  String failedToCopySelectionErrorMsg(String e) => 'Failed to copy selection: $e';
   @override
   String get selectionCopiedSuccessfullyMsg => 'Selection copied successfully';
   @override
-  String failedToPasteSelectionErrorMsg(String e) =>
-      'Failed to paste selection: $e';
+  String failedToPasteSelectionErrorMsg(String e) => 'Failed to paste selection: $e';
   @override
   String failedToSaveProjectErrorMsg(String e) => 'Failed to save project: $e';
   @override
@@ -72,8 +70,7 @@ class FlNodesLocalizationsEn extends FlNodesLocalizations {
   @override
   String get projectLoadedSuccessfullyMsg => 'Project loaded successfully';
   @override
-  String get newProjectCreatedSuccessfullyMsg =>
-      'New project created successfully';
+  String get newProjectCreatedSuccessfullyMsg => 'New project created successfully';
   @override
   String failedToExecuteNodeErrorMsg(String e) => 'Failed to execute node: $e';
 }

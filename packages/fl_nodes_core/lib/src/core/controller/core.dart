@@ -123,8 +123,7 @@ class FlNodesController with ChangeNotifier {
   /// Viewport properties are used to manage the viewport of the node editor.
   ////////////////////////////////////////////////////////////////////////////////
 
-  final ValueNotifier<Offset> viewportOffsetNotifier =
-      ValueNotifier(Offset.zero);
+  final ValueNotifier<Offset> viewportOffsetNotifier = ValueNotifier(Offset.zero);
   final ValueNotifier<double> viewportZoomNotifier = ValueNotifier(1.0);
 
   Offset get viewportOffset => viewportOffsetNotifier.value;
@@ -279,8 +278,7 @@ class FlNodesController with ChangeNotifier {
   /// Rendering accelerators are data stored in the controller to speed up rendering.
   ////////////////////////////////////////////////////////////////////////////////
 
-  late final lodLevelNotifier =
-      ValueNotifier<int>(_computeLODLevel(viewportZoom));
+  late final lodLevelNotifier = ValueNotifier<int>(_computeLODLevel(viewportZoom));
   int get lodLevel => lodLevelNotifier.value;
 
   bool nodesDataDirty = false;
@@ -344,10 +342,8 @@ class FlNodesController with ChangeNotifier {
     } else {
       for (final FlNodeDataModel node in nodes.values) {
         node.offset = Offset(
-          (node.offset.dx / config.snapToGridSize).round() *
-              config.snapToGridSize,
-          (node.offset.dy / config.snapToGridSize).round() *
-              config.snapToGridSize,
+          (node.offset.dx / config.snapToGridSize).round() * config.snapToGridSize,
+          (node.offset.dy / config.snapToGridSize).round() * config.snapToGridSize,
         );
       }
     }
@@ -356,8 +352,7 @@ class FlNodesController with ChangeNotifier {
   }
 
   /// Set the size of the grid to snap to in the node editor.
-  void setSnapToGridSize(double size) =>
-      setConfig(config.copyWith(snapToGridSize: size));
+  void setSnapToGridSize(double size) => setConfig(config.copyWith(snapToGridSize: size));
 
   /// Enable or disable auto placement of nodes in the node editor.
   void enableAutoPlacement(bool enable) =>
@@ -410,8 +405,7 @@ class FlNodesController with ChangeNotifier {
   ////////////////////////////////////////////////////////////////////////
 
   Map<String, FlNodePrototype> nodePrototypes = {};
-  List<FlNodePrototype> get nodePrototypesAsList =>
-      nodePrototypes.values.map((e) => e).toList();
+  List<FlNodePrototype> get nodePrototypesAsList => nodePrototypes.values.map((e) => e).toList();
   int get nodePrototypeCount => nodePrototypes.length;
 
   Map<String, FlNodeDataModel> get nodes => project.projectData.nodes;
@@ -419,8 +413,7 @@ class FlNodesController with ChangeNotifier {
   int get nodeCount => nodes.length;
 
   Map<String, FlLinkDataModel> get links => project.projectData.links;
-  List<FlLinkDataModel> get linksAsList =>
-      project.projectData.links.values.toList();
+  List<FlLinkDataModel> get linksAsList => project.projectData.links.values.toList();
   int get linkCount => links.length;
 
   final SpatialHashGrid nodesSpatialHashGrid = SpatialHashGrid(
@@ -590,8 +583,7 @@ class FlNodesController with ChangeNotifier {
     final FlNodeDataModel node = nodes[id]!;
 
     for (final FlPortDataModel port in node.ports.values) {
-      final List<String> linksToRemove =
-          port.links.map((link) => link.id).toList();
+      final List<String> linksToRemove = port.links.map((link) => link.id).toList();
 
       for (final linkId in linksToRemove) {
         removeLinkById(linkId, isHandled: true);
@@ -707,8 +699,7 @@ class FlNodesController with ChangeNotifier {
     String? eventId,
     bool isHandled = false,
   }) {
-    if (!nodes.containsKey(link.ports.$1.nodeId) ||
-        !nodes.containsKey(link.ports.$2.nodeId)) {
+    if (!nodes.containsKey(link.ports.$1.nodeId) || !nodes.containsKey(link.ports.$2.nodeId)) {
       return;
     }
 
@@ -720,10 +711,8 @@ class FlNodesController with ChangeNotifier {
       return;
     }
 
-    final FlPortDataModel port1 =
-        nodes[link.ports.$1.nodeId]!.ports[link.ports.$1.portId]!;
-    final FlPortDataModel port2 =
-        nodes[link.ports.$2.nodeId]!.ports[link.ports.$2.portId]!;
+    final FlPortDataModel port1 = nodes[link.ports.$1.nodeId]!.ports[link.ports.$1.portId]!;
+    final FlPortDataModel port2 = nodes[link.ports.$2.nodeId]!.ports[link.ports.$2.portId]!;
 
     port1.links.add(link);
     port2.links.add(link);
@@ -759,10 +748,8 @@ class FlNodesController with ChangeNotifier {
     final FlLinkDataModel link = links[id]!;
 
     // Remove the link from its associated ports
-    final FlPortDataModel? port1 =
-        nodes[link.ports.$1.nodeId]?.ports[link.ports.$1.portId];
-    final FlPortDataModel? port2 =
-        nodes[link.ports.$2.nodeId]?.ports[link.ports.$2.portId];
+    final FlPortDataModel? port1 = nodes[link.ports.$1.nodeId]?.ports[link.ports.$1.portId];
+    final FlPortDataModel? port2 = nodes[link.ports.$2.nodeId]?.ports[link.ports.$2.portId];
 
     port1?.links.remove(link);
     port2?.links.remove(link);
@@ -834,8 +821,7 @@ class FlNodesController with ChangeNotifier {
     if (!nodes[nodeId]!.ports.containsKey(portId)) return;
 
     final FlPortDataModel port = nodes[nodeId]!.ports[portId]!;
-    final List<String> linksToRemove =
-        port.links.map((link) => link.id).toList();
+    final List<String> linksToRemove = port.links.map((link) => link.id).toList();
 
     for (final linkId in linksToRemove) {
       removeLinkById(linkId, isHandled: linkId != linksToRemove.last);
@@ -985,10 +971,8 @@ class FlNodesController with ChangeNotifier {
 
         // Snap the node's offset to the grid using rounding.
         node.offset = Offset(
-          (unboundOffset.dx / config.snapToGridSize).round() *
-              config.snapToGridSize,
-          (unboundOffset.dy / config.snapToGridSize).round() *
-              config.snapToGridSize,
+          (unboundOffset.dx / config.snapToGridSize).round() * config.snapToGridSize,
+          (unboundOffset.dy / config.snapToGridSize).round() * config.snapToGridSize,
         );
       } else {
         // Apply the effective delta directly to the node's offset.
@@ -1045,9 +1029,7 @@ class FlNodesController with ChangeNotifier {
       FlNodeSelectionEvent(
         id: const Uuid().v4(),
         selectedNodeIds.toSet(),
-        type: holdSelection
-            ? FlSelectionEventType.holdSelect
-            : FlSelectionEventType.select,
+        type: holdSelection ? FlSelectionEventType.holdSelect : FlSelectionEventType.select,
         isHandled: isHandled,
         isSideEffect: isSideEffect,
       ),
@@ -1066,8 +1048,7 @@ class FlNodesController with ChangeNotifier {
       return clearSelection();
     }
 
-    final Set<String> containedNodes =
-        nodesSpatialHashGrid.queryArea(_highlightArea!);
+    final Set<String> containedNodes = nodesSpatialHashGrid.queryArea(_highlightArea!);
 
     selectNodesById(
       containedNodes,
@@ -1104,9 +1085,7 @@ class FlNodesController with ChangeNotifier {
       FlLinkSelectionEvent(
         id: const Uuid().v4(),
         selectedLinkIds.toSet(),
-        type: holdSelection
-            ? FlSelectionEventType.holdSelect
-            : FlSelectionEventType.select,
+        type: holdSelection ? FlSelectionEventType.holdSelect : FlSelectionEventType.select,
         isHandled: isHandled,
       ),
     );

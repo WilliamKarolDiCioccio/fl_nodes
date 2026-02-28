@@ -18,8 +18,7 @@ final class RenderBoxUtils {
     GlobalKey relativeTo,
   ) {
     final RenderObject? renderObject = key.currentContext?.findRenderObject();
-    final RenderObject? relativeRenderObject =
-        relativeTo.currentContext?.findRenderObject();
+    final RenderObject? relativeRenderObject = relativeTo.currentContext?.findRenderObject();
     if (renderObject is RenderBox && relativeRenderObject is RenderBox) {
       return renderObject.localToGlobal(
         Offset.zero,
@@ -79,8 +78,7 @@ final class RenderBoxUtils {
     final Size size = nodeEditorBounds.size;
 
     // Adjust the screen position relative to the top-left of the editor
-    final Offset adjustedScreenPosition =
-        screenPosition - nodeEditorBounds.topLeft;
+    final Offset adjustedScreenPosition = screenPosition - nodeEditorBounds.topLeft;
 
     // Calculate the viewport rectangle in canvas space
     final viewport = Rect.fromLTWH(
@@ -91,10 +89,10 @@ final class RenderBoxUtils {
     );
 
     // Calculate the canvas position corresponding to the screen position
-    final double canvasX = viewport.left +
-        (adjustedScreenPosition.dx / size.width) * viewport.width;
-    final double canvasY = viewport.top +
-        (adjustedScreenPosition.dy / size.height) * viewport.height;
+    final double canvasX =
+        viewport.left + (adjustedScreenPosition.dx / size.width) * viewport.width;
+    final double canvasY =
+        viewport.top + (adjustedScreenPosition.dy / size.height) * viewport.height;
 
     return Offset(canvasX, canvasY);
   }

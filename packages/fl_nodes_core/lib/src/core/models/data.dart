@@ -151,8 +151,7 @@ abstract class FlPortPrototype {
     bool areTypesCompatible(Type type1, Type type2) {
       if (type1 == dynamic || type2 == dynamic) return true;
 
-      if ((type1 == int || type1 == double) &&
-          (type2 == int || type2 == double)) {
+      if ((type1 == int || type1 == double) && (type2 == int || type2 == double)) {
         return true;
       }
 
@@ -265,15 +264,12 @@ class FlPortState with SingleListenerChangeNotifier {
     bool isHovered = false,
   }) : _isHovered = isHovered;
 
-  FlPortState copyWith({bool? isHovered}) =>
-      FlPortState(isHovered: isHovered ?? this.isHovered);
+  FlPortState copyWith({bool? isHovered}) => FlPortState(isHovered: isHovered ?? this.isHovered);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FlPortState &&
-          runtimeType == other.runtimeType &&
-          isHovered == other.isHovered;
+      other is FlPortState && runtimeType == other.runtimeType && isHovered == other.isHovered;
 
   @override
   int get hashCode => isHovered.hashCode;
@@ -337,8 +333,7 @@ final class FlPortDataModel {
     if (identical(this, other)) return 'Cannot connect a port to itself';
 
     // check prototype compatibility
-    final String? compatibilityError =
-        prototype.compatibleWith(other.prototype);
+    final String? compatibilityError = prototype.compatibleWith(other.prototype);
     if (compatibilityError != null) return compatibilityError;
 
     // check multiplicity constraints
@@ -406,8 +401,7 @@ class FlFieldDataModel {
     required this.data,
   });
 
-  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) =>
-      toJsonV1(dataHandlers);
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => toJsonV1(dataHandlers);
 
   factory FlFieldDataModel.fromJson(
     Map<String, dynamic> json,
@@ -473,8 +467,7 @@ final class FlNodeState {
 
   Map<String, dynamic> toJson() => toJsonV1();
 
-  factory FlNodeState.fromJson(Map<String, dynamic> json) =>
-      FlNodeStateV1Adapter.fromJsonV1(json);
+  factory FlNodeState.fromJson(Map<String, dynamic> json) => FlNodeStateV1Adapter.fromJsonV1(json);
 
   @override
   bool operator ==(Object other) =>
@@ -520,8 +513,7 @@ final class FlNodeDataModel {
     this.cachedRenderboxRect = Rect.zero,
   });
 
-  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) =>
-      toJsonV1(dataHandlers);
+  Map<String, dynamic> toJson(Map<Type, DataHandler> dataHandlers) => toJsonV1(dataHandlers);
 
   factory FlNodeDataModel.fromJson(
     Map<String, dynamic> json, {
@@ -598,15 +590,13 @@ FlNodeDataModel createNode(
       prototype: prototype,
       ports: Map.fromEntries(
         prototype.portPrototypes.map((prototype) {
-          final FlPortDataModel instance =
-              createPort(prototype.idName, prototype);
+          final FlPortDataModel instance = createPort(prototype.idName, prototype);
           return MapEntry(prototype.idName, instance);
         }),
       ),
       fields: Map.fromEntries(
         prototype.fieldPrototypes.map((prototype) {
-          final FlFieldDataModel instance =
-              createField(prototype.idName, prototype);
+          final FlFieldDataModel instance = createField(prototype.idName, prototype);
           return MapEntry(prototype.idName, instance);
         }),
       ),

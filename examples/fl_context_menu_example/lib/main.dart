@@ -22,8 +22,7 @@ class ContextMenuExampleScreen extends StatefulWidget {
   const ContextMenuExampleScreen({super.key});
 
   @override
-  State<ContextMenuExampleScreen> createState() =>
-      _ContextMenuExampleScreenState();
+  State<ContextMenuExampleScreen> createState() => _ContextMenuExampleScreenState();
 }
 
 class _ContextMenuExampleScreenState extends State<ContextMenuExampleScreen> {

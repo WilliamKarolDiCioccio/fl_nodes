@@ -16,8 +16,7 @@ class SemVerUtils {
     final int minor = int.parse(match.group(2)!);
     final int patch = int.parse(match.group(3)!);
 
-    final int? hotfix =
-        match.group(4) != null ? int.parse(match.group(4)!) : null;
+    final int? hotfix = match.group(4) != null ? int.parse(match.group(4)!) : null;
 
     return (major, minor, patch, hotfix);
   }

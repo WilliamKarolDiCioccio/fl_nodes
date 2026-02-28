@@ -82,8 +82,7 @@ abstract class FlNodesLocalizations {
 }
 
 /// A delegate that provides localized strings for the Node Editor.
-class FlNodesLocalizationsDelegate
-    extends LocalizationsDelegate<FlNodesLocalizations> {
+class FlNodesLocalizationsDelegate extends LocalizationsDelegate<FlNodesLocalizations> {
   const FlNodesLocalizationsDelegate();
 
   @override
@@ -101,8 +100,7 @@ class FlNodesLocalizationsDelegate
       ].contains(locale.languageCode);
 
   @override
-  Future<FlNodesLocalizations> load(Locale locale) async =>
-      switch (locale.languageCode) {
+  Future<FlNodesLocalizations> load(Locale locale) async => switch (locale.languageCode) {
         'en' => FlNodesLocalizationsEn(locale),
         'it' => FlNodesLocalizationsIt(locale),
         'fr' => FlNodesLocalizationsFr(locale),

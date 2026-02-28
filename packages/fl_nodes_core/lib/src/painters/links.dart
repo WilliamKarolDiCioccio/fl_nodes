@@ -40,10 +40,8 @@ class LinksCustomPainter extends FlCustomPainter {
       }
 
       for (final FlLinkDataModel link in controller.links.values) {
-        final FlNodeDataModel? node1 =
-            controller.getNodeById(link.ports.$1.nodeId);
-        final FlNodeDataModel? node2 =
-            controller.getNodeById(link.ports.$2.nodeId);
+        final FlNodeDataModel? node1 = controller.getNodeById(link.ports.$1.nodeId);
+        final FlNodeDataModel? node2 = controller.getNodeById(link.ports.$2.nodeId);
         if (node1 == null || node2 == null) continue;
 
         final FlPortDataModel? port1 = node1.ports[link.ports.$1.portId];
@@ -68,8 +66,7 @@ class LinksCustomPainter extends FlCustomPainter {
         Rect? toNodeBounds;
 
         if (shouldDrawLabels) {
-          labelText = port1.prototype.linkPrototype
-              .label(controller.editorKey.currentContext!);
+          labelText = port1.prototype.linkPrototype.label(controller.editorKey.currentContext!);
 
           if (labelText.isNotEmpty) {
             fromNodeBounds = node1.cachedRenderboxRect;
@@ -109,9 +106,7 @@ class LinksCustomPainter extends FlCustomPainter {
 
           _unbatchableLinks.add((path, paint));
 
-          if (shouldDrawLabels &&
-              data.labelText != null &&
-              data.labelText!.isNotEmpty) {
+          if (shouldDrawLabels && data.labelText != null && data.labelText!.isNotEmpty) {
             _cacheTextPainter(data.linkId, data.labelText!);
           }
         } else {
@@ -129,9 +124,7 @@ class LinksCustomPainter extends FlCustomPainter {
 
           _solidColorLinkBatches[style]!.$1.addPath(path, Offset.zero);
 
-          if (shouldDrawLabels &&
-              data.labelText != null &&
-              data.labelText!.isNotEmpty) {
+          if (shouldDrawLabels && data.labelText != null && data.labelText!.isNotEmpty) {
             _cacheTextPainter(data.linkId, data.labelText!);
           }
         }
@@ -140,8 +133,7 @@ class LinksCustomPainter extends FlCustomPainter {
 
     canvas.saveLayer(viewport, Paint());
 
-    for (final MapEntry<FlLinkStyle, (Path, Paint)> entry
-        in _solidColorLinkBatches.entries) {
+    for (final MapEntry<FlLinkStyle, (Path, Paint)> entry in _solidColorLinkBatches.entries) {
       final (Path path, Paint paint) = entry.value;
       canvas.drawPath(path, paint);
     }
@@ -157,8 +149,7 @@ class LinksCustomPainter extends FlCustomPainter {
     canvas.restore();
   }
 
-  Path _computeLinkPath(FlLinkCurveType curveType, LinkPaintModel data) =>
-      switch (curveType) {
+  Path _computeLinkPath(FlLinkCurveType curveType, LinkPaintModel data) => switch (curveType) {
         FlLinkCurveType.straight => PathUtils.computeStraightLinkPath(
             outPortOffset: data.outPortOffset,
             inPortOffset: data.inPortOffset,
@@ -204,8 +195,7 @@ class LinksCustomPainter extends FlCustomPainter {
     const padding = 4.0;
     final clearPaint = Paint()..blendMode = BlendMode.clear;
 
-    for (final MapEntry<String, (Rect, Path)> entry
-        in linksHitTestData.entries) {
+    for (final MapEntry<String, (Rect, Path)> entry in linksHitTestData.entries) {
       final String id = entry.key;
       final Rect pathData = entry.value.$1;
 
@@ -215,10 +205,8 @@ class LinksCustomPainter extends FlCustomPainter {
       final FlLinkDataModel? controllerLink = controller.links[id];
       if (controllerLink == null) continue;
 
-      final FlNodeDataModel? fromNode =
-          controller.getNodeById(controllerLink.ports.$1.nodeId);
-      final FlNodeDataModel? toNode =
-          controller.getNodeById(controllerLink.ports.$2.nodeId);
+      final FlNodeDataModel? fromNode = controller.getNodeById(controllerLink.ports.$1.nodeId);
+      final FlNodeDataModel? toNode = controller.getNodeById(controllerLink.ports.$2.nodeId);
       if (fromNode == null || toNode == null) continue;
 
       final Rect fromNodeBounds = fromNode.cachedRenderboxRect;
@@ -233,9 +221,8 @@ class LinksCustomPainter extends FlCustomPainter {
       );
 
       // Detect overlap with either node
-      final bool overlapsNode =
-          fromNodeBounds.inflate(margin).overlaps(textRect) ||
-              toNodeBounds.inflate(margin).overlaps(textRect);
+      final bool overlapsNode = fromNodeBounds.inflate(margin).overlaps(textRect) ||
+          toNodeBounds.inflate(margin).overlaps(textRect);
 
       if (overlapsNode) {
         continue;

@@ -47,8 +47,7 @@ extension FlPortDataModelLegacyAdapter on FlPortDataModel {
       throw Exception('Port prototype not found');
     }
 
-    final FlPortPrototype prototype =
-        portPrototypes[json['idName'].toString()]!;
+    final FlPortPrototype prototype = portPrototypes[json['idName'].toString()]!;
 
     final instance = FlPortDataModel(
       prototype: prototype,
@@ -83,8 +82,7 @@ extension FlFieldDataModelLegacyAdapter on FlFieldDataModel {
       throw Exception('Field prototype not found');
     }
 
-    final FlFieldPrototype prototype =
-        fieldPrototypes[json['idName'].toString()]!;
+    final FlFieldPrototype prototype = fieldPrototypes[json['idName'].toString()]!;
 
     return FlFieldDataModel(
       prototype: prototype,
@@ -112,8 +110,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
         'id': id,
         'idName': prototype.idName,
         'ports': ports.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
-        'fields':
-            fields.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
+        'fields': fields.map((k, v) => MapEntry(k, v.toJsonLegacy(dataHandlers))),
         'state': state.toJsonLegacy(),
         'offset': [offset.dx, offset.dy],
         'customData': customData.map((k, v) {
@@ -131,8 +128,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
       throw Exception('Node prototype not found');
     }
 
-    final FlNodePrototype prototype =
-        nodePrototypes[json['idName'].toString()]!;
+    final FlNodePrototype prototype = nodePrototypes[json['idName'].toString()]!;
 
     final Map<String, FlPortPrototype> portPrototypes = Map.fromEntries(
       prototype.portPrototypes.map(
@@ -140,8 +136,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
       ),
     );
 
-    final Map<String, FlPortDataModel> ports =
-        (json['ports'] as Map<String, dynamic>).map(
+    final Map<String, FlPortDataModel> ports = (json['ports'] as Map<String, dynamic>).map(
       (id, portJson) => MapEntry(
         id,
         FlPortDataModelLegacyAdapter.fromJsonLegacy(
@@ -158,8 +153,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
       ),
     );
 
-    final Map<String, FlFieldDataModel> fields =
-        (json['fields'] as Map<String, dynamic>).map(
+    final Map<String, FlFieldDataModel> fields = (json['fields'] as Map<String, dynamic>).map(
       (id, fieldJson) => MapEntry(
         id,
         FlFieldDataModelLegacyAdapter.fromJsonLegacy(
@@ -177,8 +171,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
       fields: fields,
       customData: {},
       state: FlNodeState(
-        isCollapsed:
-            (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool,
+        isCollapsed: (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool,
       ),
       offset: Offset(
         ((json['offset'] as List<dynamic>)[0] as num).toDouble(),

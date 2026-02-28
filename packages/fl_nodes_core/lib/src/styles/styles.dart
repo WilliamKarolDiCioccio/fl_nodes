@@ -180,17 +180,12 @@ class FlLinkStyle {
   }
 
   @override
-  int get hashCode =>
-      color.hashCode ^
-      lineWidth.hashCode ^
-      drawMode.hashCode ^
-      curveType.hashCode;
+  int get hashCode => color.hashCode ^ lineWidth.hashCode ^ drawMode.hashCode ^ curveType.hashCode;
 }
 
 typedef LinkStyleBuilder = FlLinkStyle Function(FlLinkState style);
 
-FlLinkStyle flDefaultLinkStyleBuilder(FlLinkState state) =>
-    const FlLinkStyle.basic();
+FlLinkStyle flDefaultLinkStyleBuilder(FlLinkState state) => const FlLinkStyle.basic();
 
 enum FlPortShape {
   circle,
@@ -234,8 +229,7 @@ class FlPortStyle {
 
 typedef PortStyleBuilder = FlPortStyle Function(FlPortState style);
 
-FlPortStyle flDefaultPortStyleBuilder(FlPortState state) =>
-    const FlPortStyle.basic();
+FlPortStyle flDefaultPortStyleBuilder(FlPortState state) => const FlPortStyle.basic();
 
 class FlFieldStyle {
   final BoxDecoration decoration;

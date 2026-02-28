@@ -1,7 +1,5 @@
-export 'package:fl_nodes_core/src/core/controller/callback.dart'
-    show FlCallbackType;
-export 'package:fl_nodes_core/src/core/controller/core.dart'
-    show FlNodesConfig, FlNodesController;
+export 'package:fl_nodes_core/src/core/controller/callback.dart' show FlCallbackType;
+export 'package:fl_nodes_core/src/core/controller/core.dart' show FlNodesConfig, FlNodesController;
 export 'package:fl_nodes_core/src/core/events/events.dart'
     show
         FlAddLinkEvent,
@@ -74,5 +72,4 @@ export 'package:fl_nodes_core/src/widgets/default_node.dart';
 export 'package:fl_nodes_core/src/widgets/node_editor.dart';
 export 'package:fl_nodes_core/src/widgets/node_editor_shortcuts.dart';
 export 'package:fl_nodes_core/src/core/utils/misc/nodes.dart' show FlNodesUtils;
-export 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart'
-    show RenderBoxUtils;
+export 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart' show RenderBoxUtils;

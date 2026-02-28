@@ -21,8 +21,7 @@ class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
   @override
   Widget build(BuildContext context) {
     final ShapeType shapeType =
-        widget.node.customData['shape'] as ShapeType? ??
-        ShapeType.roundedRectangle;
+        widget.node.customData['shape'] as ShapeType? ?? ShapeType.roundedRectangle;
     final String text = widget.node.customData['text'] as String? ?? 'Node';
 
     return wrapWithControls(
@@ -91,17 +90,14 @@ class _MindMapNodeWidgetState extends FlBaseNodeWidgetState<MindMapNodeWidget> {
   void updatePortsPosition() {
     // Early return with combined null checks
     final renderBox = context.findRenderObject() as RenderBox?;
-    final nodeBox =
-        widget.node.key.currentContext?.findRenderObject() as RenderBox?;
+    final nodeBox = widget.node.key.currentContext?.findRenderObject() as RenderBox?;
 
     if (renderBox == null || nodeBox == null) return;
 
     // Cache frequently used values
     final Offset nodeOffset = nodeBox.localToGlobal(Offset.zero);
     final bool isCollapsed = widget.node.state.isCollapsed;
-    final num collapsedYAdjustment = isCollapsed
-        ? -renderBox.size.height + 8
-        : 0;
+    final num collapsedYAdjustment = isCollapsed ? -renderBox.size.height + 8 : 0;
 
     // Process ports
     for (final FlPortDataModel port in widget.node.ports.values) {
@@ -210,6 +206,5 @@ class _ShapePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ShapePainter oldDelegate) =>
-      oldDelegate.shapeType != shapeType ||
-      oldDelegate.isSelected != isSelected;
+      oldDelegate.shapeType != shapeType || oldDelegate.isSelected != isSelected;
 }

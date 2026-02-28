@@ -36,8 +36,7 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
     properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
     properties.add(
       ObjectFlagProperty<ShowPortContextMenu>.has(
@@ -60,8 +59,7 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   }
 }
 
-abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
-    extends State<T> {
+abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T> {
   // Interaction state for linking ports.
   bool _isLinking = false;
 
@@ -171,8 +169,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   void _startEdgeTimer(Offset position) {
     const edgeThreshold = 50.0;
     final double moveAmount = 5.0 / widget.controller.viewportZoom;
-    final Rect? editorBounds =
-        RenderBoxUtils.getEditorBoundsInScreen(editorKey);
+    final Rect? editorBounds = RenderBoxUtils.getEditorBoundsInScreen(editorKey);
     if (editorBounds == null) return;
 
     _edgeTimer?.cancel();
@@ -221,15 +218,13 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       height: kNodesSpatialHashingCellSize,
     );
 
-    final Set<String> nearNodeIds =
-        widget.controller.nodesSpatialHashGrid.queryArea(near);
+    final Set<String> nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
       final FlNodeDataModel node = widget.controller.getNodeById(nodeId)!;
       for (final FlPortDataModel port in node.ports.values) {
         final Offset absolutePortPosition = node.offset + port.offset;
-        if ((worldPosition - absolutePortPosition).distance <
-            kNearPortSnapDistance) {
+        if ((worldPosition - absolutePortPosition).distance < kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
@@ -250,8 +245,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
       viewportOffset,
       viewportZoom,
     );
-    final FlNodeDataModel node =
-        widget.controller.getNodeById(_portLocator!.nodeId)!;
+    final FlNodeDataModel node = widget.controller.getNodeById(_portLocator!.nodeId)!;
     final FlPortDataModel port = node.ports[_portLocator!.portId]!;
     final Offset absolutePortOffset = node.offset + port.offset;
 
@@ -281,8 +275,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
   }
 
   Widget wrapWithControls(Widget child) =>
-      defaultTargetPlatform == TargetPlatform.android ||
-              defaultTargetPlatform == TargetPlatform.iOS
+      defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS
           ? GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () {
@@ -440,10 +433,8 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
 
   void _updateStyleCache() {
     setState(() {
-      widget.node.builtStyle =
-          widget.node.prototype.styleBuilder(widget.node.state);
-      widget.node.builtHeaderStyle =
-          widget.node.prototype.headerStyleBuilder(widget.node.state);
+      widget.node.builtStyle = widget.node.prototype.styleBuilder(widget.node.state);
+      widget.node.builtHeaderStyle = widget.node.prototype.headerStyleBuilder(widget.node.state);
 
       fakeTransparentColor = Color.alphaBlend(
         widget.node.builtStyle.decoration.color!.withAlpha(255),
@@ -468,8 +459,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget>
     properties.add(IterableProperty<FlPortDataModel>('ports', ports));
     properties.add(IterableProperty<FlFieldDataModel>('fields', fields));
     properties.add(DoubleProperty('viewportZoom', viewportZoom));
-    properties
-        .add(DiagnosticsProperty<Offset>('viewportOffset', viewportOffset));
+    properties.add(DiagnosticsProperty<Offset>('viewportOffset', viewportOffset));
     properties.add(
       DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>(
         'editorKey',

@@ -39,13 +39,11 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
   void initState() {
     super.initState();
 
-    final Locale systemLocale =
-        WidgetsBinding.instance.platformDispatcher.locale;
+    final Locale systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
     final Set<String> supportedLanguageCodes = SupportedLocale.values
         .map((l) => l.languageCode)
         .toSet();
-    final String defaultLanguageCode =
-        supportedLanguageCodes.contains(systemLocale.languageCode)
+    final String defaultLanguageCode = supportedLanguageCodes.contains(systemLocale.languageCode)
         ? systemLocale.languageCode
         : 'en';
 
@@ -108,8 +106,7 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
   List<_ExampleEntry> get _examples => [
     _ExampleEntry(
       title: 'Visual Scripting',
-      description:
-          'Classic node graph with execution flow and visual programming capabilities.',
+      description: 'Classic node graph with execution flow and visual programming capabilities.',
       icon: Icons.memory,
       tags: ['nodes', 'scripting', 'visual'],
       imageUrl:
@@ -304,8 +301,7 @@ class _ExampleCardState extends State<_ExampleCard> {
                       ? Image.network(
                           entry.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildIconPlaceholder(),
+                          errorBuilder: (context, error, stackTrace) => _buildIconPlaceholder(),
                         )
                       : _buildIconPlaceholder(),
                 ),
@@ -344,8 +340,9 @@ class _ExampleCardState extends State<_ExampleCard> {
                               Expanded(
                                 child: Text(
                                   entry.title,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -355,12 +352,11 @@ class _ExampleCardState extends State<_ExampleCard> {
                           // Description
                           Text(
                             entry.description,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -388,11 +384,9 @@ class _ExampleCardState extends State<_ExampleCard> {
                                   tag,
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color:
-                                        Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant
-                                            .withAlpha(179),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant.withAlpha(179),
                                   ),
                                 ),
                               ),

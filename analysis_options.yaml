@@ -512,4 +512,5 @@ analyzer:
     - "**/*.config.dart"
 
 formatter:
+  page_width: 100
   trailing_commas: preserve

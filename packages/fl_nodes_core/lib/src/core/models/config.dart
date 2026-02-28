@@ -75,8 +75,7 @@ class FlNodesConfig {
         panSensitivity: panSensitivity ?? this.panSensitivity,
         maxPanX: maxPanX ?? this.maxPanX,
         maxPanY: maxPanY ?? this.maxPanY,
-        enableKineticScrolling:
-            enableKineticScrolling ?? this.enableKineticScrolling,
+        enableKineticScrolling: enableKineticScrolling ?? this.enableKineticScrolling,
         enableAutoScrolling: enableAutoScrolling ?? this.enableAutoScrolling,
         enableAreaSelection: enableAreaSelection ?? this.enableAreaSelection,
         enableSnapToGrid: enableSnapToGrid ?? this.enableSnapToGrid,

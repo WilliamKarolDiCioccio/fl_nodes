@@ -80,13 +80,11 @@ abstract base class FlProjectClassEvent extends NodeEditorEvent {
 }
 
 abstract base class FlTempInteractionClassEvent extends NodeEditorEvent {
-  const FlTempInteractionClassEvent({required super.id, super.isHandled})
-      : super();
+  const FlTempInteractionClassEvent({required super.id, super.isHandled}) : super();
 }
 
 abstract base class FlConfigurationClassEvent extends NodeEditorEvent {
-  const FlConfigurationClassEvent({required super.id, super.isHandled})
-      : super();
+  const FlConfigurationClassEvent({required super.id, super.isHandled}) : super();
 }
 
 /// ---------------------------------------------------------------------------
@@ -100,8 +98,7 @@ abstract base class FlConfigurationClassEvent extends NodeEditorEvent {
 
 /// Event produced when the viewport offset changes.
 /// -> Paint (no layout)
-final class FlViewportOffsetEvent extends FlViewportClassEvent
-    with FlPaintEventCat {
+final class FlViewportOffsetEvent extends FlViewportClassEvent with FlPaintEventCat {
   final Offset offset;
   final bool animate;
 
@@ -115,8 +112,7 @@ final class FlViewportOffsetEvent extends FlViewportClassEvent
 
 /// Event produced when the viewport zoom level changes.
 /// -> Paint (no layout)
-final class FlViewportZoomEvent extends FlViewportClassEvent
-    with FlPaintEventCat {
+final class FlViewportZoomEvent extends FlViewportClassEvent with FlPaintEventCat {
   final double zoom;
   final bool animate;
 
@@ -134,8 +130,7 @@ final class FlViewportZoomEvent extends FlViewportClassEvent
 
 enum FlSelectionEventType { select, holdSelect, deselect }
 
-final class FlNodeSelectionEvent extends FlSelectionClassEvent
-    with FlLayoutEventCat {
+final class FlNodeSelectionEvent extends FlSelectionClassEvent with FlLayoutEventCat {
   final FlSelectionEventType type;
   final Set<String> nodeIds;
 
@@ -148,8 +143,7 @@ final class FlNodeSelectionEvent extends FlSelectionClassEvent
   });
 }
 
-final class FlLinkSelectionEvent extends FlSelectionClassEvent
-    with FlPaintEventCat {
+final class FlLinkSelectionEvent extends FlSelectionClassEvent with FlPaintEventCat {
   final FlSelectionEventType type;
   final Set<String> linkIds;
 
@@ -163,8 +157,7 @@ final class FlLinkSelectionEvent extends FlSelectionClassEvent
 }
 
 /// Dragging selection updates positions -> layout (and undoable)
-final class FlDragSelectionStartEvent extends FlGraphEditClassEvent
-    with FlLayoutEventCat {
+final class FlDragSelectionStartEvent extends FlGraphEditClassEvent with FlLayoutEventCat {
   final Set<String> nodeIds;
   final Offset position;
 
@@ -193,8 +186,7 @@ final class FlDragSelectionStartEvent extends FlGraphEditClassEvent
   }
 }
 
-final class FlDragSelectionEvent extends FlGraphEditClassEvent
-    with FlLayoutEventCat {
+final class FlDragSelectionEvent extends FlGraphEditClassEvent with FlLayoutEventCat {
   final Set<String> nodeIds;
   final Offset delta;
 
@@ -223,8 +215,7 @@ final class FlDragSelectionEvent extends FlGraphEditClassEvent
   }
 }
 
-final class FlDragSelectionEndEvent extends FlGraphEditClassEvent
-    with FlLayoutEventCat {
+final class FlDragSelectionEndEvent extends FlGraphEditClassEvent with FlLayoutEventCat {
   final Offset position;
   final Set<String> nodeIds;
 
@@ -298,8 +289,7 @@ final class FlCutSelectionEvent extends FlClipboardClassEvent
 
 enum FlHoverEventType { enter, exit }
 
-final class FlNodeHoverEvent extends FlVisualizationClassEvent
-    with FlLayoutEventCat {
+final class FlNodeHoverEvent extends FlVisualizationClassEvent with FlLayoutEventCat {
   final FlHoverEventType type;
   final String nodeId;
 
@@ -315,8 +305,7 @@ final class FlNodeHoverEvent extends FlVisualizationClassEvent
 // Graph edit events (mutate graph — default to LayoutEvent; adjust if only paint)
 ////////////////////////////////////////////////////////////////////////
 
-final class FlAddNodeEvent extends FlGraphEditClassEvent
-    with FlTreeEventCat, FlLayoutEventCat {
+final class FlAddNodeEvent extends FlGraphEditClassEvent with FlTreeEventCat, FlLayoutEventCat {
   final FlNodeDataModel node;
 
   const FlAddNodeEvent(
@@ -346,8 +335,7 @@ final class FlAddNodeEvent extends FlGraphEditClassEvent
       );
 }
 
-final class FlRemoveNodeEvent extends FlGraphEditClassEvent
-    with FlTreeEventCat, FlLayoutEventCat {
+final class FlRemoveNodeEvent extends FlGraphEditClassEvent with FlTreeEventCat, FlLayoutEventCat {
   final FlNodeDataModel node;
 
   const FlRemoveNodeEvent(
@@ -406,8 +394,7 @@ final class FlAddLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
       );
 }
 
-final class FlRemoveLinkEvent extends FlGraphEditClassEvent
-    with FlPaintEventCat {
+final class FlRemoveLinkEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   final FlLinkDataModel link;
 
   const FlRemoveLinkEvent(
@@ -442,8 +429,7 @@ enum FlFieldEventType {
   cancel,
 }
 
-final class FlNodeFieldEvent extends FlGraphEditClassEvent
-    with FlLayoutEventCat {
+final class FlNodeFieldEvent extends FlGraphEditClassEvent with FlLayoutEventCat {
   final String nodeId;
   final dynamic value;
   final FlFieldEventType eventType;
@@ -457,8 +443,7 @@ final class FlNodeFieldEvent extends FlGraphEditClassEvent
   });
 }
 
-final class FlLinkLabelEvent extends FlGraphEditClassEvent
-    with FlPaintEventCat {
+final class FlLinkLabelEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   final String linkId;
   final String label;
 
@@ -484,8 +469,7 @@ final class FlNodeCustomDataEvent extends FlGraphEditClassEvent {
   });
 }
 
-final class FlNodeCustomDataPaintEvent extends FlGraphEditClassEvent
-    with FlPaintEventCat {
+final class FlNodeCustomDataPaintEvent extends FlGraphEditClassEvent with FlPaintEventCat {
   final String nodeId;
   final String key;
   final dynamic value;
@@ -499,8 +483,7 @@ final class FlNodeCustomDataPaintEvent extends FlGraphEditClassEvent
   });
 }
 
-final class FlNodeCustomDataLayoutEvent extends FlGraphEditClassEvent
-    with FlLayoutEventCat {
+final class FlNodeCustomDataLayoutEvent extends FlGraphEditClassEvent with FlLayoutEventCat {
   final String nodeId;
   final String key;
   final dynamic value;
@@ -518,8 +501,7 @@ final class FlNodeCustomDataLayoutEvent extends FlGraphEditClassEvent
 // Visualization tweaks
 ////////////////////////////////////////////////////////////////////////
 
-final class FlCollapseNodeEvent extends FlVisualizationClassEvent
-    with FlLayoutEventCat {
+final class FlCollapseNodeEvent extends FlVisualizationClassEvent with FlLayoutEventCat {
   final bool collpased;
   final Set<String> nodeIds;
 
@@ -590,13 +572,11 @@ final class FlSaveProjectEvent extends FlProjectClassEvent {
   const FlSaveProjectEvent({required super.id});
 }
 
-final class FlLoadProjectEvent extends FlProjectClassEvent
-    with FlTreeEventCat, FlLayoutEventCat {
+final class FlLoadProjectEvent extends FlProjectClassEvent with FlTreeEventCat, FlLayoutEventCat {
   const FlLoadProjectEvent({required super.id});
 }
 
-final class FlNewProjectEvent extends FlProjectClassEvent
-    with FlTreeEventCat, FlLayoutEventCat {
+final class FlNewProjectEvent extends FlProjectClassEvent with FlTreeEventCat, FlLayoutEventCat {
   const FlNewProjectEvent({required super.id});
 }
 
@@ -607,22 +587,19 @@ final class FlConfigurationChangeEvent extends FlConfigurationClassEvent
   const FlConfigurationChangeEvent(this.config, {required super.id});
 }
 
-final class FlStyleChangeEvent extends FlConfigurationClassEvent
-    with FlLayoutEventCat {
+final class FlStyleChangeEvent extends FlConfigurationClassEvent with FlLayoutEventCat {
   final FlNodesStyle style;
 
   const FlStyleChangeEvent(this.style, {required super.id});
 }
 
-final class FlLocaleChangeEvent extends FlConfigurationClassEvent
-    with FlLayoutEventCat {
+final class FlLocaleChangeEvent extends FlConfigurationClassEvent with FlLayoutEventCat {
   final Locale locale;
 
   const FlLocaleChangeEvent(this.locale, {required super.id});
 }
 
-final class FlOverlayChangedEvent extends FlConfigurationClassEvent
-    with FlPaintEventCat {
+final class FlOverlayChangedEvent extends FlConfigurationClassEvent with FlPaintEventCat {
   final Set<String> idNames;
 
   const FlOverlayChangedEvent(this.idNames, {required super.id});
@@ -632,8 +609,7 @@ final class FlOverlayChangedEvent extends FlConfigurationClassEvent
 // Temporary drawing / interaction events (paint-only or no-render)
 ////////////////////////////////////////////////////////////////////////
 
-final class FlDrawTempLinkEvent extends FlTempInteractionClassEvent
-    with FlPaintEventCat {
+final class FlDrawTempLinkEvent extends FlTempInteractionClassEvent with FlPaintEventCat {
   final Offset startOffset;
   final Offset endOffset;
 
@@ -645,8 +621,7 @@ final class FlDrawTempLinkEvent extends FlTempInteractionClassEvent
   });
 }
 
-final class FlAreaHighlightEvent extends FlTempInteractionClassEvent
-    with FlPaintEventCat {
+final class FlAreaHighlightEvent extends FlTempInteractionClassEvent with FlPaintEventCat {
   final Rect? area;
 
   const FlAreaHighlightEvent(

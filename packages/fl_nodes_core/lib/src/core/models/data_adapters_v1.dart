@@ -55,8 +55,7 @@ extension FlPortDataModelV1Adapter on FlPortDataModel {
       throw Exception('Port prototype not found');
     }
 
-    final FlPortPrototype prototype =
-        portPrototypes[json['idName'].toString()]!;
+    final FlPortPrototype prototype = portPrototypes[json['idName'].toString()]!;
 
     final instance = FlPortDataModel(
       prototype: prototype,
@@ -77,8 +76,7 @@ extension FlPortDataModelV1Adapter on FlPortDataModel {
 }
 
 extension FlFieldDataModelV1Adapter on FlFieldDataModel {
-  Map<String, dynamic> toJsonV1(Map<Type, DataHandler> dataHandlers) =>
-      toJsonLegacy(dataHandlers);
+  Map<String, dynamic> toJsonV1(Map<Type, DataHandler> dataHandlers) => toJsonLegacy(dataHandlers);
 
   static FlFieldDataModel fromJsonV1(
     Map<String, dynamic> json,
@@ -122,8 +120,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       throw Exception('Node prototype not found');
     }
 
-    final FlNodePrototype prototype =
-        nodePrototypes[json['idName'].toString()]!;
+    final FlNodePrototype prototype = nodePrototypes[json['idName'].toString()]!;
 
     final Map<String, FlPortPrototype> portPrototypes = Map.fromEntries(
       prototype.portPrototypes.map(
@@ -131,8 +128,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       ),
     );
 
-    final Map<String, FlPortDataModel> ports =
-        (json['ports'] as Map<String, dynamic>).map(
+    final Map<String, FlPortDataModel> ports = (json['ports'] as Map<String, dynamic>).map(
       (id, portJson) => MapEntry(
         id,
         FlPortDataModelV1Adapter.fromJsonV1(
@@ -149,8 +145,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       ),
     );
 
-    final Map<String, FlFieldDataModel> fields =
-        (json['fields'] as Map<String, dynamic>).map(
+    final Map<String, FlFieldDataModel> fields = (json['fields'] as Map<String, dynamic>).map(
       (id, fieldJson) => MapEntry(
         id,
         FlFieldDataModelV1Adapter.fromJsonV1(
@@ -183,8 +178,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       fields: fields,
       customData: customData,
       state: FlNodeState(
-        isCollapsed:
-            (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool,
+        isCollapsed: (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool,
       ),
       offset: Offset(
         ((json['offset'] as List<dynamic>)[0] as num).toDouble(),
@@ -203,12 +197,10 @@ extension FlNodesGroupDataModelV1Adapter on FlNodesGroupDataModel {
         'nodeIds': nodeIds.toList(),
       };
 
-  static FlNodesGroupDataModel fromJsonV1(Map<String, dynamic> json) =>
-      FlNodesGroupDataModel(
+  static FlNodesGroupDataModel fromJsonV1(Map<String, dynamic> json) => FlNodesGroupDataModel(
         id: json['id'] as String,
         name: json['name'] as String,
-        nodeIds:
-            (json['nodeIds'] as List<dynamic>).map((e) => e.toString()).toSet(),
+        nodeIds: (json['nodeIds'] as List<dynamic>).map((e) => e.toString()).toSet(),
       );
 }
 

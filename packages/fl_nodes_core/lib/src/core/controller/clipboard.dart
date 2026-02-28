@@ -41,8 +41,7 @@ class FlNodesClipboardHelper {
 
     if (selectedNodeIds.isEmpty) return '';
 
-    final Rect encompassingRect =
-        FlNodesUtils.calculateEncompassingRect(selectedNodeIds, nodes);
+    final Rect encompassingRect = FlNodesUtils.calculateEncompassingRect(selectedNodeIds, nodes);
 
     final List<FlNodeDataModel> selectedNodes = selectedNodeIds.map((id) {
       final FlNodeDataModel nodeCopy = nodes[id]!.copyWith();
@@ -50,8 +49,7 @@ class FlNodesClipboardHelper {
       final Offset relativeOffset = nodeCopy.offset - encompassingRect.topLeft;
 
       // We make deep copies as we only want to copy the links that are within the selection.
-      final Map<String, FlPortDataModel> updatedPorts =
-          nodeCopy.ports.map((portId, port) {
+      final Map<String, FlPortDataModel> updatedPorts = nodeCopy.ports.map((portId, port) {
         final Set<FlLinkDataModel> deepCopiedLinks = port.links
             .where(
               (link) =>
@@ -77,13 +75,11 @@ class FlNodesClipboardHelper {
     late final String base64Data;
 
     try {
-      final List<Map<String, dynamic>> selectedNodesJson = selectedNodes
-          .map((node) => node.toJson(controller.project.dataHandlers))
-          .toList();
+      final List<Map<String, dynamic>> selectedNodesJson =
+          selectedNodes.map((node) => node.toJson(controller.project.dataHandlers)).toList();
 
       final String nodesJsonData = jsonEncode(selectedNodesJson);
-      final String encompassingRectJsonData =
-          jsonEncode(encompassingRect.toJson());
+      final String encompassingRectJsonData = jsonEncode(encompassingRect.toJson());
 
       final String jsonData = jsonEncode({
         'nodes': nodesJsonData,
@@ -142,8 +138,7 @@ class FlNodesClipboardHelper {
 
       nodesJson = jsonDecode(jsonData['nodes'] as String) as List<dynamic>;
       encompassingRect = JSONRect.fromJson(
-        jsonDecode(jsonData['encompassingRect'] as String)
-            as Map<String, dynamic>,
+        jsonDecode(jsonData['encompassingRect'] as String) as Map<String, dynamic>,
       );
     } catch (e) {
       controller.onCallback?.call(
@@ -157,12 +152,8 @@ class FlNodesClipboardHelper {
       final Size viewportSize = RenderBoxUtils.getSizeFromGlobalKey(editorKey)!;
 
       position = Rect.fromLTWH(
-        -viewportOffset.dx -
-            (viewportSize.width / 2) -
-            (encompassingRect.width / 2),
-        -viewportOffset.dy -
-            (viewportSize.height / 2) -
-            (encompassingRect.height / 2),
+        -viewportOffset.dx - (viewportSize.width / 2) - (encompassingRect.width / 2),
+        -viewportOffset.dy - (viewportSize.height / 2) - (encompassingRect.height / 2),
         viewportSize.width,
         viewportSize.height,
       ).center;
@@ -180,8 +171,7 @@ class FlNodesClipboardHelper {
         .toList();
 
     // Called on each paste, see [FlNodesController._mapToNewIds] for more info.
-    final Map<String, String> newIds =
-        await FlNodesUtils.mapToNewIds(instances);
+    final Map<String, String> newIds = await FlNodesUtils.mapToNewIds(instances);
 
     final List<FlNodeDataModel> deepCopiedNodes = instances
         .map(

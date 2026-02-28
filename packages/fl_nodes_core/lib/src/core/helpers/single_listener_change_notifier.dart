@@ -4,8 +4,7 @@ import 'package:flutter/foundation.dart';
 mixin SingleListenerChangeNotifier implements Listenable {
   VoidCallback? listener;
 
-  void notifyListeners() =>
-      listener?.call(); // just to be compatible with [ChangeNotifier]
+  void notifyListeners() => listener?.call(); // just to be compatible with [ChangeNotifier]
 
   @override
   @visibleForOverriding

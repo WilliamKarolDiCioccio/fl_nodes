@@ -29,8 +29,7 @@ class VisualScriptingExampleScreen extends StatefulWidget {
   final void Function(String) onLocaleChanged;
 
   @override
-  State<VisualScriptingExampleScreen> createState() =>
-      VisualScriptingExampleScreenState();
+  State<VisualScriptingExampleScreen> createState() => VisualScriptingExampleScreenState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -46,11 +45,9 @@ class VisualScriptingExampleScreen extends StatefulWidget {
 }
 
 final bool isMobile =
-    TargetPlatform.iOS == defaultTargetPlatform ||
-    TargetPlatform.android == defaultTargetPlatform;
+    TargetPlatform.iOS == defaultTargetPlatform || TargetPlatform.android == defaultTargetPlatform;
 
-class VisualScriptingExampleScreenState
-    extends State<VisualScriptingExampleScreen> {
+class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScreen> {
   late final FlNodesController _nodeEditorController;
   final TerminalController _terminalController = TerminalController();
 
@@ -121,8 +118,7 @@ class VisualScriptingExampleScreenState
         if (isSaved) return true;
         return await _showUnsavedChangesDialog() ?? false;
       },
-      onCallback: (type, message) =>
-          showNodeEditorSnackbar(context, message, type),
+      onCallback: (type, message) => showNodeEditorSnackbar(context, message, type),
     );
 
     _nodeEditorController.overlay.add(
@@ -281,21 +277,14 @@ class VisualScriptingExampleScreenState
                     nodeBuilder: (node, controller) => FlDefaultNodeWidget(
                       node: node,
                       controller: controller,
-                      showPortContextMenu:
-                          ShowContextMenuUtils.showPortContextMenu,
-                      showNodeCreationMenu:
-                          ShowContextMenuUtils.showNodeCreationMenu,
-                      showNodeContextMenu:
-                          ShowContextMenuUtils.showNodeContextMenu,
+                      showPortContextMenu: ShowContextMenuUtils.showPortContextMenu,
+                      showNodeCreationMenu: ShowContextMenuUtils.showNodeCreationMenu,
+                      showNodeContextMenu: ShowContextMenuUtils.showNodeContextMenu,
                     ),
-                    showPortContextMenu:
-                        ShowContextMenuUtils.showPortContextMenu,
-                    showCanvasContextMenu:
-                        ShowContextMenuUtils.showCanvasContextMenu,
-                    showNodeCreationMenu:
-                        ShowContextMenuUtils.showNodeCreationMenu,
-                    showLinkContextMenu:
-                        ShowContextMenuUtils.showLinkContextMenu,
+                    showPortContextMenu: ShowContextMenuUtils.showPortContextMenu,
+                    showCanvasContextMenu: ShowContextMenuUtils.showCanvasContextMenu,
+                    showNodeCreationMenu: ShowContextMenuUtils.showNodeCreationMenu,
+                    showLinkContextMenu: ShowContextMenuUtils.showLinkContextMenu,
                   ),
                 ),
                 ClipRect(
@@ -350,9 +339,7 @@ class VisualScriptingExampleScreenState
                 onPressed: _toggleHierarchy,
               ),
               _buildToolbarButton(
-                icon: isTerminalCollapsed
-                    ? Icons.terminal
-                    : Icons.terminal_outlined,
+                icon: isTerminalCollapsed ? Icons.terminal : Icons.terminal_outlined,
                 tooltip: AppLocalizations.of(context)!.toggleTerminalTooltip,
                 onPressed: _toggleTerminal,
               ),
@@ -369,20 +356,17 @@ class VisualScriptingExampleScreenState
               _buildToolbarButton(
                 icon: Icons.add,
                 tooltip: strings.createProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.create(context: context),
+                onPressed: () => _nodeEditorController.project.create(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.folder_open,
                 tooltip: strings.openProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.load(context: context),
+                onPressed: () => _nodeEditorController.project.load(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.save,
                 tooltip: strings.saveProjectActionTooltip,
-                onPressed: () =>
-                    _nodeEditorController.project.save(context: context),
+                onPressed: () => _nodeEditorController.project.save(context: context),
               ),
               _buildToolbarButton(
                 icon: Icons.undo,
@@ -414,8 +398,7 @@ class VisualScriptingExampleScreenState
               _buildToolbarButton(
                 icon: Icons.play_arrow,
                 tooltip: AppLocalizations.of(context)!.executeGraphTooltip,
-                onPressed: () =>
-                    _nodeEditorController.runner.executeGraph(context: context),
+                onPressed: () => _nodeEditorController.runner.executeGraph(context: context),
                 color: Colors.green,
               ),
             ],

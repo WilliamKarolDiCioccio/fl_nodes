@@ -23,8 +23,7 @@ Future<T?> createPageRoute<T>({
             style: style,
           ),
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-            FadeTransition(
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
           opacity: animation,
           child: child,
         ),

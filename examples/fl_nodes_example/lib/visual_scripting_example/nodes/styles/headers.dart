@@ -77,18 +77,17 @@ class NodeHeaderStyles {
         ),
       );
 
-  static FlNodeHeaderStyle io(FlNodeState state) =>
-      flDefaultNodeHeaderStyleBuilder(state).copyWith(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.purple, Colors.transparent],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-        ),
-      );
+  static FlNodeHeaderStyle io(FlNodeState state) => flDefaultNodeHeaderStyleBuilder(state).copyWith(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.purple, Colors.transparent],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(12),
+        topRight: Radius.circular(12),
+      ),
+    ),
+  );
 }

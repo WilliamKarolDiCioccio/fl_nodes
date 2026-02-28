@@ -81,14 +81,9 @@ class ContextMenuUtils {
       ),
       const MenuDivider(),
       MenuItem(
-        label: node.state.isCollapsed
-            ? strings.expandNodeAction
-            : strings.collapseNodeAction,
-        icon: node.state.isCollapsed
-            ? Icons.arrow_drop_down
-            : Icons.arrow_right,
-        onSelected: () =>
-            controller.toggleCollapseSelectedNodes(!node.state.isCollapsed),
+        label: node.state.isCollapsed ? strings.expandNodeAction : strings.collapseNodeAction,
+        icon: node.state.isCollapsed ? Icons.arrow_drop_down : Icons.arrow_right,
+        onSelected: () => controller.toggleCollapseSelectedNodes(!node.state.isCollapsed),
       ),
       const MenuDivider(),
       MenuItem(
@@ -206,8 +201,7 @@ class ContextMenuUtils {
       MenuItem(
         label: strings.centerViewAction,
         icon: Icons.center_focus_strong,
-        onSelected: () =>
-            controller.setViewportOffset(Offset.zero, absolute: true),
+        onSelected: () => controller.setViewportOffset(Offset.zero, absolute: true),
       ),
       MenuItem(
         label: strings.resetZoomAction,
@@ -228,8 +222,7 @@ class ContextMenuUtils {
       MenuItem(
         label: strings.pasteSelectionAction,
         icon: Icons.paste,
-        onSelected: () =>
-            controller.clipboard.pasteSelection(position: worldPosition),
+        onSelected: () => controller.clipboard.pasteSelection(position: worldPosition),
       ),
       const MenuDivider(),
       MenuItem.submenu(

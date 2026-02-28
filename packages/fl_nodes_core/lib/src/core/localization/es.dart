@@ -56,27 +56,21 @@ class FlNodesLocalizationsEs extends FlNodesLocalizations {
   @override
   String get navigateToDestinationAction => 'Navegar al destino';
   @override
-  String failedToCopySelectionErrorMsg(String e) =>
-      'Error al copiar la selección: $e';
+  String failedToCopySelectionErrorMsg(String e) => 'Error al copiar la selección: $e';
   @override
   String get selectionCopiedSuccessfullyMsg => 'Selección copiada con éxito';
   @override
-  String failedToPasteSelectionErrorMsg(String e) =>
-      'Error al pegar la selección: $e';
+  String failedToPasteSelectionErrorMsg(String e) => 'Error al pegar la selección: $e';
   @override
-  String failedToSaveProjectErrorMsg(String e) =>
-      'Error al guardar el proyecto: $e';
+  String failedToSaveProjectErrorMsg(String e) => 'Error al guardar el proyecto: $e';
   @override
   String get projectSavedSuccessfullyMsg => 'Proyecto guardado con éxito';
   @override
-  String failedToLoadProjectErrorMsg(String e) =>
-      'Error al cargar el proyecto: $e';
+  String failedToLoadProjectErrorMsg(String e) => 'Error al cargar el proyecto: $e';
   @override
   String get projectLoadedSuccessfullyMsg => 'Proyecto cargado con éxito';
   @override
-  String get newProjectCreatedSuccessfullyMsg =>
-      'Nuevo proyecto creado con éxito';
+  String get newProjectCreatedSuccessfullyMsg => 'Nuevo proyecto creado con éxito';
   @override
-  String failedToExecuteNodeErrorMsg(String e) =>
-      'Error al ejecutar el nodo: $e';
+  String failedToExecuteNodeErrorMsg(String e) => 'Error al ejecutar el nodo: $e';
 }

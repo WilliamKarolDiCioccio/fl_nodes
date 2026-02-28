@@ -40,8 +40,7 @@ class MindMapExampleScreen extends StatefulWidget {
 }
 
 final bool isMobile =
-    TargetPlatform.iOS == defaultTargetPlatform ||
-    TargetPlatform.android == defaultTargetPlatform;
+    TargetPlatform.iOS == defaultTargetPlatform || TargetPlatform.android == defaultTargetPlatform;
 
 class MindMapExampleScreenState extends State<MindMapExampleScreen> {
   late final FlNodesController _controller;
@@ -96,8 +95,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
         if (isSaved) return true;
         return await _showUnsavedChangesDialog() ?? false;
       },
-      onCallback: (type, message) =>
-          showNodeEditorSnackbar(context, message, type),
+      onCallback: (type, message) => showNodeEditorSnackbar(context, message, type),
     );
 
     _controller.overlay.add(
@@ -225,9 +223,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
                 onPressed: () => _controller.history.redo(),
               ),
               _buildToolbarButton(
-                icon: _controller.config.enableSnapToGrid
-                    ? Icons.grid_on
-                    : Icons.grid_off,
+                icon: _controller.config.enableSnapToGrid ? Icons.grid_on : Icons.grid_off,
                 tooltip: AppLocalizations.of(context)!.toggleSnapToGridTooltip,
                 onPressed: () => setState(() {
                   _controller.enableSnapToGrid(

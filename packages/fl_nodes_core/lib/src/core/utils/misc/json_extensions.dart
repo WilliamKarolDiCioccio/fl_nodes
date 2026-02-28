@@ -2,8 +2,7 @@ import 'package:flutter/widgets.dart';
 
 extension JSONColor on Color {
   static Color fromJson(String rgba) {
-    final List<double> values =
-        rgba.split(',').map((value) => double.parse(value.trim())).toList();
+    final List<double> values = rgba.split(',').map((value) => double.parse(value.trim())).toList();
 
     return Color.fromARGB(
       (values[3] * 255).round(),

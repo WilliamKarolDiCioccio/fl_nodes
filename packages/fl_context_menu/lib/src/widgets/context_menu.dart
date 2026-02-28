@@ -28,9 +28,7 @@ class FlMenuWidget extends StatelessWidget {
       case 2:
         return baseStyle.secondLevelMenuStyle ?? baseStyle;
       case 3:
-        return baseStyle.thirdLevelMenuStyle ??
-            baseStyle.secondLevelMenuStyle ??
-            baseStyle;
+        return baseStyle.thirdLevelMenuStyle ?? baseStyle.secondLevelMenuStyle ?? baseStyle;
       default:
         return baseStyle.nThLevelMenuStyle ??
             baseStyle.thirdLevelMenuStyle ??
@@ -46,8 +44,8 @@ class FlMenuWidget extends StatelessWidget {
     return Material(
       elevation: resolvedStyle.elevation,
       color: resolvedStyle.decoration.color ?? const Color(0xFF1E1E1E),
-      borderRadius: resolvedStyle.decoration.borderRadius as BorderRadius? ??
-          BorderRadius.circular(8),
+      borderRadius:
+          resolvedStyle.decoration.borderRadius as BorderRadius? ?? BorderRadius.circular(8),
       child: Container(
         constraints: BoxConstraints(
           minWidth: config.minWidth,

@@ -19,9 +19,8 @@ class FlNodesUtils {
     Map<String, FlNodeDataModel> nodes, {
     double margin = 100.0,
   }) {
-    final Iterable<Rect> rects = ids
-        .map((id) => RenderBoxUtils.getEntityBoundsInWorld(nodes[id]!))
-        .whereType<Rect>();
+    final Iterable<Rect> rects =
+        ids.map((id) => RenderBoxUtils.getEntityBoundsInWorld(nodes[id]!)).whereType<Rect>();
 
     return RenderBoxUtils.calculateBoundingRect(rects, margin: margin);
   }
@@ -82,14 +81,10 @@ class FlNodesUtils {
       final PortLocator a = link.ports.$1;
       final PortLocator b = link.ports.$2;
 
-      final bool sameOrder = a.nodeId == node1Id &&
-          a.portId == port1Id &&
-          b.nodeId == node2Id &&
-          b.portId == port2Id;
-      final bool swappedOrder = a.nodeId == node2Id &&
-          a.portId == port2Id &&
-          b.nodeId == node1Id &&
-          b.portId == port1Id;
+      final bool sameOrder =
+          a.nodeId == node1Id && a.portId == port1Id && b.nodeId == node2Id && b.portId == port2Id;
+      final bool swappedOrder =
+          a.nodeId == node2Id && a.portId == port2Id && b.nodeId == node1Id && b.portId == port1Id;
 
       if (sameOrder || swappedOrder) return true;
     }
@@ -122,8 +117,7 @@ class FlNodesUtils {
     FlLinkDataModel link,
   ) {
     bool isInputPort(FlPortDataModel port) =>
-        port.prototype is FlDataInputPortPrototype ||
-        port.prototype is FlControlInputPortPrototype;
+        port.prototype is FlDataInputPortPrototype || port.prototype is FlControlInputPortPrototype;
 
     final FlNodeDataModel node1 = controller.nodes[link.ports.$1.nodeId]!;
     final FlPortDataModel port1 = node1.ports[link.ports.$1.portId]!;
@@ -142,8 +136,7 @@ class FlNodesUtils {
   ) {
     final connectedNodeIds = <String>{};
 
-    final Iterable<FlPortDataModel> ports =
-        node.ports.values.where((port) => port.prototype is T);
+    final Iterable<FlPortDataModel> ports = node.ports.values.where((port) => port.prototype is T);
 
     for (final port in ports) {
       for (final FlLinkDataModel link in port.links) {

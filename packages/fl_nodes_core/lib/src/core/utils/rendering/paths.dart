@@ -29,8 +29,7 @@ final class PathUtils {
 
       for (int i = 0; i <= segments; i++) {
         final double t = i / segments;
-        final Offset pointOnCurve =
-            metric.getTangentForOffset(t * pathLength)!.position;
+        final Offset pointOnCurve = metric.getTangentForOffset(t * pathLength)!.position;
         final double distance = (point - pointOnCurve).distance;
 
         minDistance = distance < minDistance ? distance : minDistance;
@@ -47,16 +46,14 @@ final class PathUtils {
   }) {
     final Offset lineVector = inPortOffset - outPortOffset;
     final Offset pointVector = point - outPortOffset;
-    final double lineLengthSquared =
-        lineVector.dx * lineVector.dx + lineVector.dy * lineVector.dy;
+    final double lineLengthSquared = lineVector.dx * lineVector.dx + lineVector.dy * lineVector.dy;
 
     // Line is a single point
     if (lineLengthSquared == 0) return (point - outPortOffset).distance;
 
     // Project pointVector onto lineVector to find the projection's scale
     final double t =
-        (pointVector.dx * lineVector.dx + pointVector.dy * lineVector.dy) /
-            lineLengthSquared;
+        (pointVector.dx * lineVector.dx + pointVector.dy * lineVector.dy) / lineLengthSquared;
     final double clampedT = t.clamp(0.0, 1.0); // Clamp to line segment
 
     final Offset closestPoint = outPortOffset + lineVector * clampedT;
@@ -85,8 +82,7 @@ final class PathUtils {
       const int segments = 50; // Fewer segments needed for straight lines
       for (int i = 0; i <= segments; i++) {
         final double t = i / segments;
-        final Offset pointOnPath =
-            metric.getTangentForOffset(t * pathLength)!.position;
+        final Offset pointOnPath = metric.getTangentForOffset(t * pathLength)!.position;
         final double distance = (point - pointOnPath).distance;
 
         minDistance = distance < minDistance ? distance : minDistance;
@@ -131,8 +127,7 @@ final class PathUtils {
     double outControlScale = 1.0;
     double inControlScale = 1.0;
 
-    final bool facingEachOther =
-        (outDir.dx * inDir.dx + outDir.dy * inDir.dy) < -0.5;
+    final bool facingEachOther = (outDir.dx * inDir.dx + outDir.dy * inDir.dy) < -0.5;
 
     // More pronounced curves for ports not facing each other
     if (!facingEachOther) {
@@ -202,8 +197,7 @@ final class PathUtils {
         final double midY = (outPortOffset.dy + inPortOffset.dy) / 2;
 
         // Extend from output in its direction
-        final double firstCornerX =
-            outPortOffset.dx + outDir.dx * minSegmentLength;
+        final double firstCornerX = outPortOffset.dx + outDir.dx * minSegmentLength;
 
         path
           ..lineTo(firstCornerX, outPortOffset.dy)
@@ -220,8 +214,7 @@ final class PathUtils {
         final double midX = (outPortOffset.dx + inPortOffset.dx) / 2;
 
         // Extend from output in its direction
-        final double firstCornerY =
-            outPortOffset.dy + outDir.dy * minSegmentLength;
+        final double firstCornerY = outPortOffset.dy + outDir.dy * minSegmentLength;
 
         path
           ..lineTo(outPortOffset.dx, firstCornerY)
@@ -243,10 +236,8 @@ final class PathUtils {
         final bool goingDown = inDir.dy > 0;
 
         // Determine turning point
-        final bool canTurnAtOut =
-            (goingRight && dx > 0) || (!goingRight && dx < 0);
-        final bool canTurnAtIn =
-            (goingDown && dy > 0) || (!goingDown && dy < 0);
+        final bool canTurnAtOut = (goingRight && dx > 0) || (!goingRight && dx < 0);
+        final bool canTurnAtIn = (goingDown && dy > 0) || (!goingDown && dy < 0);
 
         if (canTurnAtOut && canTurnAtIn) {
           // Extend out horizontally then turn to reach input (L-shape)
@@ -280,8 +271,7 @@ final class PathUtils {
             ..lineTo(inPortOffset.dx, turnY);
         } else {
           // Extend from both ports in their preferred directions first then connect in the middle (Z-shape)
-          final double extendX =
-              outPortOffset.dx + outDir.dx * minSegmentLength;
+          final double extendX = outPortOffset.dx + outDir.dx * minSegmentLength;
           final double extendY = inPortOffset.dy + inDir.dy * minSegmentLength;
           final double midY = (outPortOffset.dy + extendY) / 2;
 
@@ -298,10 +288,8 @@ final class PathUtils {
         final bool goingRight = inDir.dx > 0;
 
         // Determine turning point
-        final bool canTurnAtOut =
-            (goingDown && dy > 0) || (!goingDown && dy < 0);
-        final bool canTurnAtIn =
-            (goingRight && dx > 0) || (!goingRight && dx < 0);
+        final bool canTurnAtOut = (goingDown && dy > 0) || (!goingDown && dy < 0);
+        final bool canTurnAtIn = (goingRight && dx > 0) || (!goingRight && dx < 0);
 
         if (canTurnAtOut && canTurnAtIn) {
           // Extend out vertically then turn to reach input (L-shape)
@@ -335,8 +323,7 @@ final class PathUtils {
             ..lineTo(turnX, inPortOffset.dy);
         } else {
           // Extend from both ports in their preferred directions first then connect in the middle (Z-shape)
-          final double extendY =
-              outPortOffset.dy + outDir.dy * minSegmentLength;
+          final double extendY = outPortOffset.dy + outDir.dy * minSegmentLength;
           final double extendX = inPortOffset.dx + inDir.dx * minSegmentLength;
           final double midX = (outPortOffset.dx + extendX) / 2;
 

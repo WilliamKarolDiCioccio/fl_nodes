@@ -46,12 +46,10 @@ class NodeEditorDataLayer extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<FlNodesController>('controller', controller));
+    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
     properties.add(DiagnosticsProperty<bool>('expandToParent', expandToParent));
     properties.add(DiagnosticsProperty<Size?>('fixedSize', fixedSize));
-    properties
-        .add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
+    properties.add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
     properties.add(
       ObjectFlagProperty<ShowPortContextMenu>.has(
         'showPortContextMenu',
@@ -79,8 +77,7 @@ class NodeEditorDataLayer extends StatefulWidget {
   }
 }
 
-class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
-    with TickerProviderStateMixin {
+class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerProviderStateMixin {
   // Wrapper state
   Offset get offset => widget.controller.viewportOffset;
   double get zoom => widget.controller.viewportZoom;
@@ -226,8 +223,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       height: kNodesSpatialHashingCellSize,
     );
 
-    final Set<String> nearNodeIds =
-        widget.controller.nodesSpatialHashGrid.queryArea(near);
+    final Set<String> nearNodeIds = widget.controller.nodesSpatialHashGrid.queryArea(near);
 
     for (final nodeId in nearNodeIds) {
       final FlNodeDataModel node = widget.controller.nodes[nodeId]!;
@@ -235,8 +231,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
       for (final FlPortDataModel port in node.ports.values) {
         final Offset absolutePortPosition = node.offset + port.offset;
 
-        if ((worldPosition - absolutePortPosition).distance <
-            kNearPortSnapDistance) {
+        if ((worldPosition - absolutePortPosition).distance < kNearPortSnapDistance) {
           return (nodeId: node.id, portId: port.prototype.idName);
         }
       }
@@ -341,8 +336,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
   void _setOffsetFromRawInput(Offset delta) {
     if (!widget.controller.config.enablePan) return;
 
-    final Offset offsetFactor =
-        delta * widget.controller.config.panSensitivity / zoom;
+    final Offset offsetFactor = delta * widget.controller.config.panSensitivity / zoom;
 
     final Offset targetOffset = offset + offsetFactor;
 
@@ -400,8 +394,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
         delta = amount * platformWeight * sensitivity;
       }
 
-      final double targetLogZoom =
-          isTrackpadInput ? logZoom + delta : logZoom - delta;
+      final double targetLogZoom = isTrackpadInput ? logZoom + delta : logZoom - delta;
 
       targetZoom = exp(targetLogZoom);
     }
@@ -450,8 +443,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
 
   @override
   Widget build(BuildContext context) {
-    Widget controlsWrapper(Widget child) => defaultTargetPlatform ==
-                TargetPlatform.android ||
+    Widget controlsWrapper(Widget child) => defaultTargetPlatform == TargetPlatform.android ||
             defaultTargetPlatform == TargetPlatform.iOS
         ? GestureDetector(
             onTap: () => widget.controller.clearSelection(),
@@ -459,8 +451,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
               final Offset position = details.globalPosition;
               final PortLocator? locator = _isNearPort(position);
 
-              if (locator != null &&
-                  !widget.controller.nodes[locator.nodeId]!.state.isCollapsed) {
+              if (locator != null && !widget.controller.nodes[locator.nodeId]!.state.isCollapsed) {
                 widget.showPortContextMenu(
                   context,
                   position,
@@ -509,8 +500,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 if (widget.controller.config.enablePan && _isDragging) {
                   _onDragUpdate(details.focalPointDelta);
                 }
-                if (widget.controller.config.enableZoom &&
-                        details.scale > 1.5 ||
+                if (widget.controller.config.enableZoom && details.scale > 1.5 ||
                     details.scale < 0.5) {
                   _setZoomFromRawInput(
                     details.scale < 1 ? details.scale : -details.scale,
@@ -573,8 +563,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   }
                 } else if (event.buttons == kSecondaryMouseButton) {
                   if (locator != null &&
-                      !widget.controller.nodes[locator.nodeId]!.state
-                          .isCollapsed) {
+                      !widget.controller.nodes[locator.nodeId]!.state.isCollapsed) {
                     /// If a port is near the cursor, show the port context menu
                     widget.showPortContextMenu(
                       context,
@@ -625,12 +614,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                 }
               },
               onPointerSignalReceived: (event) {
-                if (event is PointerScrollEvent &&
-                    widget.controller.config.enablePan) {
+                if (event is PointerScrollEvent && widget.controller.config.enablePan) {
                   if (kIsWeb) {
-                    final bool isZoomModifier =
-                        HardwareKeyboard.instance.isControlPressed ||
-                            HardwareKeyboard.instance.isMetaPressed;
+                    final bool isZoomModifier = HardwareKeyboard.instance.isControlPressed ||
+                        HardwareKeyboard.instance.isMetaPressed;
 
                     if (isZoomModifier && widget.controller.config.enableZoom) {
                       _setZoomFromRawInput(
@@ -649,8 +636,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                     }
                   }
                 }
-                if (event is PointerScaleEvent &&
-                    widget.controller.config.enableZoom) {
+                if (event is PointerScaleEvent && widget.controller.config.enableZoom) {
                   if (kIsWeb) {
                     _setZoomFromRawInput(
                       event.scale,
@@ -660,8 +646,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer>
                   }
                 }
               },
-              onPointerPanZoomStart:
-                  _trackpadGestureRecognizer.addPointerPanZoom,
+              onPointerPanZoomStart: _trackpadGestureRecognizer.addPointerPanZoom,
               child: child,
             ),
           );
