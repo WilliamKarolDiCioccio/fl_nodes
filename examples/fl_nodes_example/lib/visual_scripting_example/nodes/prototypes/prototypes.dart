@@ -59,6 +59,8 @@ FlNodePrototype createValueNode<T>({
   },
 );
 
+final _stringListRegex = RegExp('"(.*?)"');
+
 void registerNodes(BuildContext context, FlNodesController controller) {
   controller.registerNodePrototype(
     createValueNode<double>(
@@ -222,8 +224,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       data.map((e) => '"$e"').join(', ');
 
   List<String> parseStringList(String input) {
-    final regex = RegExp('"(.*?)"');
-    return regex.allMatches(input).map((e) => e.group(1)!).toList();
+    return _stringListRegex.allMatches(input).map((e) => e.group(1)!).toList();
   }
 
   controller.registerNodePrototype(

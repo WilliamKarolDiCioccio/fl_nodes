@@ -2,10 +2,11 @@
 typedef SemVer = (int major, int minor, int patch, int? hotfix);
 
 class SemVerUtils {
+  static final _semVerRegex = RegExp(r'^(\d+)\.(\d+)\.(\d+)(?:\+(\d+))?$');
+
   /// Parses a semantic version string into a [SemVer] tuple.
   SemVer parse(String input) {
-    final regex = RegExp(r'^(\d+)\.(\d+)\.(\d+)(?:\+(\d+))?$');
-    final RegExpMatch? match = regex.firstMatch(input);
+    final RegExpMatch? match = _semVerRegex.firstMatch(input);
 
     if (match == null) {
       throw FormatException('Invalid semantic version format: $input');
