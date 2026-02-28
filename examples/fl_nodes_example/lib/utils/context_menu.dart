@@ -4,7 +4,9 @@ import 'package:flutter_context_menu/flutter_context_menu.dart';
 
 bool isContextMenuVisible = false;
 
-class ContextMenuUtils {
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
+abstract final class ContextMenuUtils {
   static Future<void> createAndShowContextMenu(
     BuildContext context, {
     required List<ContextMenuEntry<String?>> entries,
@@ -91,13 +93,9 @@ class ContextMenuUtils {
         icon: Icons.delete,
         onSelected: () {
           if (node.state.isSelected) {
-            for (final String nodeId in controller.selectedNodeIds) {
-              controller.removeNodeById(nodeId);
-            }
+            controller.selectedNodeIds.forEach(controller.removeNodeById);
           } else {
-            for (final String nodeId in controller.selectedNodeIds) {
-              controller.removeNodeById(nodeId);
-            }
+            controller.selectedNodeIds.forEach(controller.removeNodeById);
           }
 
           controller.clearSelection();
@@ -303,7 +301,9 @@ class ContextMenuUtils {
   }
 }
 
-class ShowContextMenuUtils {
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
+abstract final class ShowContextMenuUtils {
   static void showPortContextMenu(
     BuildContext context,
     Offset position,

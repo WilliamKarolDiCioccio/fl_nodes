@@ -151,9 +151,10 @@ class _ShapePainterWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<ShapeType>('shapeType', shapeType));
-    properties.add(DiagnosticsProperty<bool>('isSelected', isSelected));
-    properties.add(StringProperty('text', text));
+    properties
+      ..add(EnumProperty<ShapeType>('shapeType', shapeType))
+      ..add(DiagnosticsProperty<bool>('isSelected', isSelected))
+      ..add(StringProperty('text', text));
   }
 }
 

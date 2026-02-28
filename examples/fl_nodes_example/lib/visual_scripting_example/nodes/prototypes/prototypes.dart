@@ -61,149 +61,146 @@ FlNodePrototype createValueNode<T>({
 final _stringListRegex = RegExp('"(.*?)"');
 
 void registerNodes(BuildContext context, FlNodesController controller) {
-  controller.registerNodePrototype(
-    createValueNode<double>(
-      idName: 'numericValue',
-      displayName: (context) => AppLocalizations.of(context)!.numericValueNodeName,
-      defaultValue: 0.0,
-      visualizerBuilder: (data) => Text(
-        data.toString(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: const TextStyle(color: Colors.white),
-      ),
-      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 100),
-        child: TextFormField(
-          initialValue: data.toString(),
-          keyboardType: TextInputType.number,
-          onChanged: (value) {
-            setData(
-              double.tryParse(value) ?? 0.0,
-              eventType: FlFieldEventType.change,
-            );
-          },
-          onFieldSubmitted: (value) {
-            setData(
-              double.tryParse(value) ?? 0.0,
-              eventType: FlFieldEventType.submit,
-            );
-            removeOverlay();
-          },
+  controller
+    ..registerNodePrototype(
+      createValueNode<double>(
+        idName: 'numericValue',
+        displayName: (context) => AppLocalizations.of(context)!.numericValueNodeName,
+        defaultValue: 0.0,
+        visualizerBuilder: (data) => Text(
+          data.toString(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: const TextStyle(color: Colors.white),
+        ),
+        editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 100),
+          child: TextFormField(
+            initialValue: data.toString(),
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              setData(
+                double.tryParse(value) ?? 0.0,
+                eventType: FlFieldEventType.change,
+              );
+            },
+            onFieldSubmitted: (value) {
+              setData(
+                double.tryParse(value) ?? 0.0,
+                eventType: FlFieldEventType.submit,
+              );
+              removeOverlay();
+            },
+          ),
         ),
       ),
-    ),
-  );
-
-  controller.registerNodePrototype(
-    createValueNode<bool>(
-      idName: 'boolValue',
-      displayName: (context) => AppLocalizations.of(context)!.booleanValueNodeName,
-      defaultValue: false,
-      visualizerBuilder: (data) =>
-          Icon(data ? Icons.check : Icons.close, color: Colors.white, size: 18),
-      onVisualizerTap: (data, setData) => setData(!(data as bool)),
-    ),
-  );
-
-  controller.registerNodePrototype(
-    createValueNode<String>(
-      idName: 'stringValue',
-      displayName: (context) => AppLocalizations.of(context)!.stringValueNodeName,
-      defaultValue: '',
-      visualizerBuilder: (data) => Text(
-        '"$data"',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: const TextStyle(color: Colors.white),
+    )
+    ..registerNodePrototype(
+      createValueNode<bool>(
+        idName: 'boolValue',
+        displayName: (context) => AppLocalizations.of(context)!.booleanValueNodeName,
+        defaultValue: false,
+        visualizerBuilder: (data) =>
+            Icon(data ? Icons.check : Icons.close, color: Colors.white, size: 18),
+        onVisualizerTap: (data, setData) => setData(!(data as bool)),
       ),
-      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: TextFormField(
-          initialValue: data as String,
-          onChanged: (value) {
-            setData(value, eventType: FlFieldEventType.change);
-          },
-          onFieldSubmitted: (value) {
-            setData(value, eventType: FlFieldEventType.submit);
-            removeOverlay();
-          },
+    )
+    ..registerNodePrototype(
+      createValueNode<String>(
+        idName: 'stringValue',
+        displayName: (context) => AppLocalizations.of(context)!.stringValueNodeName,
+        defaultValue: '',
+        visualizerBuilder: (data) => Text(
+          '"$data"',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: const TextStyle(color: Colors.white),
+        ),
+        editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: TextFormField(
+            initialValue: data as String,
+            onChanged: (value) {
+              setData(value, eventType: FlFieldEventType.change);
+            },
+            onFieldSubmitted: (value) {
+              setData(value, eventType: FlFieldEventType.submit);
+              removeOverlay();
+            },
+          ),
         ),
       ),
-    ),
-  );
-
-  controller.registerNodePrototype(
-    createValueNode<List<int>>(
-      idName: 'numericListValue',
-      displayName: (context) => AppLocalizations.of(context)!.numericListValueNodeName,
-      defaultValue: [],
-      visualizerBuilder: (data) => Text(
-        data.length > 3 ? '[${data.take(3).join(', ')}...]' : '[${data.join(', ')}]',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: const TextStyle(color: Colors.white),
-      ),
-      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: TextFormField(
-          initialValue: (data as List<int>).join(', '),
-          onChanged: (value) {
-            setData(
-              value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
-              eventType: FlFieldEventType.change,
-            );
-          },
-          onFieldSubmitted: (value) {
-            setData(
-              value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
-              eventType: FlFieldEventType.submit,
-            );
-            removeOverlay();
-          },
+    )
+    ..registerNodePrototype(
+      createValueNode<List<int>>(
+        idName: 'numericListValue',
+        displayName: (context) => AppLocalizations.of(context)!.numericListValueNodeName,
+        defaultValue: [],
+        visualizerBuilder: (data) => Text(
+          data.length > 3 ? '[${data.take(3).join(', ')}...]' : '[${data.join(', ')}]',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: const TextStyle(color: Colors.white),
+        ),
+        editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: TextFormField(
+            initialValue: (data as List<int>).join(', '),
+            onChanged: (value) {
+              setData(
+                value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
+                eventType: FlFieldEventType.change,
+              );
+            },
+            onFieldSubmitted: (value) {
+              setData(
+                value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
+                eventType: FlFieldEventType.submit,
+              );
+              removeOverlay();
+            },
+          ),
         ),
       ),
-    ),
-  );
-
-  controller.registerNodePrototype(
-    createValueNode<List<bool>>(
-      idName: 'boolListValue',
-      displayName: (context) => AppLocalizations.of(context)!.booleanListValueNodeName,
-      defaultValue: [],
-      visualizerBuilder: (data) => Text(
-        data.length > 3
-            ? '[${data.take(3).map((e) => e ? 'true' : 'false').join(', ')}...]'
-            : '[${data.map((e) => e ? 'true' : 'false').join(', ')}]',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: const TextStyle(color: Colors.white),
-      ),
-      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: TextFormField(
-          initialValue: (data as List<bool>).map((e) => e ? 'true' : 'false').join(', '),
-          onChanged: (value) {
-            setData(
-              value.split(',').map((e) => e.trim() == 'true').toList(),
-              eventType: FlFieldEventType.change,
-            );
-          },
-          onFieldSubmitted: (value) {
-            setData(
-              value.split(',').map((e) => e.trim() == 'true').toList(),
-              eventType: FlFieldEventType.submit,
-            );
-            removeOverlay();
-          },
+    )
+    ..registerNodePrototype(
+      createValueNode<List<bool>>(
+        idName: 'boolListValue',
+        displayName: (context) => AppLocalizations.of(context)!.booleanListValueNodeName,
+        defaultValue: [],
+        visualizerBuilder: (data) => Text(
+          data.length > 3
+              ? '[${data.take(3).map((e) => e ? 'true' : 'false').join(', ')}...]'
+              : '[${data.map((e) => e ? 'true' : 'false').join(', ')}]',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: const TextStyle(color: Colors.white),
+        ),
+        editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: TextFormField(
+            initialValue: (data as List<bool>).map((e) => e ? 'true' : 'false').join(', '),
+            onChanged: (value) {
+              setData(
+                value.split(',').map((e) => e.trim() == 'true').toList(),
+                eventType: FlFieldEventType.change,
+              );
+            },
+            onFieldSubmitted: (value) {
+              setData(
+                value.split(',').map((e) => e.trim() == 'true').toList(),
+                eventType: FlFieldEventType.submit,
+              );
+              removeOverlay();
+            },
+          ),
         ),
       ),
-    ),
-  );
+    );
 
   String formatStringList(List<String> data) {
     if (data.isEmpty) return '[]';
@@ -215,490 +212,484 @@ void registerNodes(BuildContext context, FlNodesController controller) {
   List<String> parseStringList(String input) =>
       _stringListRegex.allMatches(input).map((e) => e.group(1)!).toList();
 
-  controller.registerNodePrototype(
-    createValueNode<List<String>>(
-      idName: 'stringListValue',
-      displayName: (context) => AppLocalizations.of(context)!.stringListValueNodeName,
-      defaultValue: [],
-      visualizerBuilder: (data) => Text(
-        formatStringList(data),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: const TextStyle(color: Colors.white),
-      ),
-      editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
-        child: TextFormField(
-          initialValue: serializeStringList(data as List<String>),
-          onChanged: (value) => setData(
-            parseStringList(value),
-            eventType: FlFieldEventType.change,
-          ),
-          onFieldSubmitted: (value) {
-            setData(parseStringList(value), eventType: FlFieldEventType.submit);
-            removeOverlay();
-          },
+  controller
+    ..registerNodePrototype(
+      createValueNode<List<String>>(
+        idName: 'stringListValue',
+        displayName: (context) => AppLocalizations.of(context)!.stringListValueNodeName,
+        defaultValue: [],
+        visualizerBuilder: (data) => Text(
+          formatStringList(data),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: const TextStyle(color: Colors.white),
         ),
-      ),
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'math.operator',
-      displayName: (context) => AppLocalizations.of(context)!.operatorNodeName,
-      description: (context) => AppLocalizations.of(context)!.operatorNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.math,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<double>(
-          idName: 'a',
-          displayName: (context) => 'A',
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<double>(
-          idName: 'b',
-          displayName: (context) => 'B',
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<double>(
-          idName: 'result',
-          linkPrototype: FlLinkPrototype(label: (_) => 'double'),
-          displayName: (context) => AppLocalizations.of(context)!.resultPortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      fieldPrototypes: [
-        FlFieldPrototype(
-          idName: 'operation',
-          displayName: (context) => AppLocalizations.of(context)!.operationPortName,
-          dataType: Operator,
-          defaultData: Operator.add,
-          visualizerBuilder: (data) => Text(
-            data.toString().split('.').last,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white),
-          ),
-          editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Operator>(
-            segments: [
-              ButtonSegment(
-                value: Operator.add,
-                label: Text(AppLocalizations.of(context)!.addFieldOption),
-              ),
-              ButtonSegment(
-                value: Operator.subtract,
-                label: Text(
-                  AppLocalizations.of(context)!.subtractFieldOption,
-                ),
-              ),
-              ButtonSegment(
-                value: Operator.multiply,
-                label: Text(
-                  AppLocalizations.of(context)!.multiplyFieldOption,
-                ),
-              ),
-              ButtonSegment(
-                value: Operator.divide,
-                label: Text(
-                  AppLocalizations.of(context)!.divideFieldOption,
-                ),
-              ),
-            ],
-            selected: {data as Operator},
-            onSelectionChanged: (newSelection) {
-              setData(
-                newSelection.first,
-                eventType: FlFieldEventType.submit,
-              );
+        editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: TextFormField(
+            initialValue: serializeStringList(data as List<String>),
+            onChanged: (value) => setData(
+              parseStringList(value),
+              eventType: FlFieldEventType.change,
+            ),
+            onFieldSubmitted: (value) {
+              setData(parseStringList(value), eventType: FlFieldEventType.submit);
               removeOverlay();
             },
-            direction: Axis.horizontal,
           ),
         ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        final a = ports['a']! as double;
-        final b = ports['b']! as double;
-        final op = fields['operation']! as Operator;
-
-        switch (op) {
-          case Operator.add:
-            put({('result', a + b)});
-          case Operator.subtract:
-            put({('result', a - b)});
-          case Operator.multiply:
-            put({('result', a * b)});
-          case Operator.divide:
-            put({('result', b == 0 ? 0 : a / b)});
-        }
-
-        forward({'completed'});
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'generator.random',
-      displayName: (context) => AppLocalizations.of(context)!.randomNodeName,
-      description: (context) => AppLocalizations.of(context)!.randomNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.generator,
-      portPrototypes: [
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<double>(
-          idName: 'value',
-          linkPrototype: FlLinkPrototype(label: (_) => 'double'),
-          displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        put({('value', Random().nextDouble())});
-
-        forward({'completed'});
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'flow.if',
-      displayName: (context) => AppLocalizations.of(context)!.ifNodeName,
-      description: (context) => AppLocalizations.of(context)!.ifNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.flow,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<bool>(
-          idName: 'condition',
-          displayName: (context) => AppLocalizations.of(context)!.conditionPortName,
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'trueBranch',
-          displayName: (context) => AppLocalizations.of(context)!.truePortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'falseBranch',
-          displayName: (context) => AppLocalizations.of(context)!.falsePortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        final condition = ports['condition']! as bool;
-
-        condition ? forward({'trueBranch'}) : forward({'falseBranch'});
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'flow.forEachLoop',
-      displayName: (context) => AppLocalizations.of(context)!.forEachLoopNodeName,
-      description: (context) => AppLocalizations.of(context)!.forEachLoopNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.flow,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<dynamic>(
-          idName: 'list',
-          displayName: (context) => AppLocalizations.of(context)!.listPortName,
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'loopBody',
-          displayName: (context) => AppLocalizations.of(context)!.loopBodyPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<dynamic>(
-          idName: 'listElem',
-          linkPrototype: FlLinkPrototype(label: (_) => 'dynamic'),
-          displayName: (context) => AppLocalizations.of(context)!.listElementPortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<int>(
-          idName: 'listIdx',
-          linkPrototype: FlLinkPrototype(label: (_) => 'int'),
-          displayName: (context) => AppLocalizations.of(context)!.listIndexPortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        final List<dynamic> list = ports['list']! as List<dynamic>;
-
-        late int i;
-
-        if (!state.containsKey('iteration')) {
-          i = state['iteration'] = 0;
-        } else {
-          i = state['iteration'] as int;
-        }
-
-        if (i < list.length) {
-          put({('listElem', list[i]), ('listIdx', i)});
-          state['iteration'] = ++i;
-          forward({'loopBody'});
-        } else {
-          forward({'completed'}, definitive: true);
-        }
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'logic.comparator',
-      displayName: (context) => AppLocalizations.of(context)!.comparatorNodeName,
-      description: (context) => AppLocalizations.of(context)!.comparatorNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.logic,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<dynamic>(
-          idName: 'a',
-          displayName: (context) => 'A',
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<dynamic>(
-          idName: 'b',
-          displayName: (context) => 'B',
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<bool>(
-          idName: 'result',
-          linkPrototype: FlLinkPrototype(label: (_) => 'bool'),
-          displayName: (context) => AppLocalizations.of(context)!.resultPortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      fieldPrototypes: [
-        FlFieldPrototype(
-          idName: 'comparator',
-          displayName: (context) => AppLocalizations.of(context)!.comparatorPortName,
-          dataType: Comparator,
-          defaultData: Comparator.equal,
-          visualizerBuilder: (data) => Text(
-            data.toString().split('.').last,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white),
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'math.operator',
+        displayName: (context) => AppLocalizations.of(context)!.operatorNodeName,
+        description: (context) => AppLocalizations.of(context)!.operatorNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.math,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
           ),
-          editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Comparator>(
-            segments: const [
-              ButtonSegment(value: Comparator.equal, label: Text('==')),
-              ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
-              ButtonSegment(value: Comparator.greater, label: Text('>')),
-              ButtonSegment(
-                value: Comparator.greaterEqual,
-                label: Text('>='),
-              ),
-              ButtonSegment(value: Comparator.less, label: Text('<')),
-              ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
-            ],
-            selected: {data as Comparator},
-            onSelectionChanged: (newSelection) {
-              setData(
-                newSelection.first,
-                eventType: FlFieldEventType.submit,
-              );
-              removeOverlay();
-            },
-            direction: Axis.horizontal,
+          FlDataInputPortPrototype<double>(
+            idName: 'a',
+            displayName: (context) => 'A',
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
           ),
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        final a = ports['a']! as dynamic;
-        final b = ports['b']! as dynamic;
-        final comp = fields['comparator']! as Comparator;
-
-        switch (comp) {
-          case Comparator.equal:
-            put({('result', a == b)});
-          case Comparator.notEqual:
-            put({('result', a != b)});
-          case Comparator.greater:
-            put({('result', a > b)});
-          case Comparator.greaterEqual:
-            put({('result', a >= b)});
-          case Comparator.less:
-            put({('result', a < b)});
-          case Comparator.lessEqual:
-            put({('result', a <= b)});
-        }
-
-        forward({'completed'});
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'io.print',
-      displayName: (context) => AppLocalizations.of(context)!.printNodeName,
-      description: (context) => AppLocalizations.of(context)!.printNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.io,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<dynamic>(
-          idName: 'value',
-          displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        TerminalController.instance.info('Value: ${ports['value']}');
-
-        forward({'completed'});
-      },
-    ),
-  );
-
-  controller.registerNodePrototype(
-    FlNodePrototype(
-      idName: 'math.round',
-      displayName: (context) => AppLocalizations.of(context)!.roundNodeName,
-      description: (context) => AppLocalizations.of(context)!.roundNodeDescription,
-      headerStyleBuilder: NodeHeaderStyles.math,
-      portPrototypes: [
-        FlControlInputPortPrototype(
-          idName: 'exec',
-          displayName: (context) => AppLocalizations.of(context)!.execPortName,
-          styleBuilder: PortStyles.controlInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlDataInputPortPrototype<double>(
-          idName: 'value',
-          displayName: (context) => AppLocalizations.of(context)!.valuePortName,
-          styleBuilder: PortStyles.dataInput,
-          geometricOrientation: FlPortGeometricOrientation.left,
-        ),
-        FlControlOutputPortPrototype(
-          idName: 'completed',
-          displayName: (context) => AppLocalizations.of(context)!.completedPortName,
-          styleBuilder: PortStyles.controlOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-        FlDataOutputPortPrototype<int>(
-          idName: 'rounded',
-          linkPrototype: FlLinkPrototype(label: (_) => 'int'),
-          displayName: (context) => AppLocalizations.of(context)!.roundedPortName,
-          styleBuilder: PortStyles.dataOutput,
-          geometricOrientation: FlPortGeometricOrientation.right,
-        ),
-      ],
-      fieldPrototypes: [
-        FlFieldPrototype(
-          idName: 'decimals',
-          displayName: (context) => AppLocalizations.of(context)!.decimalsFieldName,
-          dataType: int,
-          defaultData: 2,
-          visualizerBuilder: (data) => Text(
-            data.toString(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white),
+          FlDataInputPortPrototype<double>(
+            idName: 'b',
+            displayName: (context) => 'B',
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
           ),
-          editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 100),
-            child: TextFormField(
-              initialValue: data.toString(),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<double>(
+            idName: 'result',
+            linkPrototype: FlLinkPrototype(label: (_) => 'double'),
+            displayName: (context) => AppLocalizations.of(context)!.resultPortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        fieldPrototypes: [
+          FlFieldPrototype(
+            idName: 'operation',
+            displayName: (context) => AppLocalizations.of(context)!.operationPortName,
+            dataType: Operator,
+            defaultData: Operator.add,
+            visualizerBuilder: (data) => Text(
+              data.toString().split('.').last,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white),
+            ),
+            editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Operator>(
+              segments: [
+                ButtonSegment(
+                  value: Operator.add,
+                  label: Text(AppLocalizations.of(context)!.addFieldOption),
+                ),
+                ButtonSegment(
+                  value: Operator.subtract,
+                  label: Text(
+                    AppLocalizations.of(context)!.subtractFieldOption,
+                  ),
+                ),
+                ButtonSegment(
+                  value: Operator.multiply,
+                  label: Text(
+                    AppLocalizations.of(context)!.multiplyFieldOption,
+                  ),
+                ),
+                ButtonSegment(
+                  value: Operator.divide,
+                  label: Text(
+                    AppLocalizations.of(context)!.divideFieldOption,
+                  ),
+                ),
+              ],
+              selected: {data as Operator},
+              onSelectionChanged: (newSelection) {
                 setData(
-                  int.tryParse(value) ?? 0,
-                  eventType: FlFieldEventType.change,
-                );
-              },
-              onFieldSubmitted: (value) {
-                setData(
-                  int.tryParse(value) ?? 0,
+                  newSelection.first,
                   eventType: FlFieldEventType.submit,
                 );
                 removeOverlay();
               },
+              direction: Axis.horizontal,
             ),
           ),
-        ),
-      ],
-      onExecute: (ports, fields, state, forward, put) async {
-        final double value = ports['value']! as double;
-        final int decimals = fields['decimals']! as int;
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          final a = ports['a']! as double;
+          final b = ports['b']! as double;
+          final op = fields['operation']! as Operator;
 
-        put({('rounded', double.parse(value.toStringAsFixed(decimals)))});
+          switch (op) {
+            case Operator.add:
+              put({('result', a + b)});
+            case Operator.subtract:
+              put({('result', a - b)});
+            case Operator.multiply:
+              put({('result', a * b)});
+            case Operator.divide:
+              put({('result', b == 0 ? 0 : a / b)});
+          }
 
-        forward({'completed'});
-      },
-    ),
-  );
+          forward({'completed'});
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'generator.random',
+        displayName: (context) => AppLocalizations.of(context)!.randomNodeName,
+        description: (context) => AppLocalizations.of(context)!.randomNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.generator,
+        portPrototypes: [
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<double>(
+            idName: 'value',
+            linkPrototype: FlLinkPrototype(label: (_) => 'double'),
+            displayName: (context) => AppLocalizations.of(context)!.valuePortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          put({('value', Random().nextDouble())});
+
+          forward({'completed'});
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'flow.if',
+        displayName: (context) => AppLocalizations.of(context)!.ifNodeName,
+        description: (context) => AppLocalizations.of(context)!.ifNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.flow,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<bool>(
+            idName: 'condition',
+            displayName: (context) => AppLocalizations.of(context)!.conditionPortName,
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'trueBranch',
+            displayName: (context) => AppLocalizations.of(context)!.truePortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'falseBranch',
+            displayName: (context) => AppLocalizations.of(context)!.falsePortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          final condition = ports['condition']! as bool;
+
+          condition ? forward({'trueBranch'}) : forward({'falseBranch'});
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'flow.forEachLoop',
+        displayName: (context) => AppLocalizations.of(context)!.forEachLoopNodeName,
+        description: (context) => AppLocalizations.of(context)!.forEachLoopNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.flow,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<dynamic>(
+            idName: 'list',
+            displayName: (context) => AppLocalizations.of(context)!.listPortName,
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'loopBody',
+            displayName: (context) => AppLocalizations.of(context)!.loopBodyPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<dynamic>(
+            idName: 'listElem',
+            linkPrototype: FlLinkPrototype(label: (_) => 'dynamic'),
+            displayName: (context) => AppLocalizations.of(context)!.listElementPortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<int>(
+            idName: 'listIdx',
+            linkPrototype: FlLinkPrototype(label: (_) => 'int'),
+            displayName: (context) => AppLocalizations.of(context)!.listIndexPortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          final List<dynamic> list = ports['list']! as List<dynamic>;
+
+          late int i;
+
+          if (!state.containsKey('iteration')) {
+            i = state['iteration'] = 0;
+          } else {
+            i = state['iteration'] as int;
+          }
+
+          if (i < list.length) {
+            put({('listElem', list[i]), ('listIdx', i)});
+            state['iteration'] = ++i;
+            forward({'loopBody'});
+          } else {
+            forward({'completed'}, definitive: true);
+          }
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'logic.comparator',
+        displayName: (context) => AppLocalizations.of(context)!.comparatorNodeName,
+        description: (context) => AppLocalizations.of(context)!.comparatorNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.logic,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<dynamic>(
+            idName: 'a',
+            displayName: (context) => 'A',
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<dynamic>(
+            idName: 'b',
+            displayName: (context) => 'B',
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<bool>(
+            idName: 'result',
+            linkPrototype: FlLinkPrototype(label: (_) => 'bool'),
+            displayName: (context) => AppLocalizations.of(context)!.resultPortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        fieldPrototypes: [
+          FlFieldPrototype(
+            idName: 'comparator',
+            displayName: (context) => AppLocalizations.of(context)!.comparatorPortName,
+            dataType: Comparator,
+            defaultData: Comparator.equal,
+            visualizerBuilder: (data) => Text(
+              data.toString().split('.').last,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white),
+            ),
+            editorBuilder: (context, removeOverlay, data, setData) => SegmentedButton<Comparator>(
+              segments: const [
+                ButtonSegment(value: Comparator.equal, label: Text('==')),
+                ButtonSegment(value: Comparator.notEqual, label: Text('!=')),
+                ButtonSegment(value: Comparator.greater, label: Text('>')),
+                ButtonSegment(
+                  value: Comparator.greaterEqual,
+                  label: Text('>='),
+                ),
+                ButtonSegment(value: Comparator.less, label: Text('<')),
+                ButtonSegment(value: Comparator.lessEqual, label: Text('<=')),
+              ],
+              selected: {data as Comparator},
+              onSelectionChanged: (newSelection) {
+                setData(
+                  newSelection.first,
+                  eventType: FlFieldEventType.submit,
+                );
+                removeOverlay();
+              },
+              direction: Axis.horizontal,
+            ),
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          final a = ports['a']! as dynamic;
+          final b = ports['b']! as dynamic;
+          final comp = fields['comparator']! as Comparator;
+
+          switch (comp) {
+            case Comparator.equal:
+              put({('result', a == b)});
+            case Comparator.notEqual:
+              put({('result', a != b)});
+            case Comparator.greater:
+              put({('result', a > b)});
+            case Comparator.greaterEqual:
+              put({('result', a >= b)});
+            case Comparator.less:
+              put({('result', a < b)});
+            case Comparator.lessEqual:
+              put({('result', a <= b)});
+          }
+
+          forward({'completed'});
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'io.print',
+        displayName: (context) => AppLocalizations.of(context)!.printNodeName,
+        description: (context) => AppLocalizations.of(context)!.printNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.io,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<dynamic>(
+            idName: 'value',
+            displayName: (context) => AppLocalizations.of(context)!.valuePortName,
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          TerminalController.instance.info('Value: ${ports['value']}');
+
+          forward({'completed'});
+        },
+      ),
+    )
+    ..registerNodePrototype(
+      FlNodePrototype(
+        idName: 'math.round',
+        displayName: (context) => AppLocalizations.of(context)!.roundNodeName,
+        description: (context) => AppLocalizations.of(context)!.roundNodeDescription,
+        headerStyleBuilder: NodeHeaderStyles.math,
+        portPrototypes: [
+          FlControlInputPortPrototype(
+            idName: 'exec',
+            displayName: (context) => AppLocalizations.of(context)!.execPortName,
+            styleBuilder: PortStyles.controlInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlDataInputPortPrototype<double>(
+            idName: 'value',
+            displayName: (context) => AppLocalizations.of(context)!.valuePortName,
+            styleBuilder: PortStyles.dataInput,
+            geometricOrientation: FlPortGeometricOrientation.left,
+          ),
+          FlControlOutputPortPrototype(
+            idName: 'completed',
+            displayName: (context) => AppLocalizations.of(context)!.completedPortName,
+            styleBuilder: PortStyles.controlOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+          FlDataOutputPortPrototype<int>(
+            idName: 'rounded',
+            linkPrototype: FlLinkPrototype(label: (_) => 'int'),
+            displayName: (context) => AppLocalizations.of(context)!.roundedPortName,
+            styleBuilder: PortStyles.dataOutput,
+            geometricOrientation: FlPortGeometricOrientation.right,
+          ),
+        ],
+        fieldPrototypes: [
+          FlFieldPrototype(
+            idName: 'decimals',
+            displayName: (context) => AppLocalizations.of(context)!.decimalsFieldName,
+            dataType: int,
+            defaultData: 2,
+            visualizerBuilder: (data) => Text(
+              data.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white),
+            ),
+            editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 100),
+              child: TextFormField(
+                initialValue: data.toString(),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  setData(
+                    int.tryParse(value) ?? 0,
+                    eventType: FlFieldEventType.change,
+                  );
+                },
+                onFieldSubmitted: (value) {
+                  setData(
+                    int.tryParse(value) ?? 0,
+                    eventType: FlFieldEventType.submit,
+                  );
+                  removeOverlay();
+                },
+              ),
+            ),
+          ),
+        ],
+        onExecute: (ports, fields, state, forward, put) async {
+          final double value = ports['value']! as double;
+          final int decimals = fields['decimals']! as int;
+
+          put({('rounded', double.parse(value.toStringAsFixed(decimals)))});
+
+          forward({'completed'});
+        },
+      ),
+    );
 }

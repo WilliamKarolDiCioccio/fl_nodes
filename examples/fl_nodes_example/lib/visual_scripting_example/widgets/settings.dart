@@ -195,15 +195,9 @@ class SettingsPanel extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
-    properties.add(
-      ObjectFlagProperty<void Function(String)>.has(
-        'onLocaleChanged',
-        onLocaleChanged,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<FlNodesController>('controller', controller),
-    );
+    properties
+      ..add(DiagnosticsProperty<Locale>('currentLocale', currentLocale))
+      ..add(ObjectFlagProperty<void Function(String)>.has('onLocaleChanged', onLocaleChanged))
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller));
   }
 }

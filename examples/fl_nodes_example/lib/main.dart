@@ -1,4 +1,5 @@
 import 'package:fl_nodes/fl_nodes.dart';
+import 'package:fl_nodes_example/l10n/app_localizations.dart';
 import 'package:fl_nodes_example/mind_map_example/example.dart';
 import 'package:fl_nodes_example/models/locale.dart';
 import 'package:fl_nodes_example/visual_scripting_example/example.dart';
@@ -6,8 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'package:fl_nodes_example/l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,13 +91,9 @@ class ExampleGalleryScreen extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
-    properties.add(
-      ObjectFlagProperty<void Function(String)>.has(
-        'onLocaleChanged',
-        onLocaleChanged,
-      ),
-    );
+    properties
+      ..add(DiagnosticsProperty<Locale>('currentLocale', currentLocale))
+      ..add(ObjectFlagProperty<void Function(String)>.has('onLocaleChanged', onLocaleChanged));
   }
 }
 

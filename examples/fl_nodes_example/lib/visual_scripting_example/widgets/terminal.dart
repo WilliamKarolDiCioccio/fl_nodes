@@ -119,10 +119,9 @@ class TerminalWidget extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed));
-    properties.add(
-      DiagnosticsProperty<TerminalController>('controller', controller),
-    );
+    properties
+      ..add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed))
+      ..add(DiagnosticsProperty<TerminalController>('controller', controller));
   }
 }
 

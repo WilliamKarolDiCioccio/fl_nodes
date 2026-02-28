@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
+import 'package:fl_nodes_example/utils/context_menu.dart';
 import 'package:fl_nodes_example/utils/snackbar.dart';
 import 'package:fl_nodes_example/visual_scripting_example/nodes/data/handlers.dart';
 import 'package:fl_nodes_example/visual_scripting_example/nodes/prototypes/prototypes.dart';
@@ -15,8 +16,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-
-import 'package:fl_nodes_example/utils/context_menu.dart';
 
 class VisualScriptingExampleScreen extends StatefulWidget {
   const VisualScriptingExampleScreen({
@@ -34,13 +33,9 @@ class VisualScriptingExampleScreen extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
-    properties.add(
-      ObjectFlagProperty<void Function(String)>.has(
-        'onLocaleChanged',
-        onLocaleChanged,
-      ),
-    );
+    properties
+      ..add(DiagnosticsProperty<Locale>('currentLocale', currentLocale))
+      ..add(ObjectFlagProperty<void Function(String)>.has('onLocaleChanged', onLocaleChanged));
   }
 }
 
@@ -480,23 +475,10 @@ class VisualScriptingExampleScreenState extends State<VisualScriptingExampleScre
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      DiagnosticsProperty<bool>('isHierarchyCollapsed', isHierarchyCollapsed),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'isHierarchyFullyCollapsed',
-        isHierarchyFullyCollapsed,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>('isTerminalCollapsed', isTerminalCollapsed),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'isTerminalFullyCollapsed',
-        isTerminalFullyCollapsed,
-      ),
-    );
+    properties
+      ..add(DiagnosticsProperty<bool>('isHierarchyCollapsed', isHierarchyCollapsed))
+      ..add(DiagnosticsProperty<bool>('isHierarchyFullyCollapsed', isHierarchyFullyCollapsed))
+      ..add(DiagnosticsProperty<bool>('isTerminalCollapsed', isTerminalCollapsed))
+      ..add(DiagnosticsProperty<bool>('isTerminalFullyCollapsed', isTerminalFullyCollapsed));
   }
 }

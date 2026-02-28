@@ -1,8 +1,10 @@
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:flutter/material.dart';
 
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
 /// Styles for the ports in the node editor.
-class PortStyles {
+abstract final class PortStyles {
   static FlPortStyle dataOutput(FlPortState state) => FlPortStyle(
     color: state.isHovered
         ? const Color(0xFFFFD54F) // Warm amber on hover

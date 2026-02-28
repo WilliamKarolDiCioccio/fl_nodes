@@ -34,9 +34,7 @@ class InsertBenchmark extends BenchmarkBase {
 
   @override
   void run() {
-    for (final ({String id, Rect rect}) node in nodes) {
-      grid.insert(node);
-    }
+    nodes.forEach(grid.insert);
   }
 }
 
@@ -52,9 +50,7 @@ class RemoveBenchmark extends BenchmarkBase {
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (final ({String id, Rect rect}) node in nodes) {
-      grid.insert(node);
-    }
+    nodes.forEach(grid.insert);
   }
 
   @override
@@ -77,9 +73,7 @@ class DirectUpdateBenchmark extends BenchmarkBase {
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (final ({String id, Rect rect}) node in nodes) {
-      grid.insert(node);
-    }
+    nodes.forEach(grid.insert);
   }
 
   @override
@@ -117,9 +111,7 @@ class UpdateMethodBenchmark extends BenchmarkBase {
   void setup() {
     grid = SpatialHashGrid(cellSize: 1024.0);
     nodes = generateNodes(count);
-    for (final ({String id, Rect rect}) node in nodes) {
-      grid.insert(node);
-    }
+    nodes.forEach(grid.insert);
   }
 
   @override

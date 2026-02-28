@@ -20,10 +20,9 @@ class HierarchyWidget extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      DiagnosticsProperty<FlNodesController>('controller', controller),
-    );
-    properties.add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed));
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<bool>('isCollapsed', isCollapsed));
   }
 }
 

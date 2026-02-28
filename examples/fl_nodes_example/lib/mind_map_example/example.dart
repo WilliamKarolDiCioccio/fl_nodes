@@ -6,12 +6,11 @@ import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
 import 'package:fl_nodes_example/mind_map_example/nodes/prototypes/prototypes.dart';
 import 'package:fl_nodes_example/mind_map_example/nodes/widgets/mind_map_node.dart';
+import 'package:fl_nodes_example/utils/context_menu.dart';
 import 'package:fl_nodes_example/utils/snackbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'package:fl_nodes_example/utils/context_menu.dart';
 
 class MindMapExampleScreen extends StatefulWidget {
   const MindMapExampleScreen({
@@ -29,13 +28,9 @@ class MindMapExampleScreen extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
-    properties.add(
-      ObjectFlagProperty<void Function(String)>.has(
-        'onLocaleChanged',
-        onLocaleChanged,
-      ),
-    );
+    properties
+      ..add(DiagnosticsProperty<Locale>('currentLocale', currentLocale))
+      ..add(ObjectFlagProperty<void Function(String)>.has('onLocaleChanged', onLocaleChanged));
   }
 }
 
