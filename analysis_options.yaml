@@ -25,7 +25,7 @@ linter:
     # Put required named parameters first.
     always_put_required_named_parameters_first: true
     # Specify type annotations.
-    always_specify_types: true
+    always_specify_types: false
     # Avoid relative imports for files in `lib/`.
     always_use_package_imports: true
     # Annotate overridden members.
@@ -282,7 +282,7 @@ linter:
     # Prefer final for variable declarations if they are not reassigned.
     prefer_final_locals: true
     # Prefer final for parameter declarations if they are not reassigned.
-    prefer_final_parameters: true
+    prefer_final_parameters: false
     # Prefer `for` elements when building maps from iterables.
     prefer_for_elements_to_map_fromIterable: true
     # Use `forEach` to only apply a function to all the elements.
@@ -498,7 +498,8 @@ analyzer:
   errors:
     # TODO: Evaluate all diagnostic messages: https://dart.dev/tools/diagnostics
     todo: info
-    public_member_api_docs: ignore
+    diagnostic_describe_all_properties: info
+    public_member_api_docs: info # change to warning after adding docs for all public members
     missing_return: warning
     unchecked_use_of_nullable_value: warning
     ambiguous_import: warning
