@@ -6,7 +6,6 @@ import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
 import 'package:fl_nodes_example/mind_map_example/nodes/prototypes/prototypes.dart';
 import 'package:fl_nodes_example/mind_map_example/nodes/widgets/mind_map_node.dart';
-import 'package:fl_nodes_example/models/locale.dart';
 import 'package:fl_nodes_example/utils/snackbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,12 +16,10 @@ import '../utils/context_menu.dart';
 class MindMapExampleScreen extends StatefulWidget {
   const MindMapExampleScreen({
     super.key,
-    required this.locales,
     required this.currentLocale,
     required this.onLocaleChanged,
   });
 
-  final List<LocaleDataModel> locales;
   final Locale currentLocale;
   final Function(String) onLocaleChanged;
 

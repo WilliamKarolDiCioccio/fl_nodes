@@ -1,3 +1,4 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
 import 'package:fl_nodes_example/models/locale.dart';
@@ -7,13 +8,11 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsPanel extends StatelessWidget {
   const SettingsPanel({
     super.key,
-    required this.locales,
     required this.currentLocale,
     required this.onLocaleChanged,
     required this.controller,
   });
 
-  final List<LocaleDataModel> locales;
   final Locale currentLocale;
   final Function(String) onLocaleChanged;
   final FlNodesController controller;
@@ -99,17 +98,21 @@ class SettingsPanel extends StatelessWidget {
                     child: DropdownButton<String>(
                       value: currentLocale.languageCode,
                       isExpanded: true,
-                      items: locales.map((locale) {
+                      items: SupportedLocale.values.map((locale) {
                         return DropdownMenuItem<String>(
-                          value: locale.code,
+                          value: locale.languageCode,
                           child: Row(
                             children: [
-                              Text(
-                                locale.flag,
-                                style: const TextStyle(fontSize: 18),
+                              CountryFlag.fromCountryCode(
+                                locale.countryCode,
+                                theme: const ImageTheme(
+                                  shape: RoundedRectangle(4),
+                                  height: 18,
+                                  width: 24,
+                                ),
                               ),
                               const SizedBox(width: 12),
-                              Text(locale.name),
+                              Text(locale.displayName),
                             ],
                           ),
                         );

@@ -18,6 +18,7 @@ dependencies:
   fl_nodes:
     path: ../../packages/fl_nodes
 
+  country_flags: ^4.1.2
   gap: ^3.0.1
   uuid: ^4.5.1
   file_picker: ^10.3.2

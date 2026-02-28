@@ -29,19 +29,6 @@ class FlNodesExampleApp extends StatefulWidget {
 class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
   late Locale _locale;
 
-  final List<LocaleDataModel> locales = [
-    const LocaleDataModel('en', '🇺🇸', 'English'),
-    const LocaleDataModel('it', '🇮🇹', 'Italiano'),
-    const LocaleDataModel('fr', '🇫🇷', 'Français'),
-    const LocaleDataModel('es', '🇪🇸', 'Español'),
-    const LocaleDataModel('de', '🇩🇪', 'Deutsch'),
-    const LocaleDataModel('ja', '🇯🇵', '日本語'),
-    const LocaleDataModel('zh', '🇨🇳', '中文'),
-    const LocaleDataModel('ko', '🇰🇷', '한국어'),
-    const LocaleDataModel('ru', '🇷🇺', 'Русский'),
-    const LocaleDataModel('ar', '🇸🇦', 'العربية'),
-  ];
-
   void _setLocale(String languageCode) {
     setState(() {
       _locale = Locale(languageCode);
@@ -53,7 +40,8 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
     super.initState();
 
     final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
-    final supportedLanguageCodes = locales.map((l) => l.code).toSet();
+    final supportedLanguageCodes =
+        SupportedLocale.values.map((l) => l.languageCode).toSet();
     final defaultLanguageCode =
         supportedLanguageCodes.contains(systemLocale.languageCode)
         ? systemLocale.languageCode
@@ -72,7 +60,7 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: locales.map((l) => Locale(l.code)).toList(),
+      supportedLocales: SupportedLocale.values.map((l) => l.locale).toList(),
       locale: _locale,
       title: 'Fl Nodes Example',
       theme: ThemeData.dark().copyWith(
@@ -82,7 +70,6 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
         ),
       ),
       home: ExampleGalleryScreen(
-        locales: locales,
         currentLocale: _locale,
         onLocaleChanged: _setLocale,
       ),
@@ -92,13 +79,11 @@ class _FlNodesExampleAppState extends State<FlNodesExampleApp> {
 }
 
 class ExampleGalleryScreen extends StatefulWidget {
-  final List<LocaleDataModel> locales;
   final Locale currentLocale;
   final void Function(String) onLocaleChanged;
 
   const ExampleGalleryScreen({
     super.key,
-    required this.locales,
     required this.currentLocale,
     required this.onLocaleChanged,
   });
@@ -118,7 +103,6 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
       imageUrl:
           'https://raw.githubusercontent.com/WilliamKarolDiCioccio/fl_nodes/refs/heads/main/.github/images/node_editor_example.webp',
       builder: (ctx) => VisualScriptingExampleScreen(
-        locales: widget.locales,
         currentLocale: widget.currentLocale,
         onLocaleChanged: widget.onLocaleChanged,
       ),
@@ -129,7 +113,6 @@ class _ExampleGalleryScreenState extends State<ExampleGalleryScreen> {
       icon: Icons.map,
       tags: ['nodes', 'mind map', 'layout'],
       builder: (ctx) => MindMapExampleScreen(
-        locales: widget.locales,
         currentLocale: widget.currentLocale,
         onLocaleChanged: widget.onLocaleChanged,
       ),

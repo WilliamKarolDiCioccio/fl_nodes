@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_nodes/fl_nodes.dart';
 import 'package:fl_nodes_example/l10n/app_localizations.dart';
-import 'package:fl_nodes_example/models/locale.dart';
 import 'package:fl_nodes_example/utils/snackbar.dart';
 import 'package:fl_nodes_example/visual_scripting_example/nodes/data/handlers.dart';
 import 'package:fl_nodes_example/visual_scripting_example/nodes/prototypes/prototypes.dart';
@@ -22,12 +21,10 @@ import '../utils/context_menu.dart';
 class VisualScriptingExampleScreen extends StatefulWidget {
   const VisualScriptingExampleScreen({
     super.key,
-    required this.locales,
     required this.currentLocale,
     required this.onLocaleChanged,
   });
 
-  final List<LocaleDataModel> locales;
   final Locale currentLocale;
   final Function(String) onLocaleChanged;
 
@@ -194,7 +191,6 @@ class VisualScriptingExampleScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => SettingsPanel(
-        locales: widget.locales,
         currentLocale: widget.currentLocale,
         onLocaleChanged: widget.onLocaleChanged,
         controller: _nodeEditorController,
