@@ -117,5 +117,5 @@ class FlNodesLocalizationsDelegate
       };
 
   @override
-  bool shouldReload(covariant LocalizationsDelegate old) => false;
+  bool shouldReload(covariant LocalizationsDelegate<dynamic> old) => false;
 }

@@ -280,7 +280,7 @@ class FlNodesExecutionHelper {
       final FlNodeDataModel node = nodes[nodeId]!;
 
       final bool hasDataInputs =
-          FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
+          FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype<dynamic>>(
         controller,
         node,
       ).isNotEmpty;
@@ -372,7 +372,7 @@ class FlNodesExecutionHelper {
 
       final FlNodeDataModel node = nodes[nodeId]!;
       final Set<String> dataDeps =
-          FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
+          FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype<dynamic>>(
         controller,
         node,
       );
@@ -673,7 +673,7 @@ class FlNodesExecutionHelper {
   /// Check if all data dependencies for a node are ready (stepped and completed)
   bool _areDataDependenciesReady(String nodeId) {
     final Set<String> dataDependencies =
-        FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype>(
+        FlNodesUtils.getConnectedNodesIdsForNode<FlDataInputPortPrototype<dynamic>>(
       controller,
       nodes[nodeId]!,
     );

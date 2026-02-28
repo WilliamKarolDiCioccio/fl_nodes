@@ -13,12 +13,12 @@ FlNodePrototype createValueNode<T>({
   required String Function(BuildContext context) displayName,
   required T defaultValue,
   required Widget Function(T data) visualizerBuilder,
-  Function(dynamic data, Function(dynamic data) setData)? onVisualizerTap,
+  void Function(dynamic data, void Function(dynamic data) setData)? onVisualizerTap,
   Widget Function(
     BuildContext context,
-    Function() removeOverlay,
+    void Function() removeOverlay,
     dynamic data,
-    Function(dynamic data, {required FlFieldEventType eventType}) setData,
+    void Function(dynamic data, {required FlFieldEventType eventType}) setData,
   )?
   editorBuilder,
 }) => FlNodePrototype(
@@ -458,7 +458,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           styleBuilder: PortStyles.controlInput,
           geometricOrientation: FlPortGeometricOrientation.left,
         ),
-        FlDataInputPortPrototype(
+        FlDataInputPortPrototype<dynamic>(
           idName: 'list',
           displayName: (context) => AppLocalizations.of(context)!.listPortName,
           styleBuilder: PortStyles.dataInput,
@@ -478,7 +478,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           styleBuilder: PortStyles.controlOutput,
           geometricOrientation: FlPortGeometricOrientation.right,
         ),
-        FlDataOutputPortPrototype(
+        FlDataOutputPortPrototype<dynamic>(
           idName: 'listElem',
           linkPrototype: FlLinkPrototype(label: (_) => 'dynamic'),
           displayName: (context) =>
@@ -532,13 +532,13 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           styleBuilder: PortStyles.controlInput,
           geometricOrientation: FlPortGeometricOrientation.left,
         ),
-        FlDataInputPortPrototype(
+        FlDataInputPortPrototype<dynamic>(
           idName: 'a',
           displayName: (context) => 'A',
           styleBuilder: PortStyles.dataInput,
           geometricOrientation: FlPortGeometricOrientation.left,
         ),
-        FlDataInputPortPrototype(
+        FlDataInputPortPrototype<dynamic>(
           idName: 'b',
           displayName: (context) => 'B',
           styleBuilder: PortStyles.dataInput,
@@ -637,7 +637,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
           styleBuilder: PortStyles.controlInput,
           geometricOrientation: FlPortGeometricOrientation.left,
         ),
-        FlDataInputPortPrototype(
+        FlDataInputPortPrototype<dynamic>(
           idName: 'value',
           displayName: (context) => AppLocalizations.of(context)!.valuePortName,
           styleBuilder: PortStyles.dataInput,

@@ -26,7 +26,7 @@ class VisualScriptingExampleScreen extends StatefulWidget {
   });
 
   final Locale currentLocale;
-  final Function(String) onLocaleChanged;
+  final void Function(String) onLocaleChanged;
 
   @override
   State<VisualScriptingExampleScreen> createState() =>
@@ -37,7 +37,7 @@ class VisualScriptingExampleScreen extends StatefulWidget {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
     properties.add(
-      ObjectFlagProperty<Function(String)>.has(
+      ObjectFlagProperty<void Function(String)>.has(
         'onLocaleChanged',
         onLocaleChanged,
       ),
@@ -194,7 +194,7 @@ class VisualScriptingExampleScreenState
   }
 
   void _showSettingsPanel() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -207,7 +207,7 @@ class VisualScriptingExampleScreenState
   }
 
   void _showInstructionsPanel() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

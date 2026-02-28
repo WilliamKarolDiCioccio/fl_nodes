@@ -15,7 +15,7 @@ void showFlContextMenu({
   FlMenuConfig config = const FlMenuConfig(),
   FlMenuStyle style = const FlMenuStyle.basic(),
 }) {
-  createPageRoute(
+  createPageRoute<void>(
     context: context,
     position: position,
     data: data,

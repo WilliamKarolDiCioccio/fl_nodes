@@ -288,7 +288,7 @@ class _ExampleCardState extends State<_ExampleCard> {
           borderRadius: BorderRadius.circular(16),
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: entry.builder),
+            MaterialPageRoute<void>(builder: entry.builder),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -21,7 +21,7 @@ class MindMapExampleScreen extends StatefulWidget {
   });
 
   final Locale currentLocale;
-  final Function(String) onLocaleChanged;
+  final void Function(String) onLocaleChanged;
 
   @override
   State<MindMapExampleScreen> createState() => MindMapExampleScreenState();
@@ -31,7 +31,7 @@ class MindMapExampleScreen extends StatefulWidget {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
     properties.add(
-      ObjectFlagProperty<Function(String)>.has(
+      ObjectFlagProperty<void Function(String)>.has(
         'onLocaleChanged',
         onLocaleChanged,
       ),

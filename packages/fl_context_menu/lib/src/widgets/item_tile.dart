@@ -7,7 +7,7 @@ class FlMenuItemTile extends StatefulWidget {
   final String? label;
   final IconData? iconData;
   final VoidCallback? onTap;
-  final Function(String)? onPressed;
+  final void Function(String)? onPressed;
   final bool closeOnTap;
   final FlMenuItemStyle style;
   final bool isEnabled;
@@ -35,7 +35,7 @@ class FlMenuItemTile extends StatefulWidget {
     properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
     properties.add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap));
     properties
-        .add(ObjectFlagProperty<Function(String)?>.has('onPressed', onPressed));
+        .add(ObjectFlagProperty<void Function(String)?>.has('onPressed', onPressed));
     properties.add(DiagnosticsProperty<bool>('closeOnTap', closeOnTap));
     properties.add(DiagnosticsProperty<FlMenuItemStyle>('style', style));
     properties.add(DiagnosticsProperty<bool>('isEnabled', isEnabled));

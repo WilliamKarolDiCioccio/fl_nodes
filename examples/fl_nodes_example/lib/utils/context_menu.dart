@@ -7,31 +7,31 @@ bool isContextMenuVisible = false;
 class ContextMenuUtils {
   static Future<void> createAndShowContextMenu(
     BuildContext context, {
-    required List<ContextMenuEntry> entries,
+    required List<ContextMenuEntry<String?>> entries,
     required Offset position,
-    Function(String? value)? onDismiss,
+    void Function(String? value)? onDismiss,
   }) async {
     if (isContextMenuVisible) return;
 
     isContextMenuVisible = true;
 
-    final ContextMenu<dynamic> menu = ContextMenu(
+    final ContextMenu<String?> menu = ContextMenu(
       entries: entries,
       position: position,
       padding: const EdgeInsets.all(8),
     );
 
-    final copiedValue = await showContextMenu(context, contextMenu: menu).then((
+    final String? copiedValue = await showContextMenu<String?>(context, contextMenu: menu).then((
       value,
     ) {
       isContextMenuVisible = false;
       return value;
     });
 
-    if (onDismiss != null) onDismiss(copiedValue as String?);
+    if (onDismiss != null) onDismiss(copiedValue);
   }
 
-  static List<ContextMenuEntry> portContextMenuEntries(
+  static List<ContextMenuEntry<String?>> portContextMenuEntries(
     Offset position, {
     required BuildContext context,
     required FlNodesController controller,
@@ -51,7 +51,7 @@ class ContextMenuUtils {
     ];
   }
 
-  static List<ContextMenuEntry> nodeMenuEntries(
+  static List<ContextMenuEntry<String?>> nodeMenuEntries(
     BuildContext context,
     FlNodesController controller,
     FlNodeDataModel node,
@@ -64,7 +64,7 @@ class ContextMenuUtils {
         label: strings.seeNodeDescriptionAction,
         icon: Icons.info,
         onSelected: () {
-          showDialog(
+          showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
               title: Text(node.prototype.displayName(context)),
@@ -121,7 +121,7 @@ class ContextMenuUtils {
     ];
   }
 
-  static List<ContextMenuEntry> nodeCreationMenuEntries(
+  static List<ContextMenuEntry<String?>> nodeCreationMenuEntries(
     Offset position, {
     required BuildContext context,
     required FlNodesController controller,
@@ -156,7 +156,7 @@ class ContextMenuUtils {
 
     return compatiblePrototypes
         .map(
-          (entry) => MenuItem(
+          (entry) => MenuItem<String?>(
             label: entry.value.displayName(context),
             icon: Icons.widgets,
             onSelected: () {
@@ -187,7 +187,7 @@ class ContextMenuUtils {
         .toList();
   }
 
-  static List<ContextMenuEntry> canvasMenuEntries(
+  static List<ContextMenuEntry<String?>> canvasMenuEntries(
     Offset position, {
     required BuildContext context,
     required FlNodesController controller,
@@ -266,7 +266,7 @@ class ContextMenuUtils {
     ];
   }
 
-  static List<ContextMenuEntry> linkContextMenuEntries(
+  static List<ContextMenuEntry<String?>> linkContextMenuEntries(
     Offset position, {
     required BuildContext context,
     required FlNodesController controller,

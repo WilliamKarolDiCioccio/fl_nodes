@@ -19,7 +19,7 @@ class FlMenuItemDataModel extends FlMenuEntryDataModel {
 
   final String label;
   final IconData? icon;
-  final Function(String)? onPressed;
+  final void Function(String)? onPressed;
 
   const FlMenuItemDataModel({
     required this.idName,

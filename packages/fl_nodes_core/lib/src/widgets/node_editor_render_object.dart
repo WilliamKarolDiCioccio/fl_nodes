@@ -58,7 +58,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final FlNodesController controller;
   final FragmentShader gridShader;
   final NodeBuilder nodeBuilder;
-  final Function(String linkId, Offset position)? showLinkContextMenu;
+  final void Function(String linkId, Offset position)? showLinkContextMenu;
 
   NodeEditorRenderObjectWidget({
     required this.controller,
@@ -102,7 +102,7 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     properties
         .add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
     properties.add(
-      ObjectFlagProperty<Function(String linkId, ui.Offset position)?>.has(
+      ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has(
         'showLinkContextMenu',
         showLinkContextMenu,
       ),
@@ -118,7 +118,7 @@ class NodeEditorRenderBox extends RenderBox
     required FlNodesController controller,
     required FragmentShader gridShader,
     required bool isModalPresent,
-    required Function(String portId, Offset position)? showLinkContextMenu,
+    required void Function(String portId, Offset position)? showLinkContextMenu,
   })  : _controller = controller,
         _gridShader = gridShader,
         _isModalPresent = isModalPresent,
@@ -207,7 +207,7 @@ class NodeEditorRenderBox extends RenderBox
   }
 
   final FlNodesController _controller;
-  final Function(String linkId, Offset position)? _showLinkContextMenu;
+  final void Function(String linkId, Offset position)? _showLinkContextMenu;
 
   final Map<String, RenderBox> _childrenById = {};
 

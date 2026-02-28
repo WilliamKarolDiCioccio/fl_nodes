@@ -354,16 +354,16 @@ final class FlPortDataModel {
   }
 }
 
-typedef OnVisualizerTap = Function(
+typedef OnVisualizerTap = void Function(
   dynamic data,
-  Function(dynamic data) setData,
+  void Function(dynamic data) setData,
 );
 
 typedef EditorBuilder = Widget Function(
   BuildContext context,
-  Function() removeOverlay,
+  void Function() removeOverlay,
   dynamic data,
-  Function(dynamic data, {required FlFieldEventType eventType}) setData,
+  void Function(dynamic data, {required FlFieldEventType eventType}) setData,
 );
 
 /// A field prototype is the blueprint for a field instance.
@@ -541,7 +541,7 @@ final class FlNodeDataModel {
     Map<String, FlFieldDataModel>? fields,
     FlNodeState? state,
     Map<String, dynamic>? customData,
-    Function(FlNodeDataModel node)? onRendered,
+    void Function(FlNodeDataModel node)? onRendered,
     Offset? offset,
   }) =>
       FlNodeDataModel(

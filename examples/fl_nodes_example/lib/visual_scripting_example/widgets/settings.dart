@@ -15,7 +15,7 @@ class SettingsPanel extends StatelessWidget {
   });
 
   final Locale currentLocale;
-  final Function(String) onLocaleChanged;
+  final void Function(String) onLocaleChanged;
   final FlNodesController controller;
 
   @override
@@ -197,7 +197,7 @@ class SettingsPanel extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Locale>('currentLocale', currentLocale));
     properties.add(
-      ObjectFlagProperty<Function(String)>.has(
+      ObjectFlagProperty<void Function(String)>.has(
         'onLocaleChanged',
         onLocaleChanged,
       ),
