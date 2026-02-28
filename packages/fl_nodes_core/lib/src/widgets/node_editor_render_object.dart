@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
@@ -116,8 +117,10 @@ class NodeEditorRenderBox extends RenderBox
     _offset = _controller.viewportOffset;
     _zoom = _controller.viewportZoom;
 
-    _controller.eventBus.events.listen(_handleControllerEvent);
+    _eventSubscription = _controller.eventBus.events.listen(_handleControllerEvent);
   }
+
+  late final StreamSubscription<NodeEditorEvent> _eventSubscription;
 
   void _handleControllerEvent(NodeEditorEvent event) {
     if (event is! FlPaintEventCat && event is! FlLayoutEventCat) return;
@@ -1182,6 +1185,12 @@ class NodeEditorRenderBox extends RenderBox
   //////////////////////////////////////////////////////////////////
   /// Misc methods
   //////////////////////////////////////////////////////////////////
+
+  @override
+  void dispose() {
+    _eventSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   bool get isRepaintBoundary => true;
