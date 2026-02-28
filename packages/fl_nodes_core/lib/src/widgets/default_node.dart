@@ -1,11 +1,9 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/events/events.dart';
 import 'package:fl_nodes_core/src/core/models/data.dart';
-
 import 'package:fl_nodes_core/src/widgets/base_node.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// The main NodeWidget which represents a node in the editor.
 /// It now ensures that fields (regardless of whether a custom fieldBuilder is used)
@@ -193,8 +191,9 @@ class _NodeHeaderWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<FlNodeDataModel>('node', node));
   }
 }
 
@@ -236,8 +235,9 @@ class _PortWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
-    properties.add(DiagnosticsProperty<FlPortDataModel>('port', port));
+    properties
+      ..add(DiagnosticsProperty<FlNodeDataModel>('node', node))
+      ..add(DiagnosticsProperty<FlPortDataModel>('port', port));
   }
 }
 
@@ -345,8 +345,9 @@ class _FieldWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
-    properties.add(DiagnosticsProperty<FlFieldDataModel>('field', field));
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<FlNodeDataModel>('node', node))
+      ..add(DiagnosticsProperty<FlFieldDataModel>('field', field));
   }
 }

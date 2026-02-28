@@ -104,10 +104,11 @@ class FlMenuWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlMenuDataModel>('data', data));
-    properties.add(DiagnosticsProperty<Offset>('position', position));
-    properties.add(DiagnosticsProperty<FlMenuConfig>('config', config));
-    properties.add(DiagnosticsProperty<FlMenuStyle>('style', style));
-    properties.add(IntProperty('menuLevel', menuLevel));
+    properties
+      ..add(DiagnosticsProperty<FlMenuDataModel>('data', data))
+      ..add(DiagnosticsProperty<Offset>('position', position))
+      ..add(DiagnosticsProperty<FlMenuConfig>('config', config))
+      ..add(DiagnosticsProperty<FlMenuStyle>('style', style))
+      ..add(IntProperty('menuLevel', menuLevel));
   }
 }

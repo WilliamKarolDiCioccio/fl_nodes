@@ -1,9 +1,8 @@
 import 'package:fl_nodes_core/src/core/models/data.dart';
-import 'package:flutter/material.dart';
-
 import 'package:fl_nodes_core/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes_core/src/painters/custom_painter.dart';
 import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:flutter/material.dart';
 
 class LinksCustomPainter extends FlCustomPainter {
   final List<(Path, Paint)> _unbatchableLinks = [];

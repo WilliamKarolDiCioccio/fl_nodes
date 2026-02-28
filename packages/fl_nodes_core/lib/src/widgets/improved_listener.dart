@@ -38,64 +38,20 @@ class ImprovedListener extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      ObjectFlagProperty<PointerDownEventListener?>.has(
-        'onPointerPressed',
-        onPointerPressed,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerMoveEventListener?>.has(
-        'onPointerMoved',
-        onPointerMoved,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerUpEventListener?>.has(
-        'onPointerReleased',
-        onPointerReleased,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerCancelEventListener?>.has(
-        'onPointerCanceled',
-        onPointerCanceled,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerSignalEventListener?>.has(
-        'onPointerSignalReceived',
-        onPointerSignalReceived,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerPanZoomStartEventListener?>.has(
-        'onPointerPanZoomStart',
-        onPointerPanZoomStart,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerPanZoomUpdateEventListener?>.has(
-        'onPointerPanZoomUpdate',
-        onPointerPanZoomUpdate,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<PointerPanZoomEndEventListener?>.has(
-        'onPointerPanZoomEnd',
-        onPointerPanZoomEnd,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<VoidCallback?>.has('onDoubleClick', onDoubleClick),
-    );
-    properties.add(
-      DiagnosticsProperty<Duration>(
-        'doubleClickThreshold',
-        doubleClickThreshold,
-      ),
-    );
-    properties.add(EnumProperty<HitTestBehavior>('behavior', behavior));
+    // dart format off
+    properties
+      ..add(ObjectFlagProperty<PointerDownEventListener?>.has('onPointerPressed', onPointerPressed))
+      ..add(ObjectFlagProperty<PointerMoveEventListener?>.has('onPointerMoved', onPointerMoved))
+      ..add(ObjectFlagProperty<PointerUpEventListener?>.has('onPointerReleased', onPointerReleased))
+      ..add(ObjectFlagProperty<PointerCancelEventListener?>.has('onPointerCanceled', onPointerCanceled))
+      ..add(ObjectFlagProperty<PointerSignalEventListener?>.has('onPointerSignalReceived', onPointerSignalReceived))
+      ..add(ObjectFlagProperty<PointerPanZoomStartEventListener?>.has('onPointerPanZoomStart', onPointerPanZoomStart))
+      ..add(ObjectFlagProperty<PointerPanZoomUpdateEventListener?>.has('onPointerPanZoomUpdate', onPointerPanZoomUpdate))
+      ..add(ObjectFlagProperty<PointerPanZoomEndEventListener?>.has('onPointerPanZoomEnd', onPointerPanZoomEnd))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDoubleClick', onDoubleClick))
+      ..add(DiagnosticsProperty<Duration>('doubleClickThreshold', doubleClickThreshold))
+      ..add(EnumProperty<HitTestBehavior>('behavior', behavior));
+    // dart format on
   }
 }
 

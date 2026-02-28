@@ -26,8 +26,9 @@ void main() {
     });
 
     test('RemoveKey', () {
-      set.insert(3, 300);
-      set.insert(5, 500);
+      set
+        ..insert(3, 300)
+        ..insert(5, 500);
 
       expect(set.contains(3), isTrue);
       expect(set.contains(5), isTrue);
@@ -43,8 +44,9 @@ void main() {
     });
 
     test('ClearEmptiesSet', () {
-      set.insert(7, 700);
-      set.insert(8, 800);
+      set
+        ..insert(7, 700)
+        ..insert(8, 800);
 
       expect(set.size, equals(2));
 
@@ -71,9 +73,10 @@ void main() {
     });
 
     test('DenseIterationOrder', () {
-      set.insert(10, 1000);
-      set.insert(20, 2000);
-      set.insert(15, 1500);
+      set
+        ..insert(10, 1000)
+        ..insert(20, 2000)
+        ..insert(15, 1500);
       final List<int> keys = set.keys.toList();
       final List<int> values = set.values.toList();
       expect(keys.length, equals(3));
@@ -125,9 +128,7 @@ void main() {
 
       expect(set.size, equals(edgeKeys.length));
 
-      for (final k in edgeKeys) {
-        set.remove(k);
-      }
+      edgeKeys.forEach(set.remove);
 
       expect(set.size, equals(0));
 

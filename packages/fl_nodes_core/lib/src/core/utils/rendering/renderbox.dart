@@ -1,8 +1,10 @@
 import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:flutter/widgets.dart';
 
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
 /// Utility class for working with RenderBox objects.
-final class RenderBoxUtils {
+abstract final class RenderBoxUtils {
   /// Retrieves the global offset of a widget identified by a [GlobalKey].
   static Offset? getOffsetFromGlobalKey(GlobalKey key) {
     final RenderObject? renderObject = key.currentContext?.findRenderObject();

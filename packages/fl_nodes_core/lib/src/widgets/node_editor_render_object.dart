@@ -3,9 +3,16 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/models/paint.dart';
+import 'package:fl_nodes_core/src/core/utils/rendering/paths.dart';
 import 'package:fl_nodes_core/src/painters/links.dart';
 import 'package:fl_nodes_core/src/painters/selection_area.dart';
 import 'package:fl_nodes_core/src/painters/tmp_link.dart';
+import 'package:fl_nodes_core/src/styles/styles.dart';
+import 'package:fl_nodes_core/src/widgets/builders.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -16,14 +23,6 @@ import 'package:flutter_shaders/flutter_shaders.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vector_math/vector_math.dart' as vec;
 import 'package:vector_math/vector_math_64.dart' hide Colors;
-
-import 'package:fl_nodes_core/src/core/controller/core.dart';
-import 'package:fl_nodes_core/src/core/events/events.dart';
-import 'package:fl_nodes_core/src/core/models/data.dart';
-import 'package:fl_nodes_core/src/core/models/paint.dart';
-import 'package:fl_nodes_core/src/core/utils/rendering/paths.dart';
-import 'package:fl_nodes_core/src/styles/styles.dart';
-import 'package:fl_nodes_core/src/widgets/builders.dart';
 
 class _NodeDiffCheckData {
   String id;
@@ -87,22 +86,21 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
     BuildContext context,
     NodeEditorRenderBox renderObject,
   ) {
-    renderObject.gridShader = gridShader;
-    renderObject.isModalPresent = ModalRoute.of(context)?.isCurrent == false;
+    renderObject
+      ..gridShader = gridShader
+      ..isModalPresent = ModalRoute.of(context)?.isCurrent == false;
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties.add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
-    properties.add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
-    properties.add(
-      ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has(
-        'showLinkContextMenu',
-        showLinkContextMenu,
-      ),
-    );
+    // dart format off
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader))
+      ..add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder))
+      ..add(ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has('showLinkContextMenu', showLinkContextMenu));
+    // dart format on
   }
 }
 
@@ -269,22 +267,22 @@ class NodeEditorRenderBox extends RenderBox
   void _loadGridShader() => gridShader.setFloatUniforms((uniforms) {
         final FlGridStyle gridStyle = _controller.style.gridStyle;
 
-        // uniform vec2 uGridSpacing
-        uniforms.setVector(
-          vec.Vector2(gridStyle.gridSpacingX, gridStyle.gridSpacingY),
-        );
+        uniforms
 
-        // uniform float uLineWidth
-        uniforms.setFloat(gridStyle.lineWidth);
+          // uniform vec2 uGridSpacing
+          ..setVector(vec.Vector2(gridStyle.gridSpacingX, gridStyle.gridSpacingY))
 
-        // uniform vec4 uLineColor
-        uniforms.setColor(gridStyle.lineColor, premultiply: true);
+          // uniform float uLineWidth
+          ..setFloat(gridStyle.lineWidth)
 
-        // uniform float uIntersectionRadius
-        uniforms.setFloat(gridStyle.intersectionRadius);
+          // uniform vec4 uLineColor
+          ..setColor(gridStyle.lineColor, premultiply: true)
 
-        // uniform vec4 uIntersectionColor
-        uniforms.setColor(gridStyle.intersectionColor, premultiply: true);
+          // uniform float uIntersectionRadius
+          ..setFloat(gridStyle.intersectionRadius)
+
+          // uniform vec4 uIntersectionColor
+          ..setColor(gridStyle.intersectionColor, premultiply: true);
       });
 
   /// This method can be called directly only if the event is affecting the existing nodes data and not the widget tree.
@@ -316,10 +314,11 @@ class NodeEditorRenderBox extends RenderBox
           childParentData.offset != nodeData.offset ||
           childParentData.state.isCollapsed != nodeData.state.isCollapsed ||
           _childrenById[nodeData.id] != child) {
-        childParentData.id = nodeData.id;
-        childParentData.offset = nodeData.offset;
-        childParentData.state = nodeData.state;
-        childParentData.rect = Rect.zero;
+        childParentData
+          ..id = nodeData.id
+          ..offset = nodeData.offset
+          ..state = nodeData.state
+          ..rect = Rect.zero;
 
         _childrenById[nodeData.id] = child;
         _childrenNotLaidOut.add(nodeData.id);
@@ -377,9 +376,10 @@ class NodeEditorRenderBox extends RenderBox
 
     final _NodeDiffCheckData diffCheckData = _nodesDiffCheckData[currentIdx];
 
-    parentData.id = diffCheckData.id;
-    parentData.offset = diffCheckData.offset;
-    parentData.state = diffCheckData.state;
+    parentData
+      ..id = diffCheckData.id
+      ..offset = diffCheckData.offset
+      ..state = diffCheckData.state;
 
     final BoxDecoration? decoration =
         _controller.getNodeById(diffCheckData.id)?.builtStyle.decoration;
@@ -1200,46 +1200,20 @@ class NodeEditorRenderBox extends RenderBox
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader));
-    properties.add(IntProperty('lodLevel', lodLevel));
-    properties.add(IterableProperty<RenderBox>('selectedChildren', selectedChildren));
-    properties.add(
-      DiagnosticsProperty<ui.Path>('selectedShadowPath', selectedShadowPath),
-    );
-    properties.add(
-      DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>(
-        'batchSelectedPortByStyle',
-        batchSelectedPortByStyle,
-      ),
-    );
-    properties.add(
-      IterableProperty<RenderBox>('unselectedChildren', unselectedChildren),
-    );
-    properties.add(
-      DiagnosticsProperty<ui.Path>(
-        'unselectedShadowPath',
-        unselectedShadowPath,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>(
-        'batchUnselectedPortByStyle',
-        batchUnselectedPortByStyle,
-      ),
-    );
-    properties.add(
-      IterableProperty<(PortLocator, ui.Rect)>(
-        'portsHitTestData',
-        portsHitTestData,
-      ),
-    );
-    properties.add(StringProperty('lastHoveredNodeId', lastHoveredNodeId));
-    properties.add(StringProperty('lastHoveredLinkId', lastHoveredLinkId));
-    properties.add(
-      DiagnosticsProperty<PortLocator?>(
-        'lastHoveredPortLocator',
-        lastHoveredPortLocator,
-      ),
-    );
+    // dart format off
+    properties
+      ..add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader))
+      ..add(IntProperty('lodLevel', lodLevel))
+      ..add(IterableProperty<RenderBox>('selectedChildren', selectedChildren))
+      ..add(DiagnosticsProperty<ui.Path>('selectedShadowPath', selectedShadowPath))
+      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>('batchSelectedPortByStyle', batchSelectedPortByStyle))
+      ..add(IterableProperty<RenderBox>('unselectedChildren', unselectedChildren))
+      ..add(DiagnosticsProperty<ui.Path>('unselectedShadowPath', unselectedShadowPath))
+      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>('batchUnselectedPortByStyle', batchUnselectedPortByStyle))
+      ..add(IterableProperty<(PortLocator, ui.Rect)>('portsHitTestData', portsHitTestData))
+      ..add(StringProperty('lastHoveredNodeId', lastHoveredNodeId))
+      ..add(StringProperty('lastHoveredLinkId', lastHoveredLinkId))
+      ..add(DiagnosticsProperty<PortLocator?>('lastHoveredPortLocator', lastHoveredPortLocator));
+    // dart format on
   }
 }

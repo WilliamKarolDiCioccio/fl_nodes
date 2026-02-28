@@ -18,9 +18,7 @@ class OrderedSet<T> {
 
   /// Adds all items (preserving uniqueness).
   void addAll(Iterable<T> items) {
-    for (final item in items) {
-      add(item);
-    }
+    items.forEach(add);
   }
 
   bool contains(T value) => _set.contains(value);

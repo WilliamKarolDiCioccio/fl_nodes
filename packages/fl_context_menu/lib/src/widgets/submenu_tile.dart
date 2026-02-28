@@ -31,13 +31,14 @@ class FlSubmenuTile extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('id', id));
-    properties.add(StringProperty('label', label));
-    properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
-    properties.add(IterableProperty<FlMenuEntryDataModel>('data', data));
-    properties.add(IntProperty('menuLevel', menuLevel));
-    properties.add(DiagnosticsProperty<FlMenuStyle>('parentStyle', parentStyle));
-    properties.add(DiagnosticsProperty<FlMenuStyle>('submenuStyle', submenuStyle));
+    properties
+      ..add(StringProperty('id', id))
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData?>('iconData', iconData))
+      ..add(IterableProperty<FlMenuEntryDataModel>('data', data))
+      ..add(IntProperty('menuLevel', menuLevel))
+      ..add(DiagnosticsProperty<FlMenuStyle>('parentStyle', parentStyle))
+      ..add(DiagnosticsProperty<FlMenuStyle>('submenuStyle', submenuStyle));
   }
 }
 

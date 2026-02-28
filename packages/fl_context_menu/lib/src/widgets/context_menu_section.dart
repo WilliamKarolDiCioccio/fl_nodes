@@ -99,8 +99,9 @@ class FlMenuSectionWidget extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlMenuSectionDataModel>('data', data));
-    properties.add(DiagnosticsProperty<FlMenuStyle>('style', style));
-    properties.add(IntProperty('menuLevel', menuLevel));
+    properties
+      ..add(DiagnosticsProperty<FlMenuSectionDataModel>('data', data))
+      ..add(DiagnosticsProperty<FlMenuStyle>('style', style))
+      ..add(IntProperty('menuLevel', menuLevel));
   }
 }

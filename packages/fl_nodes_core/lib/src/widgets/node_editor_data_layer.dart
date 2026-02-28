@@ -1,12 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' hide Size;
-import 'package:flutter_shaders/flutter_shaders.dart';
-
 import 'package:fl_nodes_core/src/constants.dart';
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/events/events.dart';
@@ -16,6 +10,11 @@ import 'package:fl_nodes_core/src/styles/styles.dart';
 import 'package:fl_nodes_core/src/widgets/builders.dart';
 import 'package:fl_nodes_core/src/widgets/improved_listener.dart';
 import 'package:fl_nodes_core/src/widgets/node_editor_render_object.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' hide Size;
+import 'package:flutter_shaders/flutter_shaders.dart';
 
 class NodeEditorDataLayer extends StatefulWidget {
   final FlNodesController controller;
@@ -46,34 +45,17 @@ class NodeEditorDataLayer extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties.add(DiagnosticsProperty<bool>('expandToParent', expandToParent));
-    properties.add(DiagnosticsProperty<Size?>('fixedSize', fixedSize));
-    properties.add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder));
-    properties.add(
-      ObjectFlagProperty<ShowPortContextMenu>.has(
-        'showPortContextMenu',
-        showPortContextMenu,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<ShowCanvasContextMenu>.has(
-        'showCanvasContextMenu',
-        showCanvasContextMenu,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<ShowNodeCreationtMenu>.has(
-        'showNodeCreationMenu',
-        showNodeCreationMenu,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<ShowLinkContextMenu>.has(
-        'showLinkContextMenu',
-        showLinkContextMenu,
-      ),
-    );
+    // dart format off
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<bool>('expandToParent', expandToParent))
+      ..add(DiagnosticsProperty<Size?>('fixedSize', fixedSize))
+      ..add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder))
+      ..add(ObjectFlagProperty<ShowPortContextMenu>.has('showPortContextMenu', showPortContextMenu))
+      ..add(ObjectFlagProperty<ShowCanvasContextMenu>.has('showCanvasContextMenu', showCanvasContextMenu))
+      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has('showNodeCreationMenu', showNodeCreationMenu))
+      ..add(ObjectFlagProperty<ShowLinkContextMenu>.has('showLinkContextMenu', showLinkContextMenu));
+    // dart format on
   }
 }
 
@@ -679,15 +661,11 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Offset>('offset', offset));
-    properties.add(DoubleProperty('zoom', zoom));
-    properties.add(DiagnosticsProperty<FlNodesStyle>('style', style));
-    properties.add(DiagnosticsProperty<FlNodesConfig>('config', config));
-    properties.add(
-      DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>(
-        'editorKey',
-        editorKey,
-      ),
-    );
+    properties
+      ..add(DiagnosticsProperty<Offset>('offset', offset))
+      ..add(DoubleProperty('zoom', zoom))
+      ..add(DiagnosticsProperty<FlNodesStyle>('style', style))
+      ..add(DiagnosticsProperty<FlNodesConfig>('config', config))
+      ..add(DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>('editorKey', editorKey));
   }
 }

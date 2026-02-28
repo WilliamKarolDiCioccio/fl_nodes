@@ -1,20 +1,17 @@
 import 'dart:async';
 
+import 'package:fl_nodes_core/src/constants.dart';
+import 'package:fl_nodes_core/src/core/controller/core.dart';
+import 'package:fl_nodes_core/src/core/events/events.dart';
+import 'package:fl_nodes_core/src/core/models/data.dart';
+import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
+import 'package:fl_nodes_core/src/widgets/builders.dart';
+import 'package:fl_nodes_core/src/widgets/improved_listener.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-
-import 'package:fl_nodes_core/src/core/controller/core.dart';
-
-import 'package:fl_nodes_core/src/constants.dart';
-import 'package:fl_nodes_core/src/core/events/events.dart';
-import 'package:fl_nodes_core/src/core/models/data.dart';
-import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
-
-import 'package:fl_nodes_core/src/widgets/builders.dart';
-import 'package:fl_nodes_core/src/widgets/improved_listener.dart';
 
 abstract class FlBaseNodeWidget extends StatefulWidget {
   final FlNodesController controller;
@@ -36,26 +33,14 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<FlNodesController>('controller', controller));
-    properties.add(DiagnosticsProperty<FlNodeDataModel>('node', node));
-    properties.add(
-      ObjectFlagProperty<ShowPortContextMenu>.has(
-        'showPortContextMenu',
-        showPortContextMenu,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<ShowNodeCreationtMenu>.has(
-        'showNodeCreationMenu',
-        showNodeCreationMenu,
-      ),
-    );
-    properties.add(
-      ObjectFlagProperty<ShowNodeContextMenu>.has(
-        'showNodeContextMenu',
-        showNodeContextMenu,
-      ),
-    );
+    // dart format off
+    properties
+      ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
+      ..add(DiagnosticsProperty<FlNodeDataModel>('node', node))
+      ..add(ObjectFlagProperty<ShowPortContextMenu>.has('showPortContextMenu', showPortContextMenu))
+      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has('showNodeCreationMenu', showNodeCreationMenu))
+      ..add(ObjectFlagProperty<ShowNodeContextMenu>.has('showNodeContextMenu', showNodeContextMenu));
+    // dart format on
   }
 }
 
@@ -455,16 +440,12 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(ColorProperty('fakeTransparentColor', fakeTransparentColor));
-    properties.add(IterableProperty<FlPortDataModel>('ports', ports));
-    properties.add(IterableProperty<FlFieldDataModel>('fields', fields));
-    properties.add(DoubleProperty('viewportZoom', viewportZoom));
-    properties.add(DiagnosticsProperty<Offset>('viewportOffset', viewportOffset));
-    properties.add(
-      DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>(
-        'editorKey',
-        editorKey,
-      ),
-    );
+    properties
+      ..add(ColorProperty('fakeTransparentColor', fakeTransparentColor))
+      ..add(IterableProperty<FlPortDataModel>('ports', ports))
+      ..add(IterableProperty<FlFieldDataModel>('fields', fields))
+      ..add(DoubleProperty('viewportZoom', viewportZoom))
+      ..add(DiagnosticsProperty<Offset>('viewportOffset', viewportOffset))
+      ..add(DiagnosticsProperty<GlobalKey<State<StatefulWidget>>>('editorKey', editorKey));
   }
 }

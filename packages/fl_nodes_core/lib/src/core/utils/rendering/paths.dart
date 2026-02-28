@@ -1,11 +1,12 @@
 import 'dart:ui';
 
 import 'package:fl_nodes_core/src/core/models/data.dart';
-
 import 'package:fl_nodes_core/src/core/models/paint.dart';
 
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
 /// Utility class for working with paths in the node editor.
-final class PathUtils {
+abstract final class PathUtils {
   static double distanceToBezier({
     required Offset point,
     required Offset outPortOffset,

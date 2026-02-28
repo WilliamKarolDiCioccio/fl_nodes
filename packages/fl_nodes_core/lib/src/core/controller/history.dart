@@ -59,14 +59,15 @@ class FlNodesHistoryHelper {
     if (event is FlDragSelectionEvent && previousEvent is FlDragSelectionEvent) {
       if (event.nodeIds.length == previousEvent.nodeIds.length &&
           event.nodeIds.every(previousEvent.nodeIds.contains)) {
-        _undoStack.pop();
-        _undoStack.push(
-          FlDragSelectionEvent(
-            id: event.id,
-            event.nodeIds,
-            event.delta + previousEvent.delta,
-          ),
-        );
+        _undoStack
+          ..pop()
+          ..push(
+            FlDragSelectionEvent(
+              id: event.id,
+              event.nodeIds,
+              event.delta + previousEvent.delta,
+            ),
+          );
         return;
       }
     }

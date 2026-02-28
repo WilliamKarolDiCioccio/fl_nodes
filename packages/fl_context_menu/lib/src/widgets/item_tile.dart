@@ -30,14 +30,15 @@ class FlMenuItemTile extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('id', id));
-    properties.add(StringProperty('label', label));
-    properties.add(DiagnosticsProperty<IconData?>('iconData', iconData));
-    properties.add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap));
-    properties.add(ObjectFlagProperty<void Function(String)?>.has('onPressed', onPressed));
-    properties.add(DiagnosticsProperty<bool>('closeOnTap', closeOnTap));
-    properties.add(DiagnosticsProperty<FlMenuItemStyle>('style', style));
-    properties.add(DiagnosticsProperty<bool>('isEnabled', isEnabled));
+    properties
+      ..add(StringProperty('id', id))
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData?>('iconData', iconData))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap))
+      ..add(ObjectFlagProperty<void Function(String)?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('closeOnTap', closeOnTap))
+      ..add(DiagnosticsProperty<FlMenuItemStyle>('style', style))
+      ..add(DiagnosticsProperty<bool>('isEnabled', isEnabled));
   }
 }
 

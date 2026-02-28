@@ -24,9 +24,7 @@ class FlNodesShortcutsWidget extends StatelessWidget {
                 isHandled: nodeId != controller.selectedNodeIds.last,
               );
             }
-            for (final String link in controller.selectedLinkIds) {
-              controller.removeLinkById(link);
-            }
+            controller.selectedLinkIds.forEach(controller.removeLinkById);
             controller.clearSelection();
           },
           const SingleActivator(LogicalKeyboardKey.backspace): () {
@@ -36,9 +34,7 @@ class FlNodesShortcutsWidget extends StatelessWidget {
                 isHandled: nodeId != controller.selectedNodeIds.last,
               );
             }
-            for (final String link in controller.selectedLinkIds) {
-              controller.removeLinkById(link);
-            }
+            controller.selectedLinkIds.forEach(controller.removeLinkById);
             controller.clearSelection();
           },
           const SingleActivator(LogicalKeyboardKey.keyC, control: true): () =>

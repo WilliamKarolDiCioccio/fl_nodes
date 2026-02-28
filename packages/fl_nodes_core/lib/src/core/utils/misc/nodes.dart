@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-
-import 'package:uuid/uuid.dart';
-
 import 'package:fl_nodes_core/src/core/controller/core.dart';
 import 'package:fl_nodes_core/src/core/models/data.dart';
 import 'package:fl_nodes_core/src/core/utils/rendering/renderbox.dart';
+import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
+// `abstract final class` is basically a namespace for static methods, and cannot be instantiated or extended.
+// ignore: avoid_classes_with_only_static_members
 /// Utility class for the node editor.
-class FlNodesUtils {
+abstract final class FlNodesUtils {
   /// Calculates the encompassing rectangle of the selected nodes.
   ///
   /// The encompassing rectangle is calculated by taking the top-left and bottom-right
