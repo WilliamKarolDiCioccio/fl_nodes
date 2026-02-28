@@ -21,16 +21,18 @@ extension FlLinkDataModelV1Adapter<T> on FlLinkDataModel {
 
   static FlLinkDataModel fromJsonV1(
       Map<String, dynamic> json, Map<Type, DataHandler> dataHandlers) {
+    final from = json['from'] as Map<String, dynamic>;
+    final to = json['to'] as Map<String, dynamic>;
     return FlLinkDataModel(
-      id: json['id'],
+      id: json['id'] as String,
       ports: (
         (
-          nodeId: json['from']['nodeId'],
-          portId: json['from']['portId'],
+          nodeId: from['nodeId'] as String,
+          portId: from['portId'] as String,
         ),
         (
-          nodeId: json['to']['nodeId'],
-          portId: json['to']['portId'],
+          nodeId: to['nodeId'] as String,
+          portId: to['portId'] as String,
         ),
       ),
       state: FlLinkState(),
@@ -64,7 +66,7 @@ extension FlPortDataModelV1Adapter on FlPortDataModel {
 
     instance.links = (json['links'] as List<dynamic>)
         .map((linkJson) =>
-            FlLinkDataModelV1Adapter.fromJsonV1(linkJson, dataHandlers))
+            FlLinkDataModelV1Adapter.fromJsonV1(linkJson as Map<String, dynamic>, dataHandlers))
         .toSet();
 
     return instance;
@@ -132,7 +134,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
         return MapEntry(
           id,
           FlPortDataModelV1Adapter.fromJsonV1(
-              portJson, dataHandlers, portPrototypes),
+              portJson as Map<String, dynamic>, dataHandlers, portPrototypes),
         );
       },
     );
@@ -148,7 +150,7 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
         return MapEntry(
           id,
           FlFieldDataModelV1Adapter.fromJsonV1(
-            fieldJson,
+            fieldJson as Map<String, dynamic>,
             fieldPrototypes,
             dataHandlers,
           ),
@@ -167,17 +169,20 @@ extension FlNodeDataModelV1Adapter on FlNodeDataModel {
       if (type == dynamic) return MapEntry(k, v);
 
       final handler = dataHandlers[type];
-      return MapEntry(k, handler?.fromJson(v) ?? v);
+      return MapEntry(k, handler?.fromJson(v as String) ?? v);
     });
 
     final instance = FlNodeDataModel(
-      id: json['id'],
+      id: json['id'] as String,
       prototype: prototype,
       ports: ports,
       fields: fields,
       customData: customData,
-      state: FlNodeState(isCollapsed: json['state']['isCollapsed']),
-      offset: Offset(json['offset'][0], json['offset'][1]),
+      state: FlNodeState(isCollapsed: (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool),
+      offset: Offset(
+        ((json['offset'] as List<dynamic>)[0] as num).toDouble(),
+        ((json['offset'] as List<dynamic>)[1] as num).toDouble(),
+      ),
     );
 
     return instance;
@@ -193,8 +198,8 @@ extension FlNodesGroupDataModelV1Adapter on FlNodesGroupDataModel {
 
   static FlNodesGroupDataModel fromJsonV1(Map<String, dynamic> json) =>
       FlNodesGroupDataModel(
-        id: json['id'],
-        name: json['name'],
+        id: json['id'] as String,
+        name: json['name'] as String,
         nodeIds:
             (json['nodeIds'] as List<dynamic>).map((e) => e.toString()).toSet(),
       );
@@ -251,7 +256,7 @@ extension FlNodesProjectDataModelV1Adapter on FlNodesProjectDataModel {
 
     for (final nodeJson in nodesJson) {
       final node = FlNodeDataModelV1Adapter.fromJsonV1(
-        nodeJson,
+        nodeJson as Map<String, dynamic>,
         nodePrototypes: nodePrototypes,
         dataHandlers: dataHandlers,
       );

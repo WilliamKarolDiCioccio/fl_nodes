@@ -135,9 +135,9 @@ class FlNodesClipboardHelper {
       final base64Data = utf8.decode(base64Decode(clipboardData.text!));
       final jsonData = jsonDecode(base64Data) as Map<String, dynamic>;
 
-      nodesJson = jsonDecode(jsonData['nodes']) as List<dynamic>;
+      nodesJson = jsonDecode(jsonData['nodes'] as String) as List<dynamic>;
       encompassingRect = JSONRect.fromJson(
-        jsonDecode(jsonData['encompassingRect']),
+        jsonDecode(jsonData['encompassingRect'] as String) as Map<String, dynamic>,
       );
     } catch (e) {
       controller.onCallback?.call(
@@ -165,7 +165,7 @@ class FlNodesClipboardHelper {
     // Create instances from the JSON data.
     final instances = nodesJson.map((node) {
       return FlNodeDataModel.fromJson(
-        node,
+        node as Map<String, dynamic>,
         nodePrototypes: controller.nodePrototypes,
         dataHandlers: controller.project.dataHandlers,
       );

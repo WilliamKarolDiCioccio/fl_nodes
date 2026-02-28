@@ -108,7 +108,7 @@ class VisualScriptingExampleScreenState
           fileContent = await file.readAsString();
         }
 
-        return jsonDecode(fileContent);
+        return jsonDecode(fileContent) as Map<String, dynamic>?;
       },
       projectCreator: (isSaved) async {
         if (isSaved) return true;
@@ -167,7 +167,7 @@ class VisualScriptingExampleScreenState
 
       if (response.statusCode == 200 && mounted) {
         _nodeEditorController.project.load(
-          data: jsonDecode(response.body),
+          data: jsonDecode(response.body) as Map<String, dynamic>?,
           context: context,
         );
       } else {

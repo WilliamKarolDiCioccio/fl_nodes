@@ -183,9 +183,10 @@ final class FlDragSelectionStartEvent extends FlGraphEditClassEvent
       };
 
   factory FlDragSelectionStartEvent.fromJson(Map<String, dynamic> json) {
+    final position = json['position'] as List<dynamic>;
     return FlDragSelectionStartEvent(
       (json['nodeIds'] as List).cast<String>().toSet(),
-      Offset(json['position'][0], json['position'][1]),
+      Offset((position[0] as num).toDouble(), (position[1] as num).toDouble()),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -212,9 +213,10 @@ final class FlDragSelectionEvent extends FlGraphEditClassEvent
       };
 
   factory FlDragSelectionEvent.fromJson(Map<String, dynamic> json) {
+    final delta = json['delta'] as List<dynamic>;
     return FlDragSelectionEvent(
       (json['nodeIds'] as List).cast<String>().toSet(),
-      Offset(json['delta'][0], json['delta'][1]),
+      Offset((delta[0] as num).toDouble(), (delta[1] as num).toDouble()),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,
     );
@@ -241,8 +243,9 @@ final class FlDragSelectionEndEvent extends FlGraphEditClassEvent
       };
 
   factory FlDragSelectionEndEvent.fromJson(Map<String, dynamic> json) {
+    final position = json['position'] as List<dynamic>;
     return FlDragSelectionEndEvent(
-      Offset(json['position'][0], json['position'][1]),
+      Offset((position[0] as num).toDouble(), (position[1] as num).toDouble()),
       (json['nodeIds'] as List).cast<String>().toSet(),
       id: json['id'] as String,
       isHandled: json['isHandled'] as bool,

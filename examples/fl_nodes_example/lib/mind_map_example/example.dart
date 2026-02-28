@@ -83,7 +83,7 @@ class MindMapExampleScreenState extends State<MindMapExampleScreen> {
           fileContent = await file.readAsString();
         }
 
-        return jsonDecode(fileContent);
+        return jsonDecode(fileContent) as Map<String, dynamic>?;
       },
       projectCreator: (isSaved) async {
         if (isSaved) return true;

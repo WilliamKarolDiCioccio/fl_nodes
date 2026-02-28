@@ -19,16 +19,16 @@ void registerDataHandlers(FlNodesController controller) {
 
   controller.project.registerDataHandler<List<int>>(
     toJson: (data) => jsonEncode(data),
-    fromJson: (json) => List<int>.from(jsonDecode(json)),
+    fromJson: (json) => List<int>.from(jsonDecode(json) as Iterable<dynamic>),
   );
 
   controller.project.registerDataHandler<List<bool>>(
     toJson: (data) => jsonEncode(data),
-    fromJson: (json) => List<bool>.from(jsonDecode(json)),
+    fromJson: (json) => List<bool>.from(jsonDecode(json) as Iterable<dynamic>),
   );
 
   controller.project.registerDataHandler<List<String>>(
     toJson: (data) => jsonEncode(data),
-    fromJson: (json) => List<String>.from(jsonDecode(json)),
+    fromJson: (json) => List<String>.from(jsonDecode(json) as Iterable<dynamic>),
   );
 }

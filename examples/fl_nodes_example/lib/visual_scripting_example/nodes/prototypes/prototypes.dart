@@ -107,7 +107,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       defaultValue: false,
       visualizerBuilder: (data) =>
           Icon(data ? Icons.check : Icons.close, color: Colors.white, size: 18),
-      onVisualizerTap: (data, setData) => setData(!data),
+      onVisualizerTap: (data, setData) => setData(!(data as bool)),
     ),
   );
 
@@ -127,7 +127,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: data,
+          initialValue: data as String,
           onChanged: (value) {
             setData(value, eventType: FlFieldEventType.change);
           },
@@ -158,7 +158,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: data.join(', '),
+          initialValue: (data as List<int>).join(', '),
           onChanged: (value) {
             setData(
               value.split(',').map((e) => int.tryParse(e.trim()) ?? 0).toList(),
@@ -195,7 +195,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: data.map((e) => e ? 'true' : 'false').join(', '),
+          initialValue: (data as List<bool>).map((e) => e ? 'true' : 'false').join(', '),
           onChanged: (value) {
             setData(
               value.split(',').map((e) => e.trim() == 'true').toList(),
@@ -244,7 +244,7 @@ void registerNodes(BuildContext context, FlNodesController controller) {
       editorBuilder: (context, removeOverlay, data, setData) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 200),
         child: TextFormField(
-          initialValue: serializeStringList(data),
+          initialValue: serializeStringList(data as List<String>),
           onChanged: (value) => setData(
             parseStringList(value),
             eventType: FlFieldEventType.change,

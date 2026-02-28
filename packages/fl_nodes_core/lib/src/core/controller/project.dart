@@ -77,7 +77,7 @@ class FlNodesProjectHelper {
     );
     registerDataHandler<String>(
       appVersion: controller.appVersion,
-      toJson: (data) => data,
+      toJson: (data) => data as String,
       fromJson: (json) => json,
     );
     registerDataHandler<List<dynamic>>(

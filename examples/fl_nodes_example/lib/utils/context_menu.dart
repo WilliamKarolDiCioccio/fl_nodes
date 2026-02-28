@@ -28,7 +28,7 @@ class ContextMenuUtils {
       return value;
     });
 
-    if (onDismiss != null) onDismiss(copiedValue);
+    if (onDismiss != null) onDismiss(copiedValue as String?);
   }
 
   static List<ContextMenuEntry> portContextMenuEntries(

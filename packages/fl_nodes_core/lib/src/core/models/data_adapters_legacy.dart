@@ -18,16 +18,16 @@ extension FlLinkDataModelLegacyAdapter on FlLinkDataModel {
     Map<Type, DataHandler> dataHandlers,
   ) {
     return FlLinkDataModel(
-      id: json['id'],
+      id: json['id'] as String,
       // What you see here is a mistake in the legacy format that we have to keep for compatibility
       ports: (
         (
-          nodeId: json['from'],
-          portId: json['to'],
+          nodeId: json['from'] as String,
+          portId: json['to'] as String,
         ),
         (
-          nodeId: json['fromPort'],
-          portId: json['toPort'],
+          nodeId: json['fromPort'] as String,
+          portId: json['toPort'] as String,
         ),
       ),
       state: FlLinkState(),
@@ -61,7 +61,7 @@ extension FlPortDataModelLegacyAdapter on FlPortDataModel {
 
     instance.links = (json['links'] as List<dynamic>)
         .map((linkJson) =>
-            FlLinkDataModelLegacyAdapter.fromJsonLegacy(linkJson, dataHandlers))
+            FlLinkDataModelLegacyAdapter.fromJsonLegacy(linkJson as Map<String, dynamic>, dataHandlers))
         .toSet();
 
     return instance;
@@ -90,7 +90,7 @@ extension FlFieldDataModelLegacyAdapter on FlFieldDataModel {
     return FlFieldDataModel(
       prototype: prototype,
       data: json['data'] != 'null'
-          ? dataHandlers[prototype.dataType]?.fromJson(json['data'])
+          ? dataHandlers[prototype.dataType]?.fromJson(json['data'] as String)
           : null,
     );
   }
@@ -106,8 +106,8 @@ extension FlNodeStateLegacyAdapter on FlNodeState {
 
   static FlNodeState fromJsonLegacy(Map<String, dynamic> json) {
     return FlNodeState(
-      isSelected: json['isSelected'],
-      isCollapsed: json['isCollapsed'],
+      isSelected: json['isSelected'] as bool,
+      isCollapsed: json['isCollapsed'] as bool,
     );
   }
 }
@@ -150,7 +150,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
         return MapEntry(
           id,
           FlPortDataModelLegacyAdapter.fromJsonLegacy(
-            portJson,
+            portJson as Map<String, dynamic>,
             dataHandlers,
             portPrototypes,
           ),
@@ -169,7 +169,7 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
         return MapEntry(
           id,
           FlFieldDataModelLegacyAdapter.fromJsonLegacy(
-            fieldJson,
+            fieldJson as Map<String, dynamic>,
             fieldPrototypes,
             dataHandlers,
           ),
@@ -178,13 +178,16 @@ extension FlNodeDataModelLegacyAdapter on FlNodeDataModel {
     );
 
     final instance = FlNodeDataModel(
-      id: json['id'],
+      id: json['id'] as String,
       prototype: prototype,
       ports: ports,
       fields: fields,
       customData: {},
-      state: FlNodeState(isCollapsed: json['state']['isCollapsed']),
-      offset: Offset(json['offset'][0], json['offset'][1]),
+      state: FlNodeState(isCollapsed: (json['state'] as Map<String, dynamic>)['isCollapsed'] as bool),
+      offset: Offset(
+        ((json['offset'] as List<dynamic>)[0] as num).toDouble(),
+        ((json['offset'] as List<dynamic>)[1] as num).toDouble(),
+      ),
     );
 
     return instance;
@@ -216,7 +219,7 @@ extension FlNodesProjectDataModelLegacyAdapter on FlNodesProjectDataModel {
 
     for (final nodeJson in nodesJson) {
       final node = FlNodeDataModelLegacyAdapter.fromJsonLegacy(
-        nodeJson,
+        nodeJson as Map<String, dynamic>,
         nodePrototypes: nodePrototypes,
         dataHandlers: dataHandlers,
       );
