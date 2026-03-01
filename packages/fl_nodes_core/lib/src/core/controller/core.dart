@@ -334,7 +334,7 @@ class FlNodesController with ChangeNotifier {
   /// Quick access to frequently used configuration properties.
 
   /// Enable or disable zooming in the node editor.
-  Future<void> enableSnapToGrid(bool enable) async {
+  void enableSnapToGrid(bool enable) {
     if (!enable) {
       for (final FlNodeDataModel node in nodes.values) {
         node.offset = unboundNodeOffsets[node.id]!;
@@ -941,12 +941,12 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to drag the selected nodes by a given delta affecting their offsets.
   ///
   /// Emits a [FlDragSelectionEvent] event.
-  Future<void> dragSelection(
+  void dragSelection(
     Offset delta, {
     String? eventId,
     bool isWorldDelta = false,
     bool resetUnboundOffset = false,
-  }) async {
+  }) {
     if (selectedNodeIds.isEmpty) return;
 
     // If the delta is not already in world coordinates,
@@ -1006,12 +1006,12 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to select nodes by their IDs.
   ///
   /// Emits a [FlNodeSelectionEvent] event.
-  Future<void> selectNodesById(
+  void selectNodesById(
     Set<String> ids, {
     bool holdSelection = false,
     bool isHandled = false,
     bool isSideEffect = false,
-  }) async {
+  }) {
     if (ids.isEmpty) {
       return clearSelection();
     } else if (!holdSelection) {
@@ -1043,7 +1043,7 @@ class FlNodesController with ChangeNotifier {
   /// hash grid to find nodes that are within the selection area and then selects them.
   ///
   /// See [selectNodesById] for more information.
-  Future<void> selectNodesByArea({bool holdSelection = false}) async {
+  void selectNodesByArea({bool holdSelection = false}) {
     if (_highlightArea == null || _highlightArea == Rect.zero) {
       return clearSelection();
     }
@@ -1061,11 +1061,11 @@ class FlNodesController with ChangeNotifier {
   /// This method is used to select a link by its ID.
   ///
   /// Emits a [FlNodeSelectionEvent] event.
-  Future<void> selectLinkById(
+  void selectLinkById(
     String id, {
     bool holdSelection = false,
     bool isHandled = false,
-  }) async {
+  }) {
     if (id.isEmpty || _tempLink != null) {
       return clearSelection();
     } else if (!holdSelection) {
@@ -1176,10 +1176,10 @@ class FlNodesController with ChangeNotifier {
   }
 
   /// This method is used to find all nodes with the specified display name.
-  Future<List<String>> searchNodesByName(
+  List<String> searchNodesByName(
     BuildContext context,
     String name,
-  ) async {
+  ) {
     final results = <String>[];
 
     final regex = RegExp(name, caseSensitive: false);

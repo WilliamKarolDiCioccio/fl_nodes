@@ -171,7 +171,7 @@ class FlNodesClipboardHelper {
         .toList();
 
     // Called on each paste, see [FlNodesController._mapToNewIds] for more info.
-    final Map<String, String> newIds = await FlNodesUtils.mapToNewIds(instances);
+    final Map<String, String> newIds = FlNodesUtils.mapToNewIds(instances);
 
     final List<FlNodeDataModel> deepCopiedNodes = instances
         .map(

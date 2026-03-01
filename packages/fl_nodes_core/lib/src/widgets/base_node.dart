@@ -73,7 +73,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
     _updateStyleCache();
     _updatePortsAndFields();
 
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       updatePortsPosition();
     });
@@ -104,7 +104,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
       _updateStyleCache();
       _updatePortsAndFields();
 
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) updatePortsPosition();
       });
     }
@@ -116,7 +116,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
     if (event is FlDragSelectionEvent) {
       if (!event.nodeIds.contains(widget.node.id)) return;
 
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) updatePortsPosition();
       });
     } else if (event is FlNodeSelectionEvent) {
@@ -128,7 +128,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
 
       _updateStyleCache();
 
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) updatePortsPosition();
       });
     } else if (event is FlNodeFieldEvent) {
@@ -145,7 +145,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
       _updatePortsAndFields();
       _updateStyleCache();
 
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) updatePortsPosition();
       });
     }
@@ -346,7 +346,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
             )
           : ImprovedListener(
               behavior: HitTestBehavior.translucent,
-              onPointerPressed: (event) async {
+              onPointerPressed: (event) {
                 _isLinking = false;
                 _portLocator = null;
 
@@ -386,7 +386,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
                   }
                 }
               },
-              onPointerMoved: (event) async {
+              onPointerMoved: (event) {
                 if (_isLinking) {
                   _onTmpLinkUpdate(event.position);
                 } else if (event.buttons == kPrimaryMouseButton) {
@@ -394,7 +394,7 @@ abstract class FlBaseNodeWidgetState<T extends FlBaseNodeWidget> extends State<T
                   widget.controller.dragSelection(event.delta);
                 }
               },
-              onPointerReleased: (event) async {
+              onPointerReleased: (event) {
                 if (_isLinking) {
                   final PortLocator? locator = _isNearPort(event.position);
 

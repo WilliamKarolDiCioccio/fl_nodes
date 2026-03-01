@@ -30,9 +30,9 @@ abstract final class FlNodesUtils {
   /// This function is used when pasting nodes to generate new IDs for the
   /// pasted nodes, ports, and links. This is done to avoid conflicts with
   /// existing nodes and to allow for multiple pastes of the same selection.
-  static Future<Map<String, String>> mapToNewIds(
+  static Map<String, String> mapToNewIds(
     List<FlNodeDataModel> nodes,
-  ) async {
+  ) {
     final Map<String, String> newIds = {};
 
     for (final node in nodes) {
