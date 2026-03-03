@@ -22,12 +22,12 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
   final ShowNodeContextMenu showNodeContextMenu;
 
   const FlBaseNodeWidget({
+    super.key,
     required this.controller,
     required this.node,
     required this.showPortContextMenu,
     required this.showNodeCreationMenu,
     required this.showNodeContextMenu,
-    super.key,
   });
 
   @override
@@ -38,8 +38,10 @@ abstract class FlBaseNodeWidget extends StatefulWidget {
       ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
       ..add(DiagnosticsProperty<FlNodeDataModel>('node', node))
       ..add(ObjectFlagProperty<ShowPortContextMenu>.has('showPortContextMenu', showPortContextMenu))
-      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has('showNodeCreationMenu', showNodeCreationMenu))
-      ..add(ObjectFlagProperty<ShowNodeContextMenu>.has('showNodeContextMenu', showNodeContextMenu));
+      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has(
+          'showNodeCreationMenu', showNodeCreationMenu))
+      ..add(
+          ObjectFlagProperty<ShowNodeContextMenu>.has('showNodeContextMenu', showNodeContextMenu));
     // dart format on
   }
 }

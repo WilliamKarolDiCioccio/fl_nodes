@@ -9,9 +9,9 @@ class FlNodesShortcutsWidget extends StatelessWidget {
   final Widget child;
 
   const FlNodesShortcutsWidget({
+    super.key,
     required this.controller,
     required this.child,
-    super.key,
   });
 
   @override

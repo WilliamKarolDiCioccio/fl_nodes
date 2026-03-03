@@ -15,12 +15,12 @@ class FlSubmenuTile extends StatefulWidget {
   final FlMenuStyle submenuStyle;
 
   const FlSubmenuTile({
+    super.key,
     required this.id,
     required this.data,
     required this.menuLevel,
     required this.parentStyle,
     required this.submenuStyle,
-    super.key,
     this.label,
     this.iconData,
   });

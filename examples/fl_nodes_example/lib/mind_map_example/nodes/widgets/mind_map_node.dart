@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 
 class MindMapNodeWidget extends FlBaseNodeWidget {
   const MindMapNodeWidget({
+    super.key,
     required super.controller,
     required super.node,
     required super.showPortContextMenu,
     required super.showNodeCreationMenu,
     required super.showNodeContextMenu,
-    super.key,
   });
 
   @override

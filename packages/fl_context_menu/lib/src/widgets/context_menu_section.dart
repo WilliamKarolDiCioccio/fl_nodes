@@ -11,10 +11,10 @@ class FlMenuSectionWidget extends StatelessWidget {
   final int menuLevel;
 
   const FlMenuSectionWidget({
+    super.key,
     required this.data,
     required this.style,
     required this.menuLevel,
-    super.key,
   });
 
   FlMenuStyle _resolveNextLevelStyle(FlMenuStyle base, int nextLevel) {

@@ -8,8 +8,8 @@ class DebugInfoWidget extends StatelessWidget {
   final FlNodesController controller;
 
   const DebugInfoWidget({
-    required this.controller,
     super.key,
+    required this.controller,
   });
 
   @override

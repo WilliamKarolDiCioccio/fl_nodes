@@ -60,10 +60,10 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
   final void Function(String linkId, Offset position)? showLinkContextMenu;
 
   NodeEditorRenderObjectWidget({
+    super.key,
     required this.controller,
     required this.gridShader,
     required this.nodeBuilder,
-    super.key,
     this.showLinkContextMenu,
   }) : super(
           children: controller.nodesAsList
@@ -99,7 +99,8 @@ class NodeEditorRenderObjectWidget extends MultiChildRenderObjectWidget {
       ..add(DiagnosticsProperty<FlNodesController>('controller', controller))
       ..add(DiagnosticsProperty<ui.FragmentShader>('gridShader', gridShader))
       ..add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder))
-      ..add(ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has('showLinkContextMenu', showLinkContextMenu));
+      ..add(ObjectFlagProperty<void Function(String linkId, ui.Offset position)?>.has(
+          'showLinkContextMenu', showLinkContextMenu));
     // dart format on
   }
 }
@@ -1206,10 +1207,12 @@ class NodeEditorRenderBox extends RenderBox
       ..add(IntProperty('lodLevel', lodLevel))
       ..add(IterableProperty<RenderBox>('selectedChildren', selectedChildren))
       ..add(DiagnosticsProperty<ui.Path>('selectedShadowPath', selectedShadowPath))
-      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>('batchSelectedPortByStyle', batchSelectedPortByStyle))
+      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>(
+          'batchSelectedPortByStyle', batchSelectedPortByStyle))
       ..add(IterableProperty<RenderBox>('unselectedChildren', unselectedChildren))
       ..add(DiagnosticsProperty<ui.Path>('unselectedShadowPath', unselectedShadowPath))
-      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>('batchUnselectedPortByStyle', batchUnselectedPortByStyle))
+      ..add(DiagnosticsProperty<Map<FlPortStyle, (ui.Path, ui.Paint)>>(
+          'batchUnselectedPortByStyle', batchUnselectedPortByStyle))
       ..add(IterableProperty<(PortLocator, ui.Rect)>('portsHitTestData', portsHitTestData))
       ..add(StringProperty('lastHoveredNodeId', lastHoveredNodeId))
       ..add(StringProperty('lastHoveredLinkId', lastHoveredLinkId))

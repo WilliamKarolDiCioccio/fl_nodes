@@ -14,9 +14,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class MindMapExampleScreen extends StatefulWidget {
   const MindMapExampleScreen({
+    super.key,
     required this.currentLocale,
     required this.onLocaleChanged,
-    super.key,
   });
 
   final Locale currentLocale;

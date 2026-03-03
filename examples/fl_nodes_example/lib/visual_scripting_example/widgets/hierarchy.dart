@@ -9,9 +9,9 @@ class HierarchyWidget extends StatefulWidget {
   final bool isCollapsed;
 
   const HierarchyWidget({
+    super.key,
     required this.controller,
     required this.isCollapsed,
-    super.key,
   });
 
   @override

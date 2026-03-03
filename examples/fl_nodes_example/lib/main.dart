@@ -80,9 +80,9 @@ class ExampleGalleryScreen extends StatefulWidget {
   final void Function(String) onLocaleChanged;
 
   const ExampleGalleryScreen({
+    super.key,
     required this.currentLocale,
     required this.onLocaleChanged,
-    super.key,
   });
 
   @override

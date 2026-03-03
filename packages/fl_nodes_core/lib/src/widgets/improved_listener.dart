@@ -17,8 +17,8 @@ class ImprovedListener extends StatefulWidget {
   final HitTestBehavior behavior;
 
   const ImprovedListener({
-    required this.child,
     super.key,
+    required this.child,
     this.onPointerPressed,
     this.onPointerMoved,
     this.onPointerReleased,
@@ -43,11 +43,16 @@ class ImprovedListener extends StatefulWidget {
       ..add(ObjectFlagProperty<PointerDownEventListener?>.has('onPointerPressed', onPointerPressed))
       ..add(ObjectFlagProperty<PointerMoveEventListener?>.has('onPointerMoved', onPointerMoved))
       ..add(ObjectFlagProperty<PointerUpEventListener?>.has('onPointerReleased', onPointerReleased))
-      ..add(ObjectFlagProperty<PointerCancelEventListener?>.has('onPointerCanceled', onPointerCanceled))
-      ..add(ObjectFlagProperty<PointerSignalEventListener?>.has('onPointerSignalReceived', onPointerSignalReceived))
-      ..add(ObjectFlagProperty<PointerPanZoomStartEventListener?>.has('onPointerPanZoomStart', onPointerPanZoomStart))
-      ..add(ObjectFlagProperty<PointerPanZoomUpdateEventListener?>.has('onPointerPanZoomUpdate', onPointerPanZoomUpdate))
-      ..add(ObjectFlagProperty<PointerPanZoomEndEventListener?>.has('onPointerPanZoomEnd', onPointerPanZoomEnd))
+      ..add(ObjectFlagProperty<PointerCancelEventListener?>.has(
+          'onPointerCanceled', onPointerCanceled))
+      ..add(ObjectFlagProperty<PointerSignalEventListener?>.has(
+          'onPointerSignalReceived', onPointerSignalReceived))
+      ..add(ObjectFlagProperty<PointerPanZoomStartEventListener?>.has(
+          'onPointerPanZoomStart', onPointerPanZoomStart))
+      ..add(ObjectFlagProperty<PointerPanZoomUpdateEventListener?>.has(
+          'onPointerPanZoomUpdate', onPointerPanZoomUpdate))
+      ..add(ObjectFlagProperty<PointerPanZoomEndEventListener?>.has(
+          'onPointerPanZoomEnd', onPointerPanZoomEnd))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onDoubleClick', onDoubleClick))
       ..add(DiagnosticsProperty<Duration>('doubleClickThreshold', doubleClickThreshold))
       ..add(EnumProperty<HitTestBehavior>('behavior', behavior));

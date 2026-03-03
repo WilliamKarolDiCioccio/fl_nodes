@@ -13,11 +13,11 @@ class FlMenuWidget extends StatelessWidget {
   final int menuLevel;
 
   const FlMenuWidget({
+    super.key,
     required this.data,
     required this.position,
     required this.config,
     required this.style,
-    super.key,
     this.menuLevel = 1,
   });
 

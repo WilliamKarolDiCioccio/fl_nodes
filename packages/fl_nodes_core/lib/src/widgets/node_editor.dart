@@ -1,6 +1,4 @@
 import 'package:fl_nodes_core/fl_nodes_core.dart';
-import 'package:fl_nodes_core/src/core/events/events.dart';
-import 'package:fl_nodes_core/src/widgets/builders.dart';
 import 'package:fl_nodes_core/src/widgets/debug_info.dart';
 import 'package:fl_nodes_core/src/widgets/node_editor_data_layer.dart';
 import 'package:flutter/foundation.dart';
@@ -42,13 +40,13 @@ class FlNodesWidget extends StatelessWidget {
   ) showLinkContextMenu;
 
   const FlNodesWidget({
+    super.key,
     required this.controller,
     required this.nodeBuilder,
     required this.showPortContextMenu,
     required this.showCanvasContextMenu,
     required this.showNodeCreationMenu,
     required this.showLinkContextMenu,
-    super.key,
     this.expandToParent = true,
     this.fixedSize,
   });

@@ -23,6 +23,7 @@ class NodeEditorDataLayer extends StatefulWidget {
   final NodeBuilder nodeBuilder;
 
   const NodeEditorDataLayer({
+    super.key,
     required this.controller,
     required this.expandToParent,
     required this.fixedSize,
@@ -31,7 +32,6 @@ class NodeEditorDataLayer extends StatefulWidget {
     required this.showCanvasContextMenu,
     required this.showNodeCreationMenu,
     required this.showLinkContextMenu,
-    super.key,
   });
 
   @override
@@ -52,9 +52,12 @@ class NodeEditorDataLayer extends StatefulWidget {
       ..add(DiagnosticsProperty<Size?>('fixedSize', fixedSize))
       ..add(ObjectFlagProperty<NodeBuilder>.has('nodeBuilder', nodeBuilder))
       ..add(ObjectFlagProperty<ShowPortContextMenu>.has('showPortContextMenu', showPortContextMenu))
-      ..add(ObjectFlagProperty<ShowCanvasContextMenu>.has('showCanvasContextMenu', showCanvasContextMenu))
-      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has('showNodeCreationMenu', showNodeCreationMenu))
-      ..add(ObjectFlagProperty<ShowLinkContextMenu>.has('showLinkContextMenu', showLinkContextMenu));
+      ..add(ObjectFlagProperty<ShowCanvasContextMenu>.has(
+          'showCanvasContextMenu', showCanvasContextMenu))
+      ..add(ObjectFlagProperty<ShowNodeCreationtMenu>.has(
+          'showNodeCreationMenu', showNodeCreationMenu))
+      ..add(
+          ObjectFlagProperty<ShowLinkContextMenu>.has('showLinkContextMenu', showLinkContextMenu));
     // dart format on
   }
 }

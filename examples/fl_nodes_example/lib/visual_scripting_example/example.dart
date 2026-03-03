@@ -19,9 +19,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class VisualScriptingExampleScreen extends StatefulWidget {
   const VisualScriptingExampleScreen({
+    super.key,
     required this.currentLocale,
     required this.onLocaleChanged,
-    super.key,
   });
 
   final Locale currentLocale;

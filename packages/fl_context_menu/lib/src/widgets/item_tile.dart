@@ -13,9 +13,9 @@ class FlMenuItemTile extends StatefulWidget {
   final bool isEnabled;
 
   const FlMenuItemTile({
+    super.key,
     required this.id,
     required this.style,
-    super.key,
     this.isEnabled = true,
     this.label,
     this.iconData,

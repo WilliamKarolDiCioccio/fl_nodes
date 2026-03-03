@@ -10,12 +10,12 @@ import 'package:flutter/material.dart';
 /// still respond to tap events in the same way as before.
 class FlDefaultNodeWidget extends FlBaseNodeWidget {
   const FlDefaultNodeWidget({
+    super.key,
     required super.controller,
     required super.node,
     required super.showPortContextMenu,
     required super.showNodeCreationMenu,
     required super.showNodeContextMenu,
-    super.key,
   });
 
   @override

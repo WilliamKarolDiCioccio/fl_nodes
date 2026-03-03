@@ -108,9 +108,9 @@ class TerminalWidget extends StatefulWidget {
   final TerminalController controller;
 
   const TerminalWidget({
+    super.key,
     required this.controller,
     required this.isCollapsed,
-    super.key,
   });
 
   @override
