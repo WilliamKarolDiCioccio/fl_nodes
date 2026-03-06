@@ -440,7 +440,12 @@ class NodeEditorRenderBox extends RenderBox
       final childParentData = child.parentData! as _ParentData;
 
       child.layout(
-        BoxConstraints.loose(constraints.biggest),
+        const BoxConstraints(
+          minWidth: 0,
+          minHeight: 0,
+          maxWidth: double.infinity,
+          maxHeight: double.infinity,
+        ),
         parentUsesSize: true,
       );
 
