@@ -225,6 +225,30 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
     return null;
   }
 
+  /// Checks whether the given screen [position] falls within any node's
+  /// cached render-box bounds. Used to avoid initiating a link drag from
+  /// the data layer when the pointer is over a node widget (the node's own
+  /// handler will take care of it instead).
+  bool _isOverNode(Offset position) {
+    final Offset? worldPosition = RenderBoxUtils.screenToWorld(
+      editorKey,
+      position,
+      offset,
+      zoom,
+    );
+
+    if (worldPosition == null) return false;
+
+    for (final String nodeId in widget.controller.nodesSpatialHashGrid.queryCoords(worldPosition)) {
+      final FlNodeDataModel? node = widget.controller.nodes[nodeId];
+      if (node != null && node.cachedRenderboxRect.contains(worldPosition)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   void _onTmpLinkStart(PortLocator locator) {
     _portLocator = (nodeId: locator.nodeId, portId: locator.portId);
     _isLinking = true;
@@ -457,7 +481,7 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
 
               final PortLocator? locator = _isNearPort(details.focalPoint);
 
-              if (locator != null && _portLocator == null) {
+              if (locator != null && _portLocator == null && !_isOverNode(details.focalPoint)) {
                 _isLinking = true;
                 _onTmpLinkStart(locator);
               } else {
@@ -541,7 +565,10 @@ class _NodeEditorDataLayerState extends State<NodeEditorDataLayer> with TickerPr
                 if (event.buttons == kMiddleMouseButton) {
                   _onDragStart();
                 } else if (event.buttons == kPrimaryMouseButton) {
-                  if (locator != null && !_isLinking && _portLocator == null) {
+                  if (locator != null &&
+                      !_isLinking &&
+                      _portLocator == null &&
+                      !_isOverNode(event.position)) {
                     _onTmpLinkStart(locator);
                   } else {
                     _onHighlightStart(event.position);
