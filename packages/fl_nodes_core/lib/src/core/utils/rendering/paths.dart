@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:fl_nodes_core/src/core/models/data.dart';
@@ -352,44 +351,42 @@ abstract final class PathUtils {
   static Path computeTrianglePortPath(PortPaintModel data) {
     final double r = data.style.radius;
 
-    // Base triangle (pointing left for inputs and right for outputs)
-    final points = data.isInput
-        ? [
-            Offset(r, -r), // top-right
-            Offset(-r, 0), // apex (left)
-            Offset(r, r), // bottom-right
-          ]
-        : [
-            Offset(-r, -r), // top-left
-            Offset(r, 0), // apex (right)
-            Offset(-r, r), // bottom-left
-          ];
-
-    // Determine rotation angle from orientation
-    final double angle = switch (data.orientation) {
-      FlPortGeometricOrientation.top => -math.pi / 2,
-      FlPortGeometricOrientation.bottom => math.pi / 2,
-      FlPortGeometricOrientation.left => math.pi,
-      FlPortGeometricOrientation.right => 0.0,
+    final List<Offset> points = switch ((data.orientation, data.isInput)) {
+      (FlPortGeometricOrientation.top, false) || (FlPortGeometricOrientation.bottom, true) => [
+          Offset(-r, r),
+          Offset(0, -r),
+          Offset(r, r),
+        ], // Top output or bottom input -> point up
+      (FlPortGeometricOrientation.bottom, false) || (FlPortGeometricOrientation.top, true) => [
+          Offset(-r, -r),
+          Offset(0, r),
+          Offset(r, -r),
+        ], // Bottom output or top input -> point down
+      (FlPortGeometricOrientation.left, false) || (FlPortGeometricOrientation.right, true) => [
+          Offset(r, r),
+          Offset(-r, 0),
+          Offset(r, -r),
+        ], // Left output or Right input -> point left
+      (FlPortGeometricOrientation.right, false) || (FlPortGeometricOrientation.left, true) => [
+          Offset(-r, r),
+          Offset(r, 0),
+          Offset(-r, -r),
+        ], // Right output or left input -> point right
     };
 
-    // Rotate + translate points
-    Offset transform(Offset p) {
-      final double cosA = math.cos(angle);
-      final double sinA = math.sin(angle);
-
-      final double x = p.dx * cosA - p.dy * sinA;
-      final double y = p.dx * sinA + p.dy * cosA;
-
-      return Offset(data.offset.dx + x, data.offset.dy + y);
-    }
-
-    final List<Offset> transformed = points.map(transform).toList();
-
     return Path()
-      ..moveTo(transformed[0].dx, transformed[0].dy)
-      ..lineTo(transformed[1].dx, transformed[1].dy)
-      ..lineTo(transformed[2].dx, transformed[2].dy)
+      ..moveTo(
+        data.offset.dx + points[0].dx,
+        data.offset.dy + points[0].dy,
+      )
+      ..lineTo(
+        data.offset.dx + points[1].dx,
+        data.offset.dy + points[1].dy,
+      )
+      ..lineTo(
+        data.offset.dx + points[2].dx,
+        data.offset.dy + points[2].dy,
+      )
       ..close();
   }
 
