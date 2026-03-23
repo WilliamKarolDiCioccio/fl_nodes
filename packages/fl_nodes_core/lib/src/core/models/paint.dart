@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:fl_nodes_core/src/core/models/data.dart';
-
 import 'package:fl_nodes_core/src/styles/styles.dart';
 
 class LinkPaintModel {
@@ -33,11 +32,15 @@ class PortPaintModel {
   final bool isSelected;
   final Offset offset;
   final FlPortStyle style;
+  final FlPortGeometricOrientation orientation;
+  final bool isInput;
 
   PortPaintModel({
     required this.locator,
     required this.isSelected,
     required this.offset,
     required this.style,
+    required this.orientation,
+    required this.isInput,
   });
 }

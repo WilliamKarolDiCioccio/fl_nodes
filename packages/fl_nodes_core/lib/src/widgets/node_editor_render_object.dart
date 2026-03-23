@@ -622,6 +622,9 @@ class NodeEditorRenderBox extends RenderBox
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
                 style: port.style,
+                orientation: port.prototype.geometricOrientation,
+                isInput: port.prototype is FlDataInputPortPrototype ||
+                         port.prototype is FlControlInputPortPrototype,
               ),
             );
           }
@@ -648,6 +651,9 @@ class NodeEditorRenderBox extends RenderBox
                 isSelected: childParentData.state.isSelected,
                 offset: childParentData.offset + port.offset,
                 style: port.style,
+                orientation: port.prototype.geometricOrientation,
+                isInput: port.prototype is FlDataInputPortPrototype ||
+                         port.prototype is FlControlInputPortPrototype,
               ),
             );
           }

@@ -348,20 +348,47 @@ abstract final class PathUtils {
       ),
     );
 
-  static Path computeTrianglePortPath(PortPaintModel data) => Path()
-    ..moveTo(
-      data.offset.dx - data.style.radius,
-      data.offset.dy - data.style.radius,
-    ) // Top-left
-    ..lineTo(
-      data.offset.dx + data.style.radius,
-      data.offset.dy,
-    ) // Middle-right (apex)
-    ..lineTo(
-      data.offset.dx - data.style.radius,
-      data.offset.dy + data.style.radius,
-    ) // Bottom-left
-    ..close();
+  static Path computeTrianglePortPath(PortPaintModel data) {
+    final double r = data.style.radius;
+
+    final List<Offset> points = switch ((data.orientation, data.isInput)) {
+      (FlPortGeometricOrientation.top, false) || (FlPortGeometricOrientation.bottom, true) => [
+          Offset(-r, r),
+          Offset(0, -r),
+          Offset(r, r),
+        ], // Top output or bottom input -> point up
+      (FlPortGeometricOrientation.bottom, false) || (FlPortGeometricOrientation.top, true) => [
+          Offset(-r, -r),
+          Offset(0, r),
+          Offset(r, -r),
+        ], // Bottom output or top input -> point down
+      (FlPortGeometricOrientation.left, false) || (FlPortGeometricOrientation.right, true) => [
+          Offset(r, r),
+          Offset(-r, 0),
+          Offset(r, -r),
+        ], // Left output or Right input -> point left
+      (FlPortGeometricOrientation.right, false) || (FlPortGeometricOrientation.left, true) => [
+          Offset(-r, r),
+          Offset(r, 0),
+          Offset(-r, -r),
+        ], // Right output or left input -> point right
+    };
+
+    return Path()
+      ..moveTo(
+        data.offset.dx + points[0].dx,
+        data.offset.dy + points[0].dy,
+      )
+      ..lineTo(
+        data.offset.dx + points[1].dx,
+        data.offset.dy + points[1].dy,
+      )
+      ..lineTo(
+        data.offset.dx + points[2].dx,
+        data.offset.dy + points[2].dy,
+      )
+      ..close();
+  }
 
   /// Checks if a point is near a path within the given tolerance
   static bool isPointNearPath(Path path, Offset point, double tolerance) {
